@@ -36,10 +36,11 @@ export async function schedulePage(env: Env, cursor: string | null): Promise<Pag
 export async function saveSchedule(
   input: unknown,
   id: string | null,
-  expectedVersion: number | null,
+  expected: { version: number; cursor: number } | null,
   env: Env,
   now: number,
 ): Promise<{ id: string }> {
+  const expectedVersion: number | null = expected?.version ?? null;
   if (env.SEND_MODE === 'live') await requireConnection(env);
   const data: ScheduleInput = scheduleSchema.parse(input);
   const due: number | null = nextRun(data, now + LIMITS.propagationMs - 1);
@@ -71,7 +72,7 @@ export async function saveSchedule(
   const statements: D1PreparedStatement[] = [
     id
       ? env.DB.prepare(
-          "UPDATE schedules SET name=?,kind=?,date=?,time=?,end_date=?,weekdays=?,cards_per_occurrence=?,next_run_at_utc=?,version=?,cursor=0,enabled=1,reason=NULL,mutation_id=? WHERE id=? AND version=? AND reason IS NOT 'cancelled'",
+          "UPDATE schedules SET name=?,kind=?,date=?,time=?,end_date=?,weekdays=?,cards_per_occurrence=?,next_run_at_utc=?,version=?,cursor=0,enabled=1,reason=NULL,mutation_id=? WHERE id=? AND version=? AND cursor=? AND reason IS NOT 'cancelled'",
         ).bind(
           data.name,
           data.kind,
@@ -85,6 +86,7 @@ export async function saveSchedule(
           mutation,
           id,
           expectedVersion,
+          expected?.cursor ?? null,
         )
       : env.DB.prepare(
           "INSERT INTO schedules(id,name,kind,date,time,end_date,weekdays,cards_per_occurrence,timezone,next_run_at_utc,version,cursor,enabled,mutation_id) VALUES(?,?,?,?,?,?,?,?,'Asia/Seoul',?,1,0,1,?)",
@@ -116,7 +118,11 @@ export async function saveSchedule(
   ];
   const results = await env.DB.batch(statements);
   if (!results[0]?.meta.changes)
-    throw appError(409, 'SCHEDULE_CHANGED', '예약이 이미 수정되었습니다. 새로 불러오세요.');
+    throw appError(
+      409,
+      'SCHEDULE_CHANGED',
+      '예약이 수정되었거나 발송이 진행되었습니다. 새로고침 후 예약 수정을 다시 여세요.',
+    );
   return { id: scheduleId };
 }
 export async function stopSchedule(

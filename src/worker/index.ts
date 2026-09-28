@@ -179,11 +179,21 @@ export async function route(request: Request, env: Env): Promise<Response> {
     });
   if (/^\/api\/schedules\/[^/]+$/.test(path) && request.method === 'PUT') {
     const body = z
-      .object({ version: z.number().int().positive(), schedule: z.unknown() })
+      .object({
+        version: z.number().int().positive(),
+        expected_cursor: z.number().int().nonnegative(),
+        schedule: z.unknown(),
+      })
       .strict()
       .parse(await readJson(request));
     return Response.json(
-      await saveSchedule(body.schedule, pathId(path, 3), body.version, env, now),
+      await saveSchedule(
+        body.schedule,
+        pathId(path, 3),
+        { version: body.version, cursor: body.expected_cursor },
+        env,
+        now,
+      ),
     );
   }
   if (/^\/api\/schedules\/[^/]+\/(pause|cancel|resume)$/.test(path) && request.method === 'POST') {

@@ -73,8 +73,20 @@ describe('예약 상태와 카드 버전', () => {
     const data = await input();
     const { id } = await saveSchedule(data, null, null, h.env, NOW);
     const result = await Promise.allSettled([
-      saveSchedule({ ...data, name: 'A', asset_ids: [data.asset_ids[0]!] }, id, 1, h.env, NOW),
-      saveSchedule({ ...data, name: 'B', asset_ids: [data.asset_ids[1]!] }, id, 1, h.env, NOW),
+      saveSchedule(
+        { ...data, name: 'A', asset_ids: [data.asset_ids[0]!] },
+        id,
+        { version: 1, cursor: 0 },
+        h.env,
+        NOW,
+      ),
+      saveSchedule(
+        { ...data, name: 'B', asset_ids: [data.asset_ids[1]!] },
+        id,
+        { version: 1, cursor: 0 },
+        h.env,
+        NOW,
+      ),
     ]);
     expect(result.filter((item) => item.status === 'fulfilled')).toHaveLength(1);
     const latest = (await listSchedules(h.env))[0]!;
@@ -92,7 +104,13 @@ describe('예약 상태와 카드 버전', () => {
       },
       sender: sendMock,
     });
-    await saveSchedule({ ...data, time: '12:20' }, id, 1, h.env, NOW + 300_000);
+    await saveSchedule(
+      { ...data, time: '12:20' },
+      id,
+      { version: 1, cursor: 1 },
+      h.env,
+      NOW + 300_000,
+    );
     expect(await h.env.DB.prepare('SELECT state FROM deliveries').first('state')).toBe('cancelled');
   });
   it('검토되지 않은 카드와 이미지 전파 여유가 없는 예약을 거부한다', async () => {
@@ -183,4 +201,77 @@ it('이미 예약한 이미지 버전은 카드 원문 편집 후에도 재개�
     sender: sendMock,
   });
   expect(await h.env.DB.prepare('SELECT state FROM deliveries').first('state')).toBe('mock_sent');
+});
+
+it('수정 화면을 연 뒤 발송이 진행되면 오래된 목록 저장을 거부한다', async () => {
+  const data = await input();
+  const { id } = await saveSchedule(data, null, null, h.env, NOW);
+  const opened = (await listSchedules(h.env))[0]!;
+  await runEngine(h.env, {
+    mode: 'mock',
+    clock: () => NOW + 300_000,
+    token: async () => 'mock',
+    sender: sendMock,
+  });
+  await expect(
+    saveSchedule(
+      { ...data, time: '12:10' },
+      id,
+      { version: opened.version, cursor: opened.cursor },
+      h.env,
+      NOW + 360_000,
+    ),
+  ).rejects.toMatchObject({ code: 'SCHEDULE_CHANGED', status: 409 });
+  const current = (await listSchedules(h.env))[0]!;
+  expect(current).toMatchObject({ version: 1, cursor: 1 });
+  await saveSchedule(
+    { ...data, time: '12:10', asset_ids: current.asset_ids.slice(current.cursor) },
+    id,
+    { version: current.version, cursor: current.cursor },
+    h.env,
+    NOW + 360_000,
+  );
+  await runEngine(h.env, {
+    mode: 'mock',
+    clock: () => NOW + 600_000,
+    token: async () => 'mock',
+    sender: sendMock,
+  });
+  const sent = await h.env.DB.prepare(
+    "SELECT asset_id FROM deliveries WHERE state='mock_sent' ORDER BY due_at_utc",
+  ).all<{ asset_id: string }>();
+  expect(sent.results.map((row) => row.asset_id)).toEqual(data.asset_ids);
+});
+
+it('저장 요청의 이미지 조회 뒤 발송되어도 소비 위치를 원자적으로 비교한다', async () => {
+  const data = await input();
+  const { id } = await saveSchedule(data, null, null, h.env, NOW);
+  const db: D1Database = new Proxy(h.env.DB, {
+    get(target, key) {
+      if (key === 'batch')
+        return async (statements: D1PreparedStatement[]) => {
+          await runEngine(h.env, {
+            mode: 'mock',
+            clock: () => NOW + 300_000,
+            token: async () => 'mock',
+            sender: sendMock,
+          });
+          return target.batch(statements);
+        };
+      const value: unknown = Reflect.get(target, key);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  await expect(
+    saveSchedule(
+      { ...data, time: '12:10' },
+      id,
+      { version: 1, cursor: 0 },
+      { ...h.env, DB: db },
+      NOW,
+    ),
+  ).rejects.toMatchObject({ code: 'SCHEDULE_CHANGED' });
+  const current = (await listSchedules(h.env))[0]!;
+  expect(current).toMatchObject({ version: 1, cursor: 1, time: '12:05' });
+  expect(current.asset_ids).toEqual(data.asset_ids);
 });

@@ -391,6 +391,7 @@ export function App(): ReactElement {
             <button
               key={item.id}
               className={page === item.id ? 'nav-item selected' : 'nav-item'}
+              disabled={busy}
               onClick={() => setPage(item.id)}
             >
               <Icon name={item.id} />
@@ -764,6 +765,7 @@ export function App(): ReactElement {
                   <div className="toolbar">
                     <button
                       className="primary"
+                      disabled={busy}
                       onClick={() => {
                         setEditing(null);
                         setCardNumber(1);
@@ -855,6 +857,7 @@ export function App(): ReactElement {
                           <div className="card-actions">
                             <button
                               className="text-button"
+                              disabled={busy}
                               onClick={() => {
                                 setEditing({ id: item.id, revision: item.revision });
                                 setCardNumber(index + 1);
@@ -869,6 +872,7 @@ export function App(): ReactElement {
                             {item.status === 'ready' ? (
                               <button
                                 className="text-button"
+                                disabled={busy}
                                 onClick={() => {
                                   setSchedule((current) => ({
                                     ...current,
@@ -1090,7 +1094,11 @@ export function App(): ReactElement {
                                 : '/api/schedules',
                               editingSchedule ? 'PUT' : 'POST',
                               editingSchedule
-                                ? { version: editingSchedule.version, schedule }
+                                ? {
+                                    version: editingSchedule.version,
+                                    expected_cursor: editingSchedule.cursor,
+                                    schedule,
+                                  }
                                 : schedule,
                               state.csrf,
                             );

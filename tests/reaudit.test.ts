@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import type { ScheduleInput } from '../src/shared/model';
+import { kstDate } from '../src/shared/time';
 import { accessToken, createSession, disconnect } from '../src/worker/auth';
 import { encrypt } from '../src/worker/crypto';
 import { assetPage, cardPage, deliveryPage } from '../src/worker/catalog';
@@ -113,7 +114,13 @@ it('재개와 수정이 겹쳐도 실패한 재개가 새 목록에 카드를 �
   await stopSchedule(id, 1, 'paused', h.env, NOW);
   const db = afterFirst(h.env.DB, async (sql) => {
     if (sql === 'SELECT * FROM schedules WHERE id=? AND version=?')
-      await saveSchedule({ ...data, asset_ids: [data.asset_ids[0]!] }, id, 1, h.env, NOW);
+      await saveSchedule(
+        { ...data, asset_ids: [data.asset_ids[0]!] },
+        id,
+        { version: 1, cursor: 0 },
+        h.env,
+        NOW,
+      );
   });
   await expect(resumeSchedule(id, 1, { ...h.env, DB: db }, NOW)).rejects.toThrow();
   expect((await listSchedules(h.env))[0]?.asset_ids).toEqual([data.asset_ids[0]]);
@@ -126,7 +133,7 @@ it('원문 편집 후 시간만 수정해도 기존에 고정한 예약 이미�
     .bind(data.asset_ids[0])
     .first<{ card_id: string }>();
   await saveCard({ ...SAMPLE, expression: 'Edited draft' }, card!.card_id, 1, h.env, NOW);
-  await saveSchedule({ ...data, time: '12:10' }, id, 1, h.env, NOW);
+  await saveSchedule({ ...data, time: '12:10' }, id, { version: 1, cursor: 0 }, h.env, NOW);
   expect((await listSchedules(h.env))[0]?.asset_ids).toEqual(data.asset_ids);
 });
 
@@ -395,7 +402,7 @@ it('취소 예약은 수정으로 다시 활성화되지 않고 한 번 예약�
   const data = await daily();
   const { id } = await saveSchedule(data, null, null, h.env, NOW);
   await stopSchedule(id, 1, 'cancelled', h.env, NOW);
-  await expect(saveSchedule(data, id, 1, h.env, NOW)).rejects.toThrow();
+  await expect(saveSchedule(data, id, { version: 1, cursor: 0 }, h.env, NOW)).rejects.toThrow();
   await expect(saveSchedule({ ...data, kind: 'once' }, null, null, h.env, NOW)).rejects.toThrow(
     '한 번 예약',
   );
@@ -559,4 +566,31 @@ it('결과 불명 수동 처리의 패자는 이미 완료된 선택을 성공�
   expect(
     await h.env.DB.prepare('SELECT confirmed_by_user FROM deliveries').first('confirmed_by_user'),
   ).toBe(1);
+});
+
+it('예약 수정 API는 편집 당시 소비 위치가 없거나 오래되면 거부한다', async () => {
+  const data = { ...(await daily()), date: kstDate(Date.now() + 86_400_000) };
+  const { id } = await saveSchedule(data, null, null, h.env, Date.now());
+  expect(
+    (await authenticated(`/api/schedules/${id}`, 'PUT', { version: 1, schedule: data })).status,
+  ).toBe(400);
+  await h.env.DB.prepare('UPDATE schedules SET cursor=1 WHERE id=?').bind(id).run();
+  expect(
+    (
+      await authenticated(`/api/schedules/${id}`, 'PUT', {
+        version: 1,
+        expected_cursor: 0,
+        schedule: data,
+      })
+    ).status,
+  ).toBe(409);
+  expect(
+    (
+      await authenticated(`/api/schedules/${id}`, 'PUT', {
+        version: 1,
+        expected_cursor: 1,
+        schedule: { ...data, asset_ids: data.asset_ids.slice(1) },
+      })
+    ).status,
+  ).toBe(200);
 });

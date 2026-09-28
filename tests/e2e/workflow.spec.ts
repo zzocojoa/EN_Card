@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
+import type { Card } from '../../src/shared/model';
 
 const sample = {
   template: 'expression',
@@ -48,6 +49,15 @@ test('카드 작성 → 실제 PNG → 저장·검토 → 예약 → 비소비 �
   await page.getByLabel('A little progress every day', { exact: true }).last().check();
   await page.getByRole('button', { name: '예약 저장', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('예약을 저장');
+  await page.locator('.schedule-card').getByRole('button', { name: '수정', exact: true }).click();
+  await page.getByLabel('예약 이름', { exact: true }).fill('수정한 브라우저 검증 예약');
+  const updated = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PUT' && response.url().includes('/api/schedules/'),
+  );
+  await page.getByRole('button', { name: '예약 수정 저장', exact: true }).click();
+  expect((await updated).status()).toBe(200);
+  await expect(page.locator('.schedule-card')).toContainText('수정한 브라우저 검증 예약');
   const before = await page.request.get('/api/state');
   const beforeState = (await before.json()) as { schedules: { id: string; cursor: number }[] };
   await page.getByRole('button', { name: '예약 발송 미리검증' }).click();
@@ -110,13 +120,11 @@ test('편집한 두 번째 카드의 미리보기·저장·PNG 복원이 동일�
     return canvas.toDataURL('image/png').split(',')[1]!;
   });
   await page.getByText('PNG 백업 복원', { exact: true }).click();
-  await page
-    .getByLabel('PNG 백업 파일')
-    .setInputFiles({
-      name: 'backup.png',
-      mimeType: 'image/png',
-      buffer: Buffer.from(backup, 'base64'),
-    });
+  await page.getByLabel('PNG 백업 파일').setInputFiles({
+    name: 'backup.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(backup, 'base64'),
+  });
   await expect(page.locator('.preview-paper img')).toBeVisible();
   const restorePromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'PNG 다운로드' }).click();
@@ -124,6 +132,108 @@ test('편집한 두 번째 카드의 미리보기·저장·PNG 복원이 동일�
   const restorePath = await restoreFile.path();
   if (!restorePath) throw new Error('복원 PNG 파일이 없습니다.');
   expect(await readFile(restorePath)).toEqual(Buffer.from(backup, 'base64'));
+});
+
+test('저장·PNG 복원 응답을 기다리는 동안 편집 대상을 바꾸지 않고 다음 카드를 보존한다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await expect(page.locator('canvas')).toBeVisible();
+  const session = (await (await page.request.get('/api/state')).json()) as { csrf: string };
+  const firstContent = { ...sample, expression: 'First card stays first' };
+  const secondContent = { ...sample, expression: 'Second card stays second' };
+  const firstResponse = await page.request.post('/api/cards', {
+    headers: { 'X-CSRF-Token': session.csrf, Origin: 'http://127.0.0.1:8787' },
+    data: firstContent,
+  });
+  const secondResponse = await page.request.post('/api/cards', {
+    headers: { 'X-CSRF-Token': session.csrf, Origin: 'http://127.0.0.1:8787' },
+    data: secondContent,
+  });
+  expect(firstResponse.status()).toBe(201);
+  expect(secondResponse.status()).toBe(201);
+  const first = (await firstResponse.json()) as { id: string };
+  const second = (await secondResponse.json()) as { id: string };
+  await page.getByRole('button', { name: '새로고침', exact: true }).click();
+  const library = page.getByRole('button', { name: '카드 보관함', exact: false });
+  await library.click();
+  await page
+    .locator('.library-card')
+    .filter({ has: page.getByRole('heading', { name: firstContent.expression, exact: true }) })
+    .getByRole('button', { name: '편집하기' })
+    .click();
+  let releaseSave!: () => void;
+  const saveBarrier: Promise<void> = new Promise((resolve) => {
+    releaseSave = resolve;
+  });
+  await page.route(`**/api/cards/${first.id}`, async (route) => {
+    const response = await route.fetch();
+    await saveBarrier;
+    await route.fulfill({ response });
+  });
+  const pendingSave = page.waitForRequest(
+    (request) => request.method() === 'PUT' && request.url().endsWith(`/api/cards/${first.id}`),
+  );
+  await page.getByRole('button', { name: 'PNG와 초안 저장' }).click();
+  await pendingSave;
+  try {
+    await expect(library).toBeDisabled();
+    await library.click({ force: true });
+    await expect(page.getByLabel('영어 표현', { exact: true })).toHaveValue(
+      firstContent.expression,
+    );
+  } finally {
+    releaseSave();
+  }
+  await expect(page.getByRole('status')).toContainText('PNG를 저장했습니다');
+  await library.click();
+  await page
+    .locator('.library-card')
+    .filter({ has: page.getByRole('heading', { name: secondContent.expression, exact: true }) })
+    .getByRole('button', { name: '편집하기' })
+    .click();
+  await page.getByRole('button', { name: 'PNG와 초안 저장' }).click();
+  await expect(page.getByRole('status')).toContainText('PNG를 저장했습니다');
+  const backup: string = await page
+    .locator('canvas')
+    .evaluate((canvas) => (canvas as HTMLCanvasElement).toDataURL('image/png').split(',')[1]!);
+  let releaseRestore!: () => void;
+  const restoreBarrier: Promise<void> = new Promise((resolve) => {
+    releaseRestore = resolve;
+  });
+  await page.route(`**/api/cards/${second.id}/image`, async (route) => {
+    const response = await route.fetch();
+    await restoreBarrier;
+    await route.fulfill({ response });
+  });
+  const pendingRestore = page.waitForRequest((request) =>
+    request.url().endsWith(`/api/cards/${second.id}/image`),
+  );
+  await page.getByText('PNG 백업 복원', { exact: true }).click();
+  await page.getByLabel('PNG 백업 파일').setInputFiles({
+    name: 'second-card.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(backup, 'base64'),
+  });
+  await pendingRestore;
+  try {
+    await expect(library).toBeDisabled();
+    await library.click({ force: true });
+    await expect(page.getByLabel('영어 표현', { exact: true })).toHaveValue(
+      secondContent.expression,
+    );
+  } finally {
+    releaseRestore();
+  }
+  await expect(page.locator('.preview-paper img')).toBeVisible();
+  await page.getByLabel('내용과 미리보기를 직접 검토했습니다.').check();
+  await page.getByRole('button', { name: 'PNG 저장·검토 완료' }).click();
+  await expect(page.getByRole('status')).toContainText('복원한 PNG의 검토');
+  const state = (await (await page.request.get('/api/state')).json()) as { cards: Card[] };
+  expect(state.cards.find((card) => card.id === first.id)?.content).toEqual(firstContent);
+  expect(state.cards.find((card) => card.id === second.id)?.content).toEqual(secondContent);
+  expect(state.cards.find((card) => card.id === second.id)?.status).toBe('ready');
 });
 
 test('100개를 넘는 보관함과 여러 JSON 백업 파일에 접근한다', async ({ page }) => {
