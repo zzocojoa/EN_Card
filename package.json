@@ -1,0 +1,41 @@
+{
+  "name": "en-card",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "npm run build:web && npm run db:migrate:local && wrangler dev --config wrangler.local.jsonc --local --port 8787",
+    "dev:web": "vite --host 127.0.0.1",
+    "build:web": "vite build",
+    "build": "npm run typecheck && npm run build:web && npm run deploy:dry-run",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "check:free": "node scripts/check-free.mjs",
+    "db:migrate:local": "wrangler d1 migrations apply DB --local --config wrangler.local.jsonc",
+    "deploy:dry-run": "wrangler deploy --dry-run --outdir .worker-build"
+  },
+  "dependencies": {
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20260928.1",
+    "@fontsource-variable/noto-sans-kr": "5.3.0",
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "jsonc-parser": "3.3.1",
+    "miniflare": "5.20260926.0-alpha",
+    "prettier": "3.9.9",
+    "typescript": "7.0.2",
+    "vite": "8.3.1",
+    "vitest": "5.0.2",
+    "wrangler": "4.142.0"
+  }
+}

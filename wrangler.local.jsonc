@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "en-card-local",
+  "main": "src/worker/local.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/auth/*", "/images/*", "/original/*"],
+  },
+  "vars": {
+    "APP_ORIGIN": "http://127.0.0.1:8787",
+    "COST_MODE": "free_only",
+    "SEND_MODE": "dry_run",
+    "SETUP_TOKEN": "local-development-only",
+    "SESSION_SECRET": "local-only-session-key-never-deploy-0000000000000",
+    "TOKEN_ENCRYPTION_KEY": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "en-card-local",
+      "database_id": "11111111-1111-1111-1111-111111111111",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "kv_namespaces": [{ "binding": "CARD_IMAGES", "id": "11111111111111111111111111111111" }],
+}
