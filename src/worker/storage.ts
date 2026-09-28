@@ -56,6 +56,25 @@ export function validatePng(bytes: Uint8Array<ArrayBuffer>): void {
   if (bytes.length > LIMITS.imageBytes)
     throw appError(413, 'IMAGE_LIMIT', 'PNG 크기는 1MiB 이하여야 합니다.');
 }
+async function retainUploadCleanup(assetId: string, env: Env): Promise<void> {
+  await env.DB.prepare(
+    "UPDATE assets SET state='cleanup_needed',cleanup_owner=NULL WHERE id=? AND state!='ready'",
+  )
+    .bind(assetId)
+    .run();
+}
+function uploadFailure(assetId: string, error: unknown): Error {
+  console.warn({
+    event: 'image_upload_failed',
+    asset_id: assetId,
+    error_type: error instanceof Error ? error.name : 'unknown',
+  });
+  return appError(
+    503,
+    'IMAGE_UPLOAD',
+    `이미지 저장을 완료하지 못했습니다. 저장량 화면에서 미완료 이미지 ${assetId}를 정리한 뒤 다시 시도하세요.`,
+  );
+}
 export async function uploadImage(
   request: Request,
   cardId: string,
@@ -79,22 +98,29 @@ export async function uploadImage(
     .bind(id, id, publicId, bytes.length, now, kstDate(now), cardId, revision)
     .first<{ id: string }>();
   if (!reserved) throw appError(409, 'CARD_CHANGED', '업로드 중 카드가 수정되었습니다.');
+  let completed: { id: string } | null;
   try {
     await env.CARD_IMAGES.put(id, bytes);
-    await env.DB.prepare("UPDATE assets SET state='ready' WHERE id=? AND state='uploading'")
+    completed = await env.DB.prepare(
+      "UPDATE assets SET state='ready' WHERE id=? AND state='uploading' RETURNING id",
+    )
       .bind(id)
-      .run();
+      .first<{ id: string }>();
   } catch (error: unknown) {
-    await env.DB.prepare("UPDATE assets SET state='cleanup_needed' WHERE id=?").bind(id).run();
-    console.warn({
-      event: 'image_upload_failed',
-      asset_id: id,
-      error_type: error instanceof Error ? error.name : 'unknown',
-    });
+    await retainUploadCleanup(id, env);
+    throw uploadFailure(id, error);
+  }
+  if (!completed) {
+    await retainUploadCleanup(id, env);
+    try {
+      await deleteImage(id, env, now);
+    } catch (error: unknown) {
+      throw uploadFailure(id, error);
+    }
     throw appError(
-      503,
-      'IMAGE_UPLOAD',
-      `이미지 저장을 완료하지 못했습니다. 저장량 화면에서 미완료 이미지 ${id}를 정리한 뒤 다시 시도하세요.`,
+      409,
+      'IMAGE_UPLOAD_CANCELLED',
+      '저장 중 이미지 정리가 요청되어 업로드를 취소했습니다. 다시 저장하세요.',
     );
   }
   return Response.json({ id, public_id: publicId, bytes: bytes.length, created_at: now });
@@ -118,10 +144,11 @@ export async function reviewCard(
     );
 }
 export async function deleteImage(assetId: string, env: Env, now: number): Promise<void> {
+  const owner: string = crypto.randomUUID();
   const row = await env.DB.prepare(
-    "UPDATE assets SET state='deleting' WHERE id=? AND state!='deleted' AND (state!='uploading' OR created_at<?) RETURNING kv_key",
+    "UPDATE assets SET state='deleting',cleanup_owner=? WHERE id=? AND state!='deleted' AND (state!='uploading' OR created_at<?) RETURNING kv_key",
   )
-    .bind(assetId, now - 300_000)
+    .bind(owner, assetId, now - 300_000)
     .first<{ kv_key: string }>();
   if (!row)
     throw appError(
@@ -130,8 +157,10 @@ export async function deleteImage(assetId: string, env: Env, now: number): Promi
       '이미지가 없거나 업로드 중입니다. 업로드가 중단됐다면 5분 뒤 정리를 시도하세요.',
     );
   await env.CARD_IMAGES.delete(row.kv_key);
-  await env.DB.prepare("UPDATE assets SET state='deleted' WHERE id=? AND state='deleting'")
-    .bind(assetId)
+  await env.DB.prepare(
+    "UPDATE assets SET state='deleted',cleanup_owner=NULL WHERE id=? AND state='deleting' AND cleanup_owner=?",
+  )
+    .bind(assetId, owner)
     .run();
 }
 export async function publicImage(publicId: string, env: Env): Promise<Response> {

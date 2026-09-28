@@ -248,7 +248,11 @@ export async function handle(request: Request, env: Env): Promise<Response> {
       );
     }
     const message: string = error instanceof Error ? error.message : '';
-    if (message.includes('CHECK constraint failed') || message.includes('active_schedule_limit'))
+    if (
+      message.includes('CHECK constraint failed') ||
+      message.includes('active_schedule_limit') ||
+      message.includes('image_storage_limit')
+    )
       return Response.json(
         {
           error: 'QUOTA',
