@@ -65,7 +65,7 @@ npx wrangler kv namespace create CARD_IMAGES
 
 4. 반환된 D1 UUID와 KV ID를 `wrangler.jsonc`에 넣고, 계정의 workers.dev 하위 도메인을 사용해 APP_ORIGIN을 설정합니다. Cron은 `* * * * *` 하나이며 UTC로 동작합니다. 개별 예약은 D1에서 KST→UTC로 계산합니다.
 5. 카카오 앱에서 카카오 로그인·`talk_message` 동의를 설정합니다. Redirect URI를 `APP_ORIGIN/auth/callback`으로 정확히 등록하고 메시지 제품 링크 웹 도메인에 APP_ORIGIN을 등록합니다. REST API 키와 Client Secret을 확인합니다. [로그인 API](https://developers.kakao.com/docs/ko/kakaologin/rest-api), [메시지 API](https://developers.kakao.com/docs/ko/kakaotalk-message/rest-api), [피드 규격](https://developers.kakao.com/docs/ko/message-template/default)을 재확인합니다.
-6. 마이그레이션과 Secrets를 적용합니다. 신규 DB에는 0001~0005를 모두 적용합니다. 기존 0001~0003 DB에는 목록 인덱스와 사용자 수신 확인 구분을 추가하는 0004~0005가 적용되며 기존 자료는 보존합니다.
+6. 마이그레이션과 Secrets를 적용합니다. 신규 DB에는 0001~0006을 모두 적용합니다. 기존 DB에는 아직 적용하지 않은 파일만 순서대로 적용합니다. 0006은 기존 사용량을 보존하며 늦게 완료된 업로드의 정리 용량을 재계상하고 신규 업로드의 200MB 한도는 유지합니다. 적용 전에 D1 백업을 보관하세요.
 
 ```sh
 npx wrangler d1 migrations apply DB --remote --config wrangler.jsonc
