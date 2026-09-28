@@ -8,6 +8,7 @@ import {
   requireSession,
 } from '../src/worker/auth';
 import { decrypt, encrypt } from '../src/worker/crypto';
+import { runEngine } from '../src/worker/engine';
 import { handle } from '../src/worker/index';
 import type { Credentials, Transport } from '../src/worker/types';
 import { dueSchedule, harness, NOW, type Harness } from './helpers';
@@ -201,6 +202,7 @@ describe('토큰 갱신', () => {
   });
   it('권한 철회·갱신 실패 뒤 외부 호출을 반복하지 않는다', async () => {
     await storeCredentials();
+    const id: string = await dueSchedule(h.env, 1, NOW);
     let calls: number = 0;
     const transport: Transport = async () => {
       calls += 1;
@@ -209,6 +211,115 @@ describe('토큰 갱신', () => {
     await expect(accessToken(h.env, NOW, transport)).rejects.toThrow('HTTP 400');
     await expect(accessToken(h.env, NOW + 60_000, transport)).rejects.toThrow('연결');
     expect(calls).toBe(1);
+    expect(await h.env.DB.prepare('SELECT status FROM credentials').first('status')).toBe(
+      'needs_reconnect',
+    );
+    expect(
+      await h.env.DB.prepare('SELECT enabled,reason FROM schedules WHERE id=?').bind(id).first(),
+    ).toEqual({ enabled: 0, reason: 'needs_reconnect' });
+  });
+  it.each(['rejected', 'response_missing'] as const)(
+    '이전 갱신의 %s 오류 뒤에도 새 연결로 다음 Cron에서 발송한다',
+    async (failure) => {
+      await storeCredentials();
+      const id: string = await dueSchedule(h.env, 1, NOW);
+      const auth = await start();
+      const result = await runEngine(h.env, {
+        mode: 'live',
+        clock: () => NOW,
+        token: () =>
+          accessToken(h.env, NOW, async () => {
+            await finishOAuth(callback(auth.state, auth.browser), h.env, NOW, oauthTransport);
+            if (failure === 'response_missing') throw new TypeError('모의 응답 유실');
+            return Response.json({ error: 'invalid_grant', error_code: 'KOE322' }, { status: 400 });
+          }),
+        sender: async () => {
+          throw new Error('이전 연결로 발송하면 안 됩니다.');
+        },
+      });
+      expect(result.processed).toBe(0);
+      expect(await h.env.DB.prepare('SELECT status,version FROM credentials').first()).toEqual({
+        status: 'connected',
+        version: 2,
+      });
+      expect(
+        await h.env.DB.prepare('SELECT reason FROM schedules WHERE id=?').bind(id).first('reason'),
+      ).toBe('content_shortage');
+      expect(await h.env.DB.prepare('SELECT state FROM deliveries').first('state')).toBe(
+        'retry_wait',
+      );
+      const next = await runEngine(h.env, {
+        mode: 'live',
+        clock: () => NOW + 60_000,
+        token: () =>
+          accessToken(h.env, NOW + 60_000, async () => {
+            throw new Error('새 토큰은 아직 만료되지 않았습니다.');
+          }),
+        sender: async (_payload, token) => {
+          expect(token).toBe('access');
+          return { outcome: 'sent', detail: '새 연결의 모의 API 접수' };
+        },
+      });
+      expect(next.processed).toBe(1);
+      expect(await h.env.DB.prepare('SELECT state FROM deliveries').first('state')).toBe('sent');
+      expect(
+        await h.env.DB.prepare('SELECT count(*) AS count FROM delivery_attempts').first('count'),
+      ).toBe(1);
+    },
+  );
+  it('이전 갱신 실패가 같은 버전의 새 갱신 잠금을 해제하지 않는다', async () => {
+    await storeCredentials();
+    const id: string = await dueSchedule(h.env, 1, NOW);
+    await expect(
+      accessToken(h.env, NOW, async () => {
+        await h.env.DB.prepare('UPDATE credentials SET lock_owner=?,lock_until=? WHERE singleton=1')
+          .bind('new-refresh-owner', NOW + 90_000)
+          .run();
+        return Response.json({ error: 'invalid_grant', error_code: 'KOE322' }, { status: 400 });
+      }),
+    ).rejects.toMatchObject({ code: 'TOKEN_CHANGED' });
+    expect(
+      await h.env.DB.prepare(
+        'SELECT status,version,lock_owner,lock_until FROM credentials',
+      ).first(),
+    ).toEqual({
+      status: 'connected',
+      version: 1,
+      lock_owner: 'new-refresh-owner',
+      lock_until: NOW + 90_000,
+    });
+    expect(
+      await h.env.DB.prepare('SELECT enabled,reason FROM schedules WHERE id=?').bind(id).first(),
+    ).toEqual({ enabled: 1, reason: null });
+  });
+  it('이전 토큰의 만료 판정이 새 OAuth 연결을 재연결 필요 상태로 처리하지 않는다', async () => {
+    await storeCredentials();
+    const id: string = await dueSchedule(h.env, 1, NOW);
+    await h.env.DB.prepare('UPDATE credentials SET refresh_expires_at=?')
+      .bind(NOW - 1)
+      .run();
+    const auth = await start();
+    const db: D1Database = new Proxy(h.env.DB, {
+      get(target, key) {
+        if (key === 'batch')
+          return async (statements: D1PreparedStatement[]) => {
+            await finishOAuth(callback(auth.state, auth.browser), h.env, NOW, oauthTransport);
+            return target.batch(statements);
+          };
+        const value: unknown = Reflect.get(target, key);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    await expect(accessToken({ ...h.env, DB: db }, NOW, oauthTransport)).rejects.toMatchObject({
+      code: 'TOKEN_CHANGED',
+    });
+    expect(await h.env.DB.prepare('SELECT status,version FROM credentials').first()).toEqual({
+      status: 'connected',
+      version: 2,
+    });
+    expect(
+      await h.env.DB.prepare('SELECT enabled,reason FROM schedules WHERE id=?').bind(id).first(),
+    ).toEqual({ enabled: 1, reason: null });
   });
   it('갱신 도중 연결 해제를 덮어쓰지 않는다', async () => {
     await storeCredentials();

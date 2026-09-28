@@ -4,6 +4,7 @@ import { kakaoOwner, nativeTransport, requestTokens } from './kakao';
 import { readJson } from './storage';
 import {
   appError,
+  type AppError,
   type Credentials,
   type Env,
   type Session,
@@ -173,6 +174,13 @@ function reconnectSchedules(env: Env, version: number): D1PreparedStatement {
     "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE reason IS NOT 'cancelled' AND reason IS NOT 'paused' AND (enabled=1 OR EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND d.schedule_version=schedules.version AND d.state IN ('pending','claimed','sending','retry_wait','blocked'))) AND EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND version=? AND status='needs_reconnect')",
   ).bind(version);
 }
+function tokenChangedError(): AppError {
+  return appError(
+    409,
+    'TOKEN_CHANGED',
+    '인증 상태가 변경되었습니다. 다음 실행에서 새 연결을 확인합니다.',
+  );
+}
 export async function accessToken(
   env: Env,
   now: number,
@@ -189,7 +197,7 @@ export async function accessToken(
       version: row.version,
     };
   if (row.refresh_expires_at <= now) {
-    await markReconnect(env, row.version);
+    if (!(await markReconnect(env, row.version))) throw tokenChangedError();
     throw appError(401, 'NEEDS_RECONNECT', '리프레시 토큰이 만료되었습니다.');
   }
   const owner: string = randomToken();
@@ -232,16 +240,16 @@ export async function accessToken(
         owner,
       )
       .first<{ owner_id: string }>();
-    if (!result)
-      throw appError(409, 'TOKEN_CHANGED', '갱신 중 인증 상태가 변경되었습니다. 다시 연결하세요.');
+    if (!result) throw tokenChangedError();
     return { token: tokens.access_token, version: row.version + 1 };
   } catch (error: unknown) {
-    await env.DB.batch([
+    const results = await env.DB.batch([
       env.DB.prepare(
-        "UPDATE credentials SET status='needs_reconnect',lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1 AND lock_owner=?",
-      ).bind(owner),
+        "UPDATE credentials SET status='needs_reconnect',lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1 AND version=? AND lock_owner=? AND status='connected'",
+      ).bind(row.version, owner),
       reconnectSchedules(env, row.version + 1),
     ]);
+    if ((results[0]?.meta.changes ?? 0) === 0) throw tokenChangedError();
     throw error;
   }
 }
