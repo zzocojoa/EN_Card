@@ -12,8 +12,17 @@ export const LIMITS = Object.freeze({
   automaticAttempts: 3,
   propagationMs: 120_000,
   claimMs: 60_000,
+  importCards: 100,
+  jsonBytes: 1_000_000,
 });
 const shortText = z.string().trim().max(200);
+const calendarDate = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine((value) => {
+    const timestamp: number = Date.parse(`${value}T00:00:00Z`);
+    return Number.isFinite(timestamp) && new Date(timestamp).toISOString().slice(0, 10) === value;
+  }, '존재하지 않는 날짜입니다.');
 export const cardSchema = z
   .object({
     template: z.enum(['expression', 'comparison']),
@@ -54,17 +63,15 @@ export type Asset = {
   bytes: number;
   state: 'uploading' | 'ready' | 'cleanup_needed' | 'deleting';
   created_at: number;
+  expression: string;
 };
 export const scheduleSchema = z
   .object({
     name: z.string().trim().min(1).max(80),
     kind: z.enum(['once', 'daily', 'weekly']),
-    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    date: calendarDate,
     time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
-    end_date: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/)
-      .nullable(),
+    end_date: calendarDate.nullable(),
     weekdays: z.array(z.number().int().min(0).max(6)).max(7),
     cards_per_occurrence: z.number().int().min(1).max(LIMITS.cardsPerOccurrence),
     asset_ids: z.array(z.string().uuid()).min(1).max(40),
@@ -91,6 +98,12 @@ export const scheduleSchema = z
         message: '회차에 필요한 카드가 부족합니다.',
         path: ['asset_ids'],
       });
+    if (schedule.kind === 'once' && schedule.asset_ids.length > schedule.cards_per_occurrence)
+      ctx.addIssue({
+        code: 'custom',
+        message: '한 번 예약에는 한 회차 카드 수만큼만 선택하세요.',
+        path: ['asset_ids'],
+      });
   });
 export type ScheduleInput = z.infer<typeof scheduleSchema>;
 export type Schedule = ScheduleInput & {
@@ -101,6 +114,7 @@ export type Schedule = ScheduleInput & {
   cursor: number;
   enabled: number;
   reason: string | null;
+  items: { asset_id: string; title: string }[];
 };
 export type SendMode = 'dry_run' | 'mock' | 'live';
 export type DeliveryStatus =
@@ -134,7 +148,22 @@ export type Delivery = {
   manual_retry_until: number | null;
   error: string | null;
   updated_at: number;
+  confirmed_by_user: number;
 };
+export type DeliverySummary = Pick<
+  Delivery,
+  | 'id'
+  | 'occurrence_id'
+  | 'schedule_id'
+  | 'position'
+  | 'state'
+  | 'mode'
+  | 'due_at_utc'
+  | 'attempts'
+  | 'error'
+  | 'updated_at'
+  | 'confirmed_by_user'
+> & { total_attempts: number; occurrence_state: string };
 export type FeedPayload = {
   object_type: 'feed';
   content: {
@@ -155,13 +184,20 @@ export type ImportResult = { cards: CardInput[]; errors: { index: number; messag
 
 export function parseImport(input: unknown): ImportResult {
   const envelope = z
-    .object({ schema_version: z.literal(1), cards: z.array(z.unknown()).min(1).max(40) })
+    .object({
+      schema_version: z.literal(1),
+      cards: z.array(z.unknown()).max(LIMITS.importCards),
+      next_cursor: z.string().max(300).nullable().optional(),
+    })
     .strict()
     .parse(input);
   const seen: Set<string> = new Set<string>();
   const results = envelope.cards.map((value: unknown, index: number) => {
     const record = z
-      .object({ id: z.string().optional(), revision: z.number().int().positive().optional() })
+      .object({
+        id: z.string().min(1).max(200).optional(),
+        revision: z.number().int().positive().optional(),
+      })
       .passthrough()
       .safeParse(value);
     if (!record.success) return { index, error: '카드 객체 형식이 잘못되었습니다.' };

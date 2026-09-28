@@ -1,6 +1,6 @@
 # 검증 근거
 
-최종 검증: 2026-09-28 (KST).
+최종 검증: 2026-09-29 (KST).
 
 검증 환경: macOS arm64, Node.js 24.6.0, npm 11.5.1. 라이브러리의 정확한 버전은 package-lock.json을 기준으로 합니다.
 
@@ -9,9 +9,9 @@
 | `npm run typecheck`        | 통과                  | strict TypeScript, 프런트엔드·Worker·테스트 타입                                   |
 | `npm run build`            | 통과                  | Vite 정적 산출물, Worker dry-run 번들. 원격 배포 아님                              |
 | `npm run check:free`       | 통과                  | 허용 바인딩·의존성·외부 호스트, 기본 dry_run, 로컬 인증/모의 구현의 운영 번들 제외 |
-| `npm test`                 | 55개 통과             | 순수 로직과 실제 Miniflare D1/KV를 사용하는 통합 검증                              |
-| `npm run test:e2e`         | Chromium 2개 통과     | 실제 로컬 Worker, 데스크톱·390px 모바일, PNG·예약 UI                               |
-| `npm run db:migrate:local` | 3개 마이그레이션 통과 | 개발 저장소·독립 E2E·테스트 DB에 스키마 적용                                       |
+| `npm test`                 | 82개 통과             | 순수 로직과 실제 Miniflare D1/KV를 사용하는 통합 검증                              |
+| `npm run test:e2e`         | Chromium 5개 통과     | 실제 로컬 Worker, 데스크톱·390px 모바일, PNG·예약 UI                               |
+| `npm run db:migrate:local` | 5개 마이그레이션 통과 | 개발 저장소·독립 E2E·테스트 DB에 스키마 적용                                       |
 
 ## 테스트가 다루는 위험
 
@@ -29,6 +29,29 @@
 - 비교형 이미지, 한글 폰트, 긴 문장 초과 시 저장 차단, JSON 부분 오류, 모바일 가로 넘침 방지, PNG 백업 복원.
 
 PNG 단위 테스트는 헤더 검증을 위한 바이트 fixture를 사용합니다. 실제 PNG 생성·다운로드·복원은 Chromium E2E가 담당합니다. 카카오 응답은 주입된 HTTP 응답이며 실제 수신을 증명하지 않습니다. 테스트 결과 이미지는 로컬 `test-results/editor-desktop.png`, `test-results/editor-mobile.png`에 생성되며 Git에는 넣지 않습니다.
+
+## 요구사항별 현재 근거
+
+프로젝트 지침과 모든 src/worker·src/shared·src/web 파일, 마이그레이션·실행 설정·운영 문서를 대조했습니다. 테스트는 기존 성공 경로와 아래 실패·경합 경로를 함께 실행합니다. 이 표의 통과 범위는 로컬이며 원격 서비스의 실제 동작을 대신하지 않습니다.
+
+| 요구사항                   | 실제 구현 경로                               | 검증 근거                                                                                                                                                                                      |
+| -------------------------- | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M0 전체 연결·운영 진입점   | index.ts, local.ts, wrangler.jsonc           | 운영 구성 오류 거부, production scheduled의 dry_run 비소비, 브라우저 입력→PNG→KV→예약→기록                                                                                                     |
+| 두 템플릿·폰트·줄바꿈      | web/canvas.ts, public/fonts, App.tsx         | 실제 1080×1080 PNG, 비교형·500자 긴 문장 차단, 390px 모바일, 미리보기·다운로드·저장 PNG 바이트 일치                                                                                            |
+| 가져오기·백업·복원         | shared/model.ts, index.ts, catalog.ts        | 중복 ID·부분 오류·빈 백업·100개 파일 원자성, 205개 JSON 분할 백업/복원, 복원 PNG 다운로드 바이트 일치                                                                                          |
+| 이미지 보관·정리·공개 범위 | storage.ts, assets 트리거                    | 1MiB 초과·잘못된 PNG 거부, 동시 횟수·용량 예약, KV 실패, KV 성공 후 D1 확정 실패, 삭제 응답 유실 후 단일 용량 반환, 참조 이미지 보호                                                           |
+| 운영자·세션·CSRF           | auth.ts, crypto.ts, index.ts                 | 최초 등록 토큰, 소유자 외 로그인, state 브라우저 바인딩·만료·재사용, 세션 없는 API, CSRF·Origin, 로그아웃/연결 해제 구분, 세션 만료 후 화면 재로그인                                           |
+| 인증 갱신과 경합           | auth.ts, engine.ts, kakao.ts                 | refresh 누락 보존·회전·직렬화, 연결 해제 중 갱신, 이전 인증의 늦은 401/권한 오류가 새 연결을 변경하지 않음, 권한 철회 시 미래 예약 중지                                                        |
+| KST·반복·예약 변경         | shared/time.ts, schedules.ts                 | 자정 UTC·월말·윤년·요일·종료일, 잘못된 날짜 400, 준비 목록 소진, 재개/수정 경합, 소비 이미지 삭제 후 재개, 원문 편집 후 고정 이미지 유지                                                       |
+| 발송·복구·중복 방지        | engine.ts, migrations/0001~0005              | 동시 Cron/claim, 예산 확보 후 연결 해제, 호출 전 claim/허용 시간 만료, sending 중단, 성공 후 DB 실패, 부분 성공, 취소 후 늦은 인증 오류·연결 해제에서도 취소 보존, unknown 수동 처리 경합·기록 |
+| 카카오 어댑터              | kakao.ts, mock.ts                            | native fetch 계약·form payload·result_code=0, 401/429/5xx/응답 유실 분류, 읽기 전용 사용자 조회의 제한된 재시도. HTTP 응답은 모의 주입                                                         |
+| 무료 구성·처리량           | check-free.mjs, DB 제약, engine.ts           | 허용 의존성/바인딩/외부 호스트·dry_run, 운영 번들의 로컬/모의 인증 제외, 활성 10·분당 3·일일 20, 실제 인증 함수+2회차/3장 경로의 호출당 50쿼리 이내                                            |
+| 운영 화면·기록 접근        | catalog.ts, pagination.ts, App.tsx           | 카드 205개·이미지/예약/발송 105개 연속 조회, 개별 발송의 전체 시도/사용자 확인 기록, 수동 수신 확인을 API 접수 집계와 구분                                                                     |
+| M5 준비 산출물             | README, SETUP, OPERATIONS, .dev.vars.example | 로컬 명령, Free 계정 확인 조건, 바인딩·Secrets·카카오 설정·마이그레이션·dry_run→live 절차, 백업/장애 복구 안내                                                                                 |
+
+최종 검증에서 핵심 테스트 6개 파일의 82개 테스트가 통과했습니다. E2E 5개는 격리된 로컬 Worker와 Chromium을 사용했고 데스크톱·모바일 PNG 화면도 확인했습니다. 기존 개발 DB의 0001~0003 상태에 0004~0005를 적용하는 업그레이드와, 독립 테스트 DB의 0001~0005 신규 적용을 모두 확인했습니다. git diff --check도 통과했습니다.
+
+쿼리 수 테스트는 지정된 대표 발송 경로를 검사합니다. 실제 계정의 행 읽기/쓰기 사용량과 CPU 10ms 충족 여부는 원격 측정 대상입니다. 2026-09-29에 Workers·D1·KV 요금, D1 제한, Cron, 카카오 인증·메시지 공식 문서를 재확인했으며 출처는 SETUP.md에 연결했습니다.
 
 ## 원격 미실시 항목
 

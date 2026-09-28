@@ -7,27 +7,31 @@ import {
 } from '../shared/model';
 import { nextRun } from '../shared/time';
 import { makePayload } from './kakao';
+import { readPage, type Page } from './pagination';
 import { appError, type Env } from './types';
 
-type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids'> & { weekdays: string };
+type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items'> & { weekdays: string };
 export function decodeSchedule(row: ScheduleRow): Schedule {
-  return { ...row, weekdays: JSON.parse(row.weekdays) as number[], asset_ids: [] };
+  return { ...row, weekdays: JSON.parse(row.weekdays) as number[], asset_ids: [], items: [] };
 }
 export async function listSchedules(env: Env): Promise<Schedule[]> {
-  const [schedules, items] = await Promise.all([
-    env.DB.prepare(
-      'SELECT * FROM schedules ORDER BY next_run_at_utc,id LIMIT 200',
-    ).all<ScheduleRow>(),
-    env.DB.prepare(
-      'SELECT i.schedule_id,i.asset_id FROM schedule_items i JOIN schedules s ON s.id=i.schedule_id AND s.version=i.version ORDER BY i.position',
-    ).all<{ schedule_id: string; asset_id: string }>(),
-  ]);
-  return schedules.results.map((row) => ({
-    ...decodeSchedule(row),
-    asset_ids: items.results
-      .filter((item) => item.schedule_id === row.id)
-      .map((item) => item.asset_id),
-  }));
+  return (await schedulePage(env, null)).items;
+}
+export async function schedulePage(env: Env, cursor: string | null): Promise<Page<Schedule>> {
+  const page = await readPage<ScheduleRow & { items_json: string }>(
+    env.DB,
+    `SELECT s.*,enabled AS sort_key,(SELECT json_group_array(json_object('asset_id',asset_id,'title',json_extract(payload,'$.content.title'))) FROM (SELECT asset_id,payload FROM schedule_items WHERE schedule_id=s.id AND version=s.version ORDER BY position)) AS items_json FROM schedules s WHERE 1=1`,
+    'enabled',
+    cursor,
+    100,
+  );
+  return {
+    ...page,
+    items: page.items.map(({ items_json, ...row }) => {
+      const items = JSON.parse(items_json) as Schedule['items'];
+      return { ...decodeSchedule(row), items, asset_ids: items.map((item) => item.asset_id) };
+    }),
+  };
 }
 export async function saveSchedule(
   input: unknown,
@@ -36,6 +40,7 @@ export async function saveSchedule(
   env: Env,
   now: number,
 ): Promise<{ id: string }> {
+  if (env.SEND_MODE === 'live') await requireConnection(env);
   const data: ScheduleInput = scheduleSchema.parse(input);
   const due: number | null = nextRun(data, now + LIMITS.propagationMs - 1);
   if (!due)
@@ -45,9 +50,12 @@ export async function saveSchedule(
       '실행 가능한 미래 시각이 없습니다. 최소 2분 이후로 설정하세요.',
     );
   const assets = await env.DB.prepare(
-    `SELECT a.id,a.public_id,a.created_at,a.snapshot FROM assets a JOIN cards c ON c.id=a.card_id AND c.revision=a.revision AND c.asset_id=a.id WHERE a.state='ready' AND c.status='ready' AND a.id IN (${data.asset_ids.map(() => '?').join(',')})`,
+    `SELECT a.id,a.public_id,a.created_at,a.snapshot FROM assets a WHERE a.state='ready' AND a.id IN (${data.asset_ids.map(() => '?').join(',')}) AND (
+      EXISTS(SELECT 1 FROM cards c WHERE c.id=a.card_id AND c.revision=a.revision AND c.asset_id=a.id AND c.status='ready')
+      OR EXISTS(SELECT 1 FROM schedule_items i JOIN schedules s ON s.id=i.schedule_id AND s.version=i.version WHERE i.asset_id=a.id AND s.id=? AND s.version=? AND s.reason IS NOT 'cancelled' AND i.position>=s.cursor)
+    )`,
   )
-    .bind(...data.asset_ids)
+    .bind(...data.asset_ids, id, expectedVersion)
     .all<{ id: string; public_id: string; created_at: number; snapshot: string }>();
   if (assets.results.length !== data.asset_ids.length)
     throw appError(
@@ -63,7 +71,7 @@ export async function saveSchedule(
   const statements: D1PreparedStatement[] = [
     id
       ? env.DB.prepare(
-          'UPDATE schedules SET name=?,kind=?,date=?,time=?,end_date=?,weekdays=?,cards_per_occurrence=?,next_run_at_utc=?,version=?,cursor=0,enabled=1,reason=NULL,mutation_id=? WHERE id=? AND version=?',
+          "UPDATE schedules SET name=?,kind=?,date=?,time=?,end_date=?,weekdays=?,cards_per_occurrence=?,next_run_at_utc=?,version=?,cursor=0,enabled=1,reason=NULL,mutation_id=? WHERE id=? AND version=? AND reason IS NOT 'cancelled'",
         ).bind(
           data.name,
           data.kind,
@@ -140,6 +148,8 @@ export async function resumeSchedule(
     .bind(id, version)
     .first<ScheduleRow>();
   if (!raw) throw appError(409, 'SCHEDULE_CHANGED', '예약을 다시 불러오세요.');
+  if (env.SEND_MODE === 'live' || raw.reason === 'needs_reconnect' || raw.reason === 'disconnected')
+    await requireConnection(env);
   if (raw.reason === 'needs_reconnect' || raw.reason === 'daily_limit') {
     const outstanding = await env.DB.prepare(
       "SELECT count(*) AS count FROM deliveries WHERE schedule_id=? AND schedule_version=? AND state IN ('blocked','pending','retry_wait') AND due_at_utc>=?",
@@ -147,11 +157,6 @@ export async function resumeSchedule(
       .bind(id, version, now - LIMITS.graceMs)
       .first<{ count: number }>();
     if (outstanding && outstanding.count > 0) {
-      if (
-        raw.reason === 'needs_reconnect' &&
-        !(await env.DB.prepare("SELECT owner_id FROM credentials WHERE status='connected'").first())
-      )
-        throw appError(409, 'NEEDS_RECONNECT', '먼저 카카오를 다시 연결하세요.');
       const remaining = await env.DB.prepare(
         'SELECT count(*) AS count FROM schedule_items WHERE schedule_id=? AND version=? AND position>=?',
       )
@@ -195,17 +200,26 @@ export async function resumeSchedule(
       'CONTENT_SHORTAGE',
       '남은 카드가 부족합니다. 카드 목록을 추가하여 예약을 수정하세요.',
     );
+  const mutation: string = crypto.randomUUID();
   const results = await env.DB.batch([
     env.DB.prepare(
-      'UPDATE schedules SET enabled=1,reason=NULL,next_run_at_utc=?,version=version+1 WHERE id=? AND version=? AND enabled=0 AND reason IS ?',
-    ).bind(due, id, version, raw.reason),
+      'UPDATE schedules SET enabled=1,reason=NULL,next_run_at_utc=?,version=version+1,cursor=0,mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason IS ?',
+    ).bind(due, mutation, id, version, raw.reason),
     env.DB.prepare(
-      'INSERT OR IGNORE INTO schedule_items(schedule_id,version,position,asset_id,payload) SELECT i.schedule_id,?,i.position,i.asset_id,i.payload FROM schedule_items i JOIN schedules s ON s.id=i.schedule_id WHERE i.schedule_id=? AND i.version=? AND s.version=?',
-    ).bind(version + 1, id, version, version + 1),
+      'INSERT INTO schedule_items(schedule_id,version,position,asset_id,payload) SELECT i.schedule_id,?,i.position-?,i.asset_id,i.payload FROM schedule_items i JOIN schedules s ON s.id=i.schedule_id WHERE i.schedule_id=? AND i.version=? AND i.position>=? AND s.mutation_id=?',
+    ).bind(version + 1, raw.cursor, id, version, raw.cursor, mutation),
     env.DB.prepare(
-      "UPDATE deliveries SET state='missed',error='재개 시 이전 회차의 허용 시간 경과',updated_at=? WHERE schedule_id=? AND schedule_version=? AND state='blocked' AND due_at_utc<? AND EXISTS(SELECT 1 FROM schedules WHERE id=? AND version=?)",
-    ).bind(now, id, version, now - LIMITS.graceMs, id, version + 1),
+      "UPDATE deliveries SET state='missed',error='재개 시 이전 회차의 허용 시간 경과',updated_at=? WHERE schedule_id=? AND schedule_version=? AND state='blocked' AND due_at_utc<? AND EXISTS(SELECT 1 FROM schedules WHERE id=? AND mutation_id=?)",
+    ).bind(now, id, version, now - LIMITS.graceMs, id, mutation),
   ]);
   if (!results[0]?.meta.changes)
     throw appError(409, 'SCHEDULE_CHANGED', '예약 상태가 변경되었습니다.');
+}
+async function requireConnection(env: Env): Promise<void> {
+  if (
+    !(await env.DB.prepare(
+      "SELECT owner_id FROM credentials WHERE singleton=1 AND status='connected'",
+    ).first())
+  )
+    throw appError(409, 'NEEDS_RECONNECT', '먼저 카카오를 다시 연결한 뒤 예약을 활성화하세요.');
 }

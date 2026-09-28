@@ -1,19 +1,24 @@
-import type { Asset, Card, Delivery, Schedule, SendMode } from '../shared/model';
+import type { Asset, Card, DeliverySummary, Schedule, SendMode } from '../shared/model';
 
+export type Collection = 'cards' | 'assets' | 'schedules' | 'deliveries';
+export type AttemptHistory = {
+  attempts: {
+    id: string;
+    started_at: number;
+    outcome: string;
+    detail: string | null;
+    mode: SendMode;
+  }[];
+  decisions: { action: 'confirm_sent' | 'retry'; created_at: number; warning_accepted: number }[];
+};
 export type AppState = {
   csrf: string;
   cards: Card[];
   assets: Asset[];
   schedules: Schedule[];
-  deliveries: Delivery[];
-  attempts: {
-    id: string;
-    delivery_id: string;
-    started_at: number;
-    outcome: string;
-    detail: string;
-    mode: SendMode;
-  }[];
+  deliveries: DeliverySummary[];
+  cursors: Record<Collection, string | null>;
+  totals: Record<Collection, number> & { active_schedules: number };
   previews: {
     id: string;
     schedule_id: string;
@@ -55,7 +60,7 @@ export async function upload(
   revision: number,
   blob: Blob,
   csrf: string,
-): Promise<{ id: string }> {
+): Promise<{ id: string; public_id: string }> {
   const response: Response = await fetch(`/api/cards/${cardId}/image`, {
     method: 'POST',
     headers: {
@@ -65,7 +70,10 @@ export async function upload(
     },
     body: blob,
   });
-  const result = (await response.json()) as { id: string; message?: string };
-  if (!response.ok) throw new Error(result.message ?? '이미지 업로드에 실패했습니다.');
+  const result = (await response.json()) as { id: string; public_id: string; message?: string };
+  if (!response.ok)
+    throw Object.assign(new Error(result.message ?? '이미지 업로드에 실패했습니다.'), {
+      status: response.status,
+    });
   return result;
 }

@@ -11,11 +11,13 @@ npm run dev
 
 `dev`는 Vite 빌드, 로컬 D1 마이그레이션, `wrangler.local.jsonc`의 loopback 서버를 순서대로 실행합니다. 주소는 `http://127.0.0.1:8787`입니다. 프런트엔드 수정 후에는 `npm run build:web`로 갱신하고 브라우저를 새로 고칩니다. Node.js는 개발 도구에만 사용하며 운영 Worker는 Web API 기반입니다.
 
+`npm run dev`의 같은 출처 화면·API를 사용합니다. 별도 Vite 개발 포트에서 운영자 API를 호출하는 스크립트는 제공하지 않습니다.
+
 로컬 진입점 `src/worker/local.ts`에는 테스트 세션 시작 기능이 있습니다. 이 파일은 운영 설정에서 참조하지 않습니다. 로컬 DB/KV ID는 운영 설정과 다르며 테스트는 매번 독립적인 Miniflare DB/KV를 만듭니다. E2E 저장소도 `.wrangler/e2e-*`로 분리합니다. 로컬 진입점·테스트 키를 운영으로 복사하지 마세요.
 
 ## 무료 조건의 근거
 
-2026-09-28 공식 문서 확인 기준입니다. 배포 직전에 다시 확인합니다.
+2026-09-29 공식 문서 확인 기준입니다. 배포 직전에 다시 확인합니다.
 
 | 항목          | 확인한 Free 한도                                            | 공식 문서                                                                                                                               |
 | ------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -27,7 +29,7 @@ npm run dev
 
 실제 계정의 Workers Free 상태, D1/KV 리소스 수와 공유 사용량, 유료 부가 상품이 없는지 대시보드에서 확인해야 합니다. Free 자격이 확인되지 않으면 배포를 보류합니다. 기존 구독·결제 수단은 변경하지 않습니다. 무료 CPU 시간은 외부 응답을 기다리는 벽시계 시간과 다르며 실제 배포에서 측정해야 합니다.
 
-앱 제한은 `src/shared/model.ts`와 DB 제약으로 강제합니다. 이미지 1MiB/장·총 200MB, 업로드 100회/일, 활성 예약 10개, 회차당 1~5장, 분당 실제 시도 3건, 하루 실제 시도 20건, 확실한 미접수 거절 최대 3회입니다. 앱 날짜는 KST, 제공사 한도 초기화는 제공사 정책을 따릅니다. D1 Free의 호출당 쿼리 한도를 고려해 가져오기·예약 목록은 한 번에 최대 40개, 회차 생성은 Cron당 최대 2개입니다.
+앱 제한은 `src/shared/model.ts`와 DB 제약으로 강제합니다. 이미지 1MiB/장·총 200MB, 업로드 100회/일, 활성 예약 10개, 회차당 1~5장, 분당 실제 시도 3건, 하루 실제 시도 20건, 확실한 미접수 거절 최대 3회입니다. 앱 날짜는 KST, 제공사 한도 초기화는 제공사 정책을 따릅니다. D1 Free의 [호출당 50쿼리 제한](https://developers.cloudflare.com/d1/platform/limits/)을 고려해 예약 목록은 한 번에 최대 40개, 회차 생성은 Cron당 최대 2개입니다. JSON 가져오기는 최대 100개·본문 1,000,000바이트이며 json_each를 이용한 단일 INSERT로 해당 파일 전체를 원자적으로 저장합니다. 목록과 JSON 백업은 100개씩 이어서 조회합니다.
 
 ## 운영 환경 설정
 
@@ -63,7 +65,7 @@ npx wrangler kv namespace create CARD_IMAGES
 
 4. 반환된 D1 UUID와 KV ID를 `wrangler.jsonc`에 넣고, 계정의 workers.dev 하위 도메인을 사용해 APP_ORIGIN을 설정합니다. Cron은 `* * * * *` 하나이며 UTC로 동작합니다. 개별 예약은 D1에서 KST→UTC로 계산합니다.
 5. 카카오 앱에서 카카오 로그인·`talk_message` 동의를 설정합니다. Redirect URI를 `APP_ORIGIN/auth/callback`으로 정확히 등록하고 메시지 제품 링크 웹 도메인에 APP_ORIGIN을 등록합니다. REST API 키와 Client Secret을 확인합니다. [로그인 API](https://developers.kakao.com/docs/ko/kakaologin/rest-api), [메시지 API](https://developers.kakao.com/docs/ko/kakaotalk-message/rest-api), [피드 규격](https://developers.kakao.com/docs/ko/message-template/default)을 재확인합니다.
-6. 마이그레이션과 Secrets를 적용합니다.
+6. 마이그레이션과 Secrets를 적용합니다. 신규 DB에는 0001~0005를 모두 적용합니다. 기존 0001~0003 DB에는 목록 인덱스와 사용자 수신 확인 구분을 추가하는 0004~0005가 적용되며 기존 자료는 보존합니다.
 
 ```sh
 npx wrangler d1 migrations apply DB --remote --config wrangler.jsonc

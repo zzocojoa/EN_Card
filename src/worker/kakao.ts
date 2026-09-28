@@ -145,7 +145,16 @@ export async function requestTokens(
       '토큰 응답이 유실되었습니다. 코드를 재사용하지 말고 카카오를 다시 연결하세요.',
     );
   }
-  const body: unknown = await response.json();
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw appError(
+      502,
+      'TOKEN_RESPONSE',
+      `토큰 API HTTP ${response.status}: 응답을 해석하지 못했습니다. 카카오를 다시 연결하세요.`,
+    );
+  }
   if (!response.ok) {
     const reason = z
       .object({ error: z.string(), error_code: z.string().optional() })
@@ -167,10 +176,21 @@ export async function requestTokens(
 }
 export async function kakaoOwner(token: string, transport: Transport): Promise<string> {
   for (let attempt: number = 1; attempt <= 3; attempt += 1) {
-    const response: Response = await transport('https://kapi.kakao.com/v2/user/me', {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    let response: Response;
+    try {
+      response = await transport('https://kapi.kakao.com/v2/user/me', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    } catch (error: unknown) {
+      if (attempt === 3) throw error;
+      console.warn({
+        event: 'owner_lookup_retry',
+        attempt,
+        error_type: error instanceof Error ? error.name : 'unknown',
+      });
+      continue;
+    }
     if (response.status >= 500 && attempt < 3) {
       console.warn({ event: 'owner_lookup_retry', status: response.status, attempt });
       continue;
@@ -181,9 +201,20 @@ export async function kakaoOwner(token: string, transport: Transport): Promise<s
         'OWNER_LOOKUP',
         `사용자 조회 HTTP ${response.status}. 로그인 상태를 확인하세요.`,
       );
-    return String(
-      z.object({ id: z.number().int().safe().positive() }).parse(await response.json()).id,
-    );
+    let body: unknown;
+    try {
+      body = await response.json();
+    } catch {
+      throw appError(
+        502,
+        'OWNER_RESPONSE',
+        `사용자 조회 HTTP ${response.status}: JSON 응답을 해석하지 못했습니다.`,
+      );
+    }
+    const parsed = z.object({ id: z.number().int().safe().positive() }).safeParse(body);
+    if (!parsed.success)
+      throw appError(502, 'OWNER_RESPONSE', '사용자 조회 응답에 올바른 운영자 ID가 없습니다.');
+    return String(parsed.data.id);
   }
   throw appError(502, 'OWNER_LOOKUP', '사용자 조회 재시도 한도에 도달했습니다.');
 }

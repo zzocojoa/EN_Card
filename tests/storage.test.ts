@@ -110,4 +110,71 @@ describe('이미지와 원자적 용량 예약', () => {
         .first('state'),
     ).toBe('deleted');
   });
+  it('KV 저장 뒤 D1 확정 실패에도 파일과 예약 용량을 추적하여 정리한다', async () => {
+    const card = await saveCard(SAMPLE, null, null, h.env, NOW);
+    await h.env.DB.exec(
+      "CREATE TRIGGER fail_ready BEFORE UPDATE OF state ON assets WHEN OLD.state='uploading' AND NEW.state='ready' BEGIN SELECT RAISE(ABORT,'injected_finalize_failure'); END;",
+    );
+    await expect(uploadRequest(card.id)).rejects.toThrow('저장량 화면');
+    const row = await h.env.DB.prepare('SELECT id,state FROM assets').first<{
+      id: string;
+      state: string;
+    }>();
+    expect(row?.state).toBe('cleanup_needed');
+    expect(await h.env.CARD_IMAGES.get(row!.id, 'arrayBuffer')).not.toBeNull();
+    expect(
+      await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
+    ).toBe(33);
+    await deleteImage(row!.id, h.env, NOW);
+    expect(
+      await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
+    ).toBe(0);
+  });
+  it('KV 삭제 응답이 유실되면 정리 상태와 용량을 보존하며 재시도 시 한 번만 반환한다', async () => {
+    const asset = await readyCard(h.env, NOW);
+    const kv = new Proxy(h.env.CARD_IMAGES, {
+      get(target, key) {
+        if (key === 'delete')
+          return async (id: string) => {
+            await target.delete(id);
+            throw new Error('delete response lost');
+          };
+        const value: unknown = Reflect.get(target, key);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+    await expect(deleteImage(asset.assetId, { ...h.env, CARD_IMAGES: kv }, NOW)).rejects.toThrow(
+      'delete response lost',
+    );
+    expect(await h.env.DB.prepare('SELECT state FROM assets').first('state')).toBe('deleting');
+    expect(
+      await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
+    ).toBe(33);
+    await deleteImage(asset.assetId, h.env, NOW);
+    expect(
+      await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
+    ).toBe(0);
+    await expect(deleteImage(asset.assetId, h.env, NOW)).rejects.toThrow();
+    expect(
+      await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
+    ).toBe(0);
+  });
+  it('1MiB 초과 본문과 PNG가 아닌 파일은 용량 예약 전에 거부한다', async () => {
+    const card = await saveCard(SAMPLE, null, null, h.env, NOW);
+    for (const bytes of [new Uint8Array(1_048_577), new Uint8Array(33)]) {
+      await expect(
+        uploadImage(
+          new Request(`${h.env.APP_ORIGIN}/upload`, {
+            method: 'POST',
+            headers: { 'X-Card-Revision': '1' },
+            body: bytes,
+          }),
+          card.id,
+          h.env,
+          NOW,
+        ),
+      ).rejects.toThrow();
+    }
+    expect(await h.env.DB.prepare('SELECT count(*) AS n FROM assets').first('n')).toBe(0);
+  });
 });

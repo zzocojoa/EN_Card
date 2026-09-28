@@ -1,0 +1,38 @@
+import { z } from 'zod';
+import { appError } from './types';
+
+export type Page<T> = { items: T[]; next: string | null };
+const cursorSchema = z.tuple([z.number().finite(), z.string().min(1).max(200)]);
+
+export async function readPage<T extends { id: string }>(
+  db: D1Database,
+  selection: string,
+  orderColumn: string,
+  cursor: string | null,
+  size: number,
+): Promise<Page<T>> {
+  let boundary: [number, string] | null = null;
+  if (cursor !== null) {
+    try {
+      boundary = cursorSchema.parse(JSON.parse(cursor) as unknown);
+    } catch {
+      throw appError(400, 'PAGE_CURSOR', '목록 위치가 잘못되었습니다. 새로고침하세요.');
+    }
+  }
+  const condition: string = boundary
+    ? ` AND (${orderColumn}<? OR (${orderColumn}=? AND id<?))`
+    : '';
+  const values: (number | string)[] = boundary
+    ? [boundary[0], boundary[0], boundary[1], size + 1]
+    : [size + 1];
+  const result = await db
+    .prepare(`${selection}${condition} ORDER BY ${orderColumn} DESC,id DESC LIMIT ?`)
+    .bind(...values)
+    .all<T & { sort_key: number }>();
+  const rows = result.results.slice(0, size);
+  const last = rows.at(-1);
+  return {
+    items: rows,
+    next: result.results.length > size && last ? JSON.stringify([last.sort_key, last.id]) : null,
+  };
+}

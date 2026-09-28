@@ -32,7 +32,9 @@ export async function readJson(request: Request): Promise<unknown> {
   if (!request.headers.get('Content-Type')?.includes('application/json'))
     throw appError(415, 'JSON_REQUIRED', 'application/json 본문이 필요합니다.');
   try {
-    return JSON.parse(new TextDecoder().decode(await readBody(request, 256_000))) as unknown;
+    return JSON.parse(
+      new TextDecoder().decode(await readBody(request, LIMITS.jsonBytes)),
+    ) as unknown;
   } catch (error: unknown) {
     if (error instanceof SyntaxError)
       throw appError(400, 'JSON_INVALID', 'JSON 문법을 확인하세요.');

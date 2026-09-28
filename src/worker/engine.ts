@@ -9,15 +9,16 @@ import { kstDate, nextRun } from '../shared/time';
 import { markReconnect } from './auth';
 import { validatePayload } from './kakao';
 import { decodeSchedule } from './schedules';
-import { appError, type Env, type Sender } from './types';
+import { appError, type Env, type Sender, type TokenGrant } from './types';
 
-type Runtime = {
-  mode: 'live' | 'mock';
+type Runtime = (
+  | { mode: 'live'; token: () => Promise<TokenGrant> }
+  | { mode: 'mock'; token: () => Promise<string> }
+) & {
   sender: Sender;
-  token: () => Promise<string>;
   clock: () => number;
 };
-type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids'> & { weekdays: string };
+type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items'> & { weekdays: string };
 type EngineReport = { mode: 'live' | 'mock' | 'dry_run'; processed: number; detail: string };
 export async function dryRun(env: Env, now: number): Promise<EngineReport> {
   const schedules = await env.DB.prepare(
@@ -51,7 +52,7 @@ export async function dryRun(env: Env, now: number): Promise<EngineReport> {
       payloads,
     });
     await env.DB.prepare(
-      'INSERT INTO dry_runs(id,schedule_id,due_at_utc,detail,created_at) VALUES(?,?,?,?,?) ON CONFLICT(schedule_id,due_at_utc) DO UPDATE SET detail=excluded.detail,created_at=excluded.created_at',
+      'INSERT INTO dry_runs(id,schedule_id,due_at_utc,detail,created_at) VALUES(?,?,?,?,?) ON CONFLICT(schedule_id,due_at_utc) DO UPDATE SET detail=excluded.detail,created_at=excluded.created_at WHERE dry_runs.detail!=excluded.detail',
     )
       .bind(crypto.randomUUID(), row.id, row.next_run_at_utc, detail, now)
       .run();
@@ -78,7 +79,7 @@ async function materialize(env: Env, now: number, mode: 'live' | 'mock'): Promis
       .first<{ count: number }>();
     if (!count || count.count < row.cards_per_occurrence) {
       await env.DB.prepare(
-        "UPDATE schedules SET enabled=0,reason='content_shortage' WHERE id=? AND version=? AND cursor=?",
+        "UPDATE schedules SET enabled=0,reason='content_shortage' WHERE id=? AND version=? AND cursor=? AND enabled=1",
       )
         .bind(row.id, row.version, row.cursor)
         .run();
@@ -174,6 +175,37 @@ async function finish(
     );
   await env.DB.batch(statements);
 }
+async function releaseBeforeCall(
+  env: Env,
+  item: Delivery,
+  owner: string,
+  now: number,
+  attempt: string | null,
+): Promise<void> {
+  const row = await env.DB.prepare(
+    `SELECT ${eligibleSchedule} AS eligible FROM deliveries WHERE id=?`,
+  )
+    .bind(item.id)
+    .first<{ eligible: number }>();
+  const late: boolean =
+    item.due_at_utc < now - LIMITS.graceMs &&
+    (item.manual_retry_until === null || item.manual_retry_until < now);
+  const state: string = !row?.eligible ? 'cancelled' : late ? 'missed' : 'retry_wait';
+  await finish(
+    env,
+    item,
+    owner,
+    state,
+    state === 'missed'
+      ? '호출 전에 15분의 허용 시간이 지났습니다.'
+      : state === 'cancelled'
+        ? '호출 전에 예약 중지·수정을 확인했습니다.'
+        : '호출 전에 인증·claim·순서가 변경되어 다음 실행에서 확인합니다. 외부 API 호출 없음.',
+    state === 'retry_wait' ? now + 60_000 : null,
+    now,
+    attempt,
+  );
+}
 export async function runEngine(env: Env, runtime: Runtime): Promise<EngineReport> {
   const now: number = runtime.clock();
   await recover(env, now);
@@ -183,13 +215,30 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
     const owner: string = crypto.randomUUID();
     const item: Delivery | null = await claim(env, runtime.clock(), owner);
     if (!item) break;
-    let token: string;
+    let payload: FeedPayload;
     try {
-      token = await runtime.token();
+      payload = validatePayload(JSON.parse(item.payload) as unknown, env.APP_ORIGIN);
+    } catch {
+      await finish(
+        env,
+        item,
+        owner,
+        'failed',
+        '저장된 피드 형식이 올바르지 않습니다. 카드와 예약을 수정하세요.',
+        null,
+        runtime.clock(),
+        null,
+      );
+      continue;
+    }
+    let grant: TokenGrant;
+    try {
+      const token = await runtime.token();
+      grant = typeof token === 'string' ? { token, version: 0 } : token;
     } catch (error: unknown) {
       if (!(error instanceof Error) || (!('code' in error) && error.name !== 'TOKEN_BUSY'))
         throw error;
-      const busy: boolean = error.name === 'TOKEN_BUSY';
+      const busy: boolean = ['TOKEN_BUSY', 'TOKEN_CHANGED'].includes(error.name);
       await finish(
         env,
         item,
@@ -204,7 +253,7 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
       );
       if (!busy)
         await env.DB.prepare(
-          "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE id=? AND version=?",
+          "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE id=? AND version=? AND reason IS NOT 'cancelled' AND reason IS NOT 'paused'",
         )
           .bind(item.schedule_id, item.schedule_version)
           .run();
@@ -212,9 +261,13 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
     }
     const attempt: string = crypto.randomUUID();
     const callTime: number = runtime.clock();
+    const credentialGuard: string =
+      runtime.mode === 'live'
+        ? `EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND status='connected' AND version=?)`
+        : '?=0';
     try {
       const budget = await env.DB.prepare(
-        `INSERT INTO delivery_attempts(id,delivery_id,claim_owner,started_at,usage_day,outcome,mode) SELECT ?,id,?,?,?,'sending',? FROM deliveries WHERE id=? AND state='claimed' AND claim_owner=? AND claim_until>? AND (due_at_utc>=? OR manual_retry_until>=?) AND ${eligibleSchedule} AND ${ordered} RETURNING id`,
+        `INSERT INTO delivery_attempts(id,delivery_id,claim_owner,started_at,usage_day,outcome,mode) SELECT ?,id,?,?,?,'sending',? FROM deliveries WHERE id=? AND state='claimed' AND claim_owner=? AND claim_until>? AND (due_at_utc>=? OR manual_retry_until>=?) AND ${eligibleSchedule} AND ${ordered} AND ${credentialGuard} RETURNING id`,
       )
         .bind(
           attempt,
@@ -227,19 +280,11 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
           callTime,
           callTime - LIMITS.graceMs,
           callTime,
+          grant.version,
         )
         .first<{ id: string }>();
       if (!budget) {
-        await finish(
-          env,
-          item,
-          owner,
-          'cancelled',
-          '호출 전 예약·취소·유효 시간을 다시 확인하여 중단했습니다.',
-          null,
-          callTime,
-          null,
-        );
+        await releaseBeforeCall(env, item, owner, callTime, null);
         continue;
       }
     } catch (error: unknown) {
@@ -263,33 +308,24 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
       );
       if (daily)
         await env.DB.prepare(
-          "UPDATE schedules SET enabled=0,reason='daily_limit' WHERE id=? AND version=?",
+          "UPDATE schedules SET enabled=0,reason='daily_limit' WHERE id=? AND version=? AND reason IS NOT 'cancelled' AND reason IS NOT 'paused'",
         )
           .bind(item.schedule_id, item.schedule_version)
           .run();
       break;
     }
     const stillValid = await env.DB.prepare(
-      `SELECT id FROM deliveries WHERE id=? AND claim_owner=? AND state='sending' AND ${eligibleSchedule}`,
+      `SELECT id FROM deliveries WHERE id=? AND claim_owner=? AND state='sending' AND ${eligibleSchedule} AND ${credentialGuard} AND claim_until>?`,
     )
-      .bind(item.id, owner)
+      .bind(item.id, owner, grant.version, runtime.clock())
       .first<{ id: string }>();
     if (!stillValid) {
-      await finish(
-        env,
-        item,
-        owner,
-        'cancelled',
-        '발송 직전 취소됨 (예산 예약은 유지)',
-        null,
-        runtime.clock(),
-        attempt,
-      );
+      await releaseBeforeCall(env, item, owner, runtime.clock(), attempt);
       continue;
     }
     let result: SendResult;
     try {
-      result = await runtime.sender(JSON.parse(item.payload) as FeedPayload, token);
+      result = await runtime.sender(payload, grant.token);
     } catch (error: unknown) {
       console.warn({
         event: 'sender_interrupted',
@@ -308,7 +344,9 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
       item.attempts + 1 < LIMITS.automaticAttempts
     ) {
       await env.DB.batch([
-        env.DB.prepare('UPDATE credentials SET expires_at=0 WHERE singleton=1'),
+        env.DB.prepare(
+          "UPDATE credentials SET expires_at=0 WHERE singleton=1 AND version=? AND status='connected'",
+        ).bind(grant.version),
         env.DB.prepare('UPDATE deliveries SET auth_retries=1 WHERE id=? AND claim_owner=?').bind(
           item.id,
           owner,
@@ -325,10 +363,24 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
         attempt,
       );
     } else if (result.outcome === 'unauthorized' || result.outcome === 'reconnect') {
-      await markReconnect(env);
+      const changed: boolean = await markReconnect(env, grant.version);
+      if (!changed && runtime.mode === 'live') {
+        const retry: boolean = item.attempts + 1 < LIMITS.automaticAttempts;
+        await finish(
+          env,
+          item,
+          owner,
+          retry ? 'retry_wait' : 'failed',
+          '이전 인증의 거절 응답입니다. 변경된 연결 상태는 유지합니다.',
+          retry ? runtime.clock() + 60_000 : null,
+          runtime.clock(),
+          attempt,
+        );
+        continue;
+      }
       await finish(env, item, owner, 'blocked', result.detail, null, runtime.clock(), attempt);
       await env.DB.prepare(
-        "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE id=? AND version=?",
+        "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE id=? AND version=? AND reason IS NOT 'cancelled' AND reason IS NOT 'paused'",
       )
         .bind(item.schedule_id, item.schedule_version)
         .run();
@@ -381,14 +433,15 @@ export async function resolveUnknown(
       );
   }
   const decision: string = crypto.randomUUID();
-  await env.DB.batch([
+  const results = await env.DB.batch([
     env.DB.prepare(
-      "INSERT INTO manual_decisions(id,delivery_id,action,created_at,warning_accepted) SELECT ?,id,?,?,1 FROM deliveries WHERE id=? AND state='unknown'",
-    ).bind(decision, action, now, id),
+      `INSERT INTO manual_decisions(id,delivery_id,action,created_at,warning_accepted) SELECT ?,id,?,?,1 FROM deliveries WHERE id=? AND state='unknown' AND (?='confirm_sent' OR ${eligibleSchedule})`,
+    ).bind(decision, action, now, id, action),
     env.DB.prepare(
-      "UPDATE deliveries SET state=?,attempts=0,auth_retries=0,manual_retry_until=?,retry_at=NULL,error=?,updated_at=? WHERE id=? AND state='unknown' AND EXISTS(SELECT 1 FROM manual_decisions WHERE id=?)",
+      "UPDATE deliveries SET state=?,confirmed_by_user=?,attempts=0,auth_retries=0,manual_retry_until=?,retry_at=NULL,error=?,updated_at=? WHERE id=? AND state='unknown' AND EXISTS(SELECT 1 FROM manual_decisions WHERE id=?)",
     ).bind(
       action === 'retry' ? 'pending' : item.mode === 'mock' ? 'mock_sent' : 'sent',
+      action === 'confirm_sent' ? 1 : 0,
       action === 'retry' ? now + LIMITS.graceMs : null,
       action === 'retry'
         ? '사용자가 중복 가능성을 확인하고 재시도 선택'
@@ -398,4 +451,10 @@ export async function resolveUnknown(
       decision,
     ),
   ]);
+  if (!results[0]?.meta.changes)
+    throw appError(
+      409,
+      'DELIVERY_CHANGED',
+      '발송 또는 예약 상태가 변경되었습니다. 기록을 새로 불러오세요.',
+    );
 }

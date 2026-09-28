@@ -1,4 +1,4 @@
-import { LIMITS, type CardInput } from '../shared/model';
+import { LIMITS, cardSchema, type CardInput } from '../shared/model';
 
 type Block = {
   text: string;
@@ -120,7 +120,8 @@ export function layoutCard(
   );
 }
 export async function renderCard(card: CardInput, number: number): Promise<HTMLCanvasElement> {
-  const text: string = Object.values(card).join(' ');
+  const input: CardInput = cardSchema.parse(card);
+  const text: string = Object.values(input).join(' ');
   await Promise.all([
     document.fonts.load(`450 32px ${FONT}`, text),
     document.fonts.load(`800 82px ${FONT}`, text),
@@ -136,7 +137,7 @@ export async function renderCard(card: CardInput, number: number): Promise<HTMLC
   const layout: Layout = layoutCard((text, font) => {
     context.font = font;
     return context.measureText(text).width;
-  }, card);
+  }, input);
   context.fillStyle = '#ffffff';
   context.fillRect(0, 0, 1080, 1080);
   context.textBaseline = 'top';
@@ -145,7 +146,7 @@ export async function renderCard(card: CardInput, number: number): Promise<HTMLC
   context.font = `600 22px ${FONT}`;
   context.fillStyle = '#657080';
   context.fillText(
-    `${String(number).padStart(3, '0')}  /  ${card.template === 'comparison' ? '표현 비교' : '오늘의 표현'}`,
+    `${String(number).padStart(3, '0')}  /  ${input.template === 'comparison' ? '표현 비교' : '오늘의 표현'}`,
     146,
     72,
   );
@@ -162,6 +163,19 @@ export async function renderCard(card: CardInput, number: number): Promise<HTMLC
   context.font = `400 20px ${FONT}`;
   context.fillText('하루 한 표현', 88, 1015);
   return canvas;
+}
+export async function validateBackup(blob: Blob): Promise<void> {
+  if (blob.type !== 'image/png' || blob.size > LIMITS.imageBytes)
+    throw new Error('1MiB 이하 PNG 파일을 선택하세요.');
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(blob);
+  } catch {
+    throw new Error('PNG를 읽을 수 없습니다. 손상되지 않은 이미지 파일을 선택하세요.');
+  }
+  const valid: boolean = bitmap.width === 1080 && bitmap.height === 1080;
+  bitmap.close();
+  if (!valid) throw new Error('1080×1080 PNG 파일을 선택하세요.');
 }
 export async function pngBlob(canvas: HTMLCanvasElement): Promise<Blob> {
   const blob: Blob = await new Promise<Blob>((resolve, reject) =>

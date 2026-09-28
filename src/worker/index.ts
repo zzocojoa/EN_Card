@@ -1,19 +1,26 @@
 import { z, ZodError } from 'zod';
-import { LIMITS, parseImport, type Card, type CardInput } from '../shared/model';
+import { LIMITS, parseImport } from '../shared/model';
 import { kstDate } from '../shared/time';
 import { beginOAuth, cookie, disconnect, finishOAuth, liveToken, requireSession } from './auth';
+import { assetPage, cardPage, deliveryPage } from './catalog';
 import { dryRun, resolveUnknown, runEngine } from './engine';
 import { nativeTransport, sendKakao } from './kakao';
-import { listSchedules, resumeSchedule, saveSchedule, stopSchedule } from './schedules';
+import { resumeSchedule, saveSchedule, schedulePage, stopSchedule } from './schedules';
 import { deleteImage, publicImage, readJson, reviewCard, saveCard, uploadImage } from './storage';
 import { appError, type AppError, type Env } from './types';
 
+const failureHeaders = {
+  'Cache-Control': 'no-store',
+  'X-Content-Type-Options': 'nosniff',
+  'Referrer-Policy': 'no-referrer',
+};
 const uuid = z.string().uuid();
 function pathId(path: string, position: number): string {
   return uuid.parse(path.split('/')[position]);
 }
 export async function route(request: Request, env: Env): Promise<Response> {
-  const path: string = new URL(request.url).pathname;
+  const url: URL = new URL(request.url);
+  const path: string = url.pathname;
   const now: number = Date.now();
   if (path.startsWith('/images/') || path.startsWith('/original/')) {
     if (!['GET', 'HEAD'].includes(request.method))
@@ -35,56 +42,63 @@ export async function route(request: Request, env: Env): Promise<Response> {
     return finishOAuth(request, env, now, nativeTransport);
   if (!path.startsWith('/api/')) return env.ASSETS.fetch(request);
   const session = await requireSession(request, env, now);
+  if (path.startsWith('/api/page/') && request.method === 'GET') {
+    const cursor: string | null = url.searchParams.get('cursor');
+    if (path === '/api/page/cards') return Response.json(await cardPage(env, cursor));
+    if (path === '/api/page/assets') return Response.json(await assetPage(env, cursor));
+    if (path === '/api/page/schedules') return Response.json(await schedulePage(env, cursor));
+    if (path === '/api/page/deliveries') return Response.json(await deliveryPage(env, cursor));
+  }
+  if (/^\/api\/deliveries\/[^/]+\/attempts$/.test(path) && request.method === 'GET') {
+    const id: string = z.string().min(1).max(200).parse(path.split('/')[3]);
+    const attempts = await env.DB.prepare(
+      'SELECT id,started_at,outcome,detail,mode FROM delivery_attempts WHERE delivery_id=? ORDER BY started_at,id',
+    )
+      .bind(id)
+      .all();
+    const decisions = await env.DB.prepare(
+      'SELECT action,created_at,warning_accepted FROM manual_decisions WHERE delivery_id=? ORDER BY created_at,id',
+    )
+      .bind(id)
+      .all();
+    return Response.json({ attempts: attempts.results, decisions: decisions.results });
+  }
   if (path === '/api/state' && request.method === 'GET') {
-    const [
-      cards,
-      assets,
-      schedules,
-      deliveries,
-      attempts,
-      previews,
-      usage,
-      connection,
-      occurrences,
-    ] = await Promise.all([
-      env.DB.prepare('SELECT * FROM cards ORDER BY created_at DESC LIMIT 500').all<
-        Omit<Card, 'content'> & { content: string }
-      >(),
-      env.DB.prepare(
-        "SELECT id,card_id,revision,public_id,bytes,state,created_at FROM assets WHERE state!='deleted' ORDER BY created_at DESC LIMIT 500",
-      ).all(),
-      listSchedules(env),
-      env.DB.prepare(
-        'SELECT id,occurrence_id,schedule_id,position,state,mode,due_at_utc,attempts,error,updated_at FROM deliveries ORDER BY due_at_utc DESC,position LIMIT 200',
-      ).all(),
-      env.DB.prepare(
-        'SELECT id,delivery_id,started_at,outcome,detail,mode FROM delivery_attempts ORDER BY started_at DESC LIMIT 200',
-      ).all(),
-      env.DB.prepare(
-        'SELECT id,schedule_id,due_at_utc,detail,created_at FROM dry_runs ORDER BY created_at DESC LIMIT 50',
-      ).all(),
-      env.DB.prepare("SELECT * FROM usage_counters WHERE day IN (?,'storage')")
-        .bind(kstDate(now))
-        .all(),
-      env.DB.prepare(
-        'SELECT status,expires_at,refresh_expires_at FROM credentials WHERE singleton=1',
-      ).first(),
-      env.DB.prepare('SELECT * FROM occurrence_results ORDER BY due_at_utc DESC LIMIT 100').all(),
-    ]);
+    const [cards, assets, schedules, deliveries, previews, usage, connection, totals] =
+      await Promise.all([
+        cardPage(env, null),
+        assetPage(env, null),
+        schedulePage(env, null),
+        deliveryPage(env, null),
+        env.DB.prepare(
+          'SELECT id,schedule_id,due_at_utc,detail,created_at FROM dry_runs ORDER BY created_at DESC LIMIT 50',
+        ).all(),
+        env.DB.prepare("SELECT * FROM usage_counters WHERE day IN (?,'storage')")
+          .bind(kstDate(now))
+          .all(),
+        env.DB.prepare(
+          'SELECT status,expires_at,refresh_expires_at FROM credentials WHERE singleton=1',
+        ).first(),
+        env.DB.prepare(
+          "SELECT (SELECT count(*) FROM cards) AS cards,(SELECT count(*) FROM assets WHERE state!='deleted') AS assets,(SELECT count(*) FROM schedules) AS schedules,(SELECT count(*) FROM schedules WHERE enabled=1) AS active_schedules,(SELECT count(*) FROM deliveries) AS deliveries",
+        ).first(),
+      ]);
     return Response.json({
       csrf: session.csrf,
-      cards: cards.results.map((card) => ({
-        ...card,
-        content: JSON.parse(card.content) as CardInput,
-      })),
-      assets: assets.results,
-      schedules,
-      deliveries: deliveries.results,
-      attempts: attempts.results,
+      cards: cards.items,
+      assets: assets.items,
+      schedules: schedules.items,
+      deliveries: deliveries.items,
+      cursors: {
+        cards: cards.next,
+        assets: assets.next,
+        schedules: schedules.next,
+        deliveries: deliveries.next,
+      },
+      totals,
       previews: previews.results,
       usage: usage.results,
       connection,
-      occurrences: occurrences.results,
       mode: env.SEND_MODE,
       now,
     });
@@ -123,27 +137,24 @@ export async function route(request: Request, env: Env): Promise<Response> {
         { status: 400 },
       );
     const cards = result.cards.map((content) => ({ id: crypto.randomUUID(), content }));
-    await env.DB.batch(
-      cards.map((card) =>
-        env.DB.prepare(
-          "INSERT INTO cards(id,revision,content,status,created_at) VALUES(?,1,?,'draft',?)",
-        ).bind(card.id, JSON.stringify(card.content), now),
-      ),
-    );
+    await env.DB.prepare(
+      "INSERT INTO cards(id,revision,content,status,created_at) SELECT json_extract(value,'$.id'),1,json_extract(value,'$.content'),'draft',? FROM json_each(?)",
+    )
+      .bind(now, JSON.stringify(cards))
+      .run();
     return Response.json({ imported: cards.length }, { status: 201 });
   }
   if (path === '/api/export' && request.method === 'GET') {
-    const cards = await env.DB.prepare(
-      'SELECT id,revision,content FROM cards ORDER BY created_at',
-    ).all<{ id: string; revision: number; content: string }>();
+    const cards = await cardPage(env, url.searchParams.get('cursor'));
     return Response.json(
       {
         schema_version: 1,
-        cards: cards.results.map((card) => ({
+        cards: cards.items.map((card) => ({
           id: card.id,
           revision: card.revision,
-          ...(JSON.parse(card.content) as CardInput),
+          ...card.content,
         })),
+        next_cursor: cards.next,
       },
       { headers: { 'Content-Disposition': 'attachment; filename="en-cards.json"' } },
     );
@@ -227,13 +238,13 @@ export async function handle(request: Request, env: Env): Promise<Response> {
             .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
             .join('; '),
         },
-        { status: 400 },
+        { status: 400, headers: failureHeaders },
       );
     if (error instanceof Error && 'status' in error && 'code' in error) {
       const known: AppError = error as AppError;
       return Response.json(
         { error: known.code, message: known.message },
-        { status: known.status, headers: { 'Cache-Control': 'no-store' } },
+        { status: known.status, headers: failureHeaders },
       );
     }
     const message: string = error instanceof Error ? error.message : '';
@@ -244,7 +255,7 @@ export async function handle(request: Request, env: Env): Promise<Response> {
           message:
             '앱의 업로드·저장량·활성 예약 한도에 도달했습니다. 저장량을 정리하거나 다음 날 다시 시도하세요.',
         },
-        { status: 409 },
+        { status: 409, headers: failureHeaders },
       );
     if (message.includes('asset_not_ready'))
       return Response.json(
@@ -252,7 +263,7 @@ export async function handle(request: Request, env: Env): Promise<Response> {
           error: 'ASSET_CHANGED',
           message: '예약 저장 중 카드의 검토 상태가 변경되었습니다. 목록을 다시 확인하세요.',
         },
-        { status: 409 },
+        { status: 409, headers: failureHeaders },
       );
     if (message.includes('asset_in_use'))
       return Response.json(
@@ -261,7 +272,7 @@ export async function handle(request: Request, env: Env): Promise<Response> {
           message:
             '예약 또는 미확정 발송에서 사용 중인 이미지입니다. 먼저 예약·결과 불명을 정리하세요.',
         },
-        { status: 409 },
+        { status: 409, headers: failureHeaders },
       );
     const requestId: string = crypto.randomUUID();
     console.error({
@@ -276,7 +287,7 @@ export async function handle(request: Request, env: Env): Promise<Response> {
         error: 'INTERNAL',
         message: `요청을 완료하지 못했습니다. 저장소·설정을 확인하고 다시 시도하세요. 오류 ID: ${requestId}`,
       },
-      { status: 500 },
+      { status: 500, headers: failureHeaders },
     );
   }
 }

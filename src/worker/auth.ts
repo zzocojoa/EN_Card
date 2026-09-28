@@ -2,7 +2,14 @@ import { z } from 'zod';
 import { decrypt, digest, encrypt, randomToken } from './crypto';
 import { kakaoOwner, nativeTransport, requestTokens } from './kakao';
 import { readJson } from './storage';
-import { appError, type Credentials, type Env, type Session, type Transport } from './types';
+import {
+  appError,
+  type Credentials,
+  type Env,
+  type Session,
+  type TokenGrant,
+  type Transport,
+} from './types';
 
 export function getCookie(request: Request, name: string): string | null {
   const pair: string | undefined = (request.headers.get('Cookie') ?? '')
@@ -55,6 +62,8 @@ export async function beginOAuth(request: Request, env: Env, now: number): Promi
   const owner = await env.DB.prepare('SELECT owner_id FROM credentials WHERE singleton=1').first<{
     owner_id: string;
   }>();
+  if (!owner && (!env.SETUP_TOKEN || env.SETUP_TOKEN.length < 32))
+    throw appError(503, 'SETUP_CONFIG', 'SETUP_TOKEN에 32자 이상의 난수를 설정하세요.');
   if (
     !owner &&
     (!env.SETUP_TOKEN ||
@@ -150,20 +159,37 @@ export async function finishOAuth(
   headers.append('Set-Cookie', cookie('en_oauth', '', 0, env.APP_ORIGIN));
   return new Response(null, { status: 303, headers });
 }
-export async function markReconnect(env: Env): Promise<void> {
-  await env.DB.prepare(
-    "UPDATE credentials SET status='needs_reconnect',lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1",
-  ).run();
+export async function markReconnect(env: Env, version: number): Promise<boolean> {
+  const results = await env.DB.batch([
+    env.DB.prepare(
+      "UPDATE credentials SET status='needs_reconnect',lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1 AND version=? AND status='connected'",
+    ).bind(version),
+    reconnectSchedules(env, version + 1),
+  ]);
+  return (results[0]?.meta.changes ?? 0) > 0;
 }
-export async function accessToken(env: Env, now: number, transport: Transport): Promise<string> {
+function reconnectSchedules(env: Env, version: number): D1PreparedStatement {
+  return env.DB.prepare(
+    "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE reason IS NOT 'cancelled' AND reason IS NOT 'paused' AND (enabled=1 OR EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND d.schedule_version=schedules.version AND d.state IN ('pending','claimed','sending','retry_wait','blocked'))) AND EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND version=? AND status='needs_reconnect')",
+  ).bind(version);
+}
+export async function accessToken(
+  env: Env,
+  now: number,
+  transport: Transport,
+): Promise<TokenGrant> {
   const row: Credentials | null = await env.DB.prepare(
     'SELECT * FROM credentials WHERE singleton=1',
   ).first<Credentials>();
   if (!row || row.status !== 'connected' || !row.access_token || !row.refresh_token)
     throw appError(401, 'NEEDS_RECONNECT', '카카오 연결이 필요합니다. 연결 후 예약을 재개하세요.');
-  if (row.expires_at > now + 60_000) return decrypt(row.access_token, env.TOKEN_ENCRYPTION_KEY);
+  if (row.expires_at > now + 60_000)
+    return {
+      token: await decrypt(row.access_token, env.TOKEN_ENCRYPTION_KEY),
+      version: row.version,
+    };
   if (row.refresh_expires_at <= now) {
-    await markReconnect(env);
+    await markReconnect(env, row.version);
     throw appError(401, 'NEEDS_RECONNECT', '리프레시 토큰이 만료되었습니다.');
   }
   const owner: string = randomToken();
@@ -208,13 +234,14 @@ export async function accessToken(env: Env, now: number, transport: Transport): 
       .first<{ owner_id: string }>();
     if (!result)
       throw appError(409, 'TOKEN_CHANGED', '갱신 중 인증 상태가 변경되었습니다. 다시 연결하세요.');
-    return tokens.access_token;
+    return { token: tokens.access_token, version: row.version + 1 };
   } catch (error: unknown) {
-    await env.DB.prepare(
-      "UPDATE credentials SET status='needs_reconnect',lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1 AND lock_owner=?",
-    )
-      .bind(owner)
-      .run();
+    await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE credentials SET status='needs_reconnect',lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1 AND lock_owner=?",
+      ).bind(owner),
+      reconnectSchedules(env, row.version + 1),
+    ]);
     throw error;
   }
 }
@@ -223,11 +250,13 @@ export async function disconnect(env: Env, now: number): Promise<void> {
     env.DB.prepare(
       "UPDATE credentials SET access_token=NULL,refresh_token=NULL,status='disconnected',version=version+1,lock_owner=NULL,lock_until=NULL WHERE singleton=1",
     ),
-    env.DB.prepare("UPDATE schedules SET enabled=0,reason='disconnected' WHERE enabled=1"),
+    env.DB.prepare(
+      "UPDATE schedules SET enabled=0,reason='disconnected' WHERE reason IS NOT 'cancelled' AND reason IS NOT 'paused' AND (enabled=1 OR EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND d.schedule_version=schedules.version AND d.state IN ('pending','claimed','sending','retry_wait','blocked')))",
+    ),
     env.DB.prepare(
       "UPDATE deliveries SET state='cancelled',error='자동 발송 연결 해제',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE state IN ('pending','claimed','retry_wait','blocked')",
     ).bind(now),
   ]);
 }
-export const liveToken = (env: Env, now: number): Promise<string> =>
+export const liveToken = (env: Env, now: number): Promise<TokenGrant> =>
   accessToken(env, now, nativeTransport);

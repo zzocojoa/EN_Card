@@ -1,6 +1,14 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 
+const sample = {
+  template: 'expression',
+  expression: 'A verified preview',
+  meaning_ko: '확인한 미리보기',
+  example_en: 'Check the card before saving.',
+  example_ko: '저장 전에 카드를 확인하세요.',
+};
+
 test('카드 작성 → 실제 PNG → 저장·검토 → 예약 → 비소비 미리검증', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -56,6 +64,120 @@ test('카드 작성 → 실제 PNG → 저장·검토 → 예약 → 비소비 �
   expect(afterState.deliveries).toHaveLength(0);
   expect(errors).toEqual([]);
 });
+
+test('편집한 두 번째 카드의 미리보기·저장·PNG 복원이 동일한 바이트를 사용한다', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await expect(page.getByRole('heading', { name: '오늘, 어떤 표현을 담을까요?' })).toBeVisible();
+  const session = (await (await page.request.get('/api/state')).json()) as { csrf: string };
+  const imported = await page.request.post('/api/import', {
+    headers: { 'X-CSRF-Token': session.csrf, Origin: 'http://127.0.0.1:8787' },
+    data: {
+      schema_version: 1,
+      cards: [sample, { ...sample, expression: 'Another verified preview' }],
+    },
+  });
+  expect(imported.status()).toBe(201);
+  await page.getByRole('button', { name: '새로고침', exact: true }).click();
+  await page.getByRole('button', { name: '카드 보관함', exact: false }).click();
+  await page.locator('.library-card').nth(1).getByRole('button', { name: '편집하기' }).click();
+  await expect(page.locator('canvas')).toBeVisible();
+  const preview = await page
+    .locator('canvas')
+    .evaluate((canvas) => (canvas as HTMLCanvasElement).toDataURL('image/png').split(',')[1]!);
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'PNG 다운로드' }).click();
+  const file = await downloadPromise;
+  const path = await file.path();
+  if (!path) throw new Error('PNG 파일이 없습니다.');
+  expect(await readFile(path)).toEqual(Buffer.from(preview, 'base64'));
+  await page.getByLabel('내용과 미리보기를 직접 검토했습니다.').check();
+  await page.getByRole('button', { name: 'PNG 저장·검토 완료' }).click();
+  await expect(page.getByRole('status')).toContainText('검토가 완료');
+  const state = (await (await page.request.get('/api/state')).json()) as {
+    assets: { public_id: string }[];
+  };
+  const saved = await page.request.get(`/images/${state.assets[0]!.public_id}.png`);
+  expect(await saved.body()).toEqual(Buffer.from(preview, 'base64'));
+  const backup = await page.locator('canvas').evaluate((element) => {
+    const canvas = element as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas가 없습니다.');
+    ctx.fillStyle = '#214de5';
+    ctx.fillRect(10, 10, 24, 24);
+    return canvas.toDataURL('image/png').split(',')[1]!;
+  });
+  await page.getByText('PNG 백업 복원', { exact: true }).click();
+  await page
+    .getByLabel('PNG 백업 파일')
+    .setInputFiles({
+      name: 'backup.png',
+      mimeType: 'image/png',
+      buffer: Buffer.from(backup, 'base64'),
+    });
+  await expect(page.locator('.preview-paper img')).toBeVisible();
+  const restorePromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'PNG 다운로드' }).click();
+  const restoreFile = await restorePromise;
+  const restorePath = await restoreFile.path();
+  if (!restorePath) throw new Error('복원 PNG 파일이 없습니다.');
+  expect(await readFile(restorePath)).toEqual(Buffer.from(backup, 'base64'));
+});
+
+test('100개를 넘는 보관함과 여러 JSON 백업 파일에 접근한다', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await expect(page.getByRole('heading', { name: '오늘, 어떤 표현을 담을까요?' })).toBeVisible();
+  const session = (await (await page.request.get('/api/state')).json()) as { csrf: string };
+  const response = await page.request.post('/api/import', {
+    headers: { 'X-CSRF-Token': session.csrf, Origin: 'http://127.0.0.1:8787' },
+    data: {
+      schema_version: 1,
+      cards: Array.from({ length: 100 }, (_, index) => ({
+        ...sample,
+        expression: `Pagination ${index}`,
+      })),
+    },
+  });
+  expect(response.status()).toBe(201);
+  await page.getByRole('button', { name: '새로고침', exact: true }).click();
+  await page.getByRole('button', { name: '카드 보관함', exact: false }).click();
+  await expect(page.locator('.library-card')).toHaveCount(100);
+  const state = (await (await page.request.get('/api/state')).json()) as {
+    totals: { cards: number };
+  };
+  await page.getByRole('button', { name: '더 불러오기' }).click();
+  await expect(page.locator('.library-card')).toHaveCount(state.totals.cards);
+  const firstPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'JSON 백업 ↓', exact: false }).click();
+  const first = await firstPromise;
+  const firstPath = await first.path();
+  if (!firstPath) throw new Error('첫 JSON 백업이 없습니다.');
+  expect(
+    (JSON.parse(await readFile(firstPath, 'utf8')) as { cards: unknown[] }).cards,
+  ).toHaveLength(100);
+  const nextPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: '다음 JSON 백업' }).click();
+  const next = await nextPromise;
+  const nextPath = await next.path();
+  if (!nextPath) throw new Error('두 번째 JSON 백업이 없습니다.');
+  expect((JSON.parse(await readFile(nextPath, 'utf8')) as { cards: unknown[] }).cards).toHaveLength(
+    state.totals.cards - 100,
+  );
+});
+
+test('세션 만료 후 화면에서 다시 로그인할 수 있다', async ({ page, context }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await expect(page.locator('canvas')).toBeVisible();
+  await context.clearCookies();
+  await page.getByRole('button', { name: '새로고침', exact: true }).click();
+  await expect(page.getByRole('button', { name: '로컬 작업실 열기' })).toBeVisible();
+  await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await expect(page.getByRole('heading', { name: '오늘, 어떤 표현을 담을까요?' })).toBeVisible();
+});
 test('비교형·긴 문장·JSON 가져오기·모바일 표시', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
@@ -85,9 +207,7 @@ test('비교형·긴 문장·JSON 가져오기·모바일 표시', async ({ page
     ).getUint32(16),
   ).toBe(1080);
   expect(comparisonPng.length).toBeGreaterThan(15000);
-  await page
-    .getByLabel('영어 예문', { exact: true })
-    .fill('This is a very long sentence. '.repeat(80));
+  await page.getByLabel('영어 예문', { exact: true }).fill('W'.repeat(500));
   await expect(page.getByRole('alert')).toContainText('모두 들어가지');
   await expect(page.getByRole('button', { name: 'PNG와 초안 저장' })).toBeDisabled();
   await page.getByRole('button', { name: '카드 보관함', exact: false }).click();

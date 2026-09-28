@@ -8,8 +8,9 @@ import {
 } from '../shared/model';
 import { formatKst, kstDate, nextRun } from '../shared/time';
 import seeds from '../../seed/cards.json';
-import { api, upload, type AppState, type Boot } from './api';
-import { downloadBlob, pngBlob, renderCard } from './canvas';
+import { api, upload, type AppState, type AttemptHistory, type Boot, type Collection } from './api';
+import type { Page as ResultPage } from '../worker/pagination';
+import { downloadBlob, pngBlob, renderCard, validateBackup } from './canvas';
 
 type Page = 'editor' | 'library' | 'schedules' | 'history' | 'settings';
 type Notice = { kind: 'error' | 'success'; text: string } | null;
@@ -148,6 +149,11 @@ export function App(): ReactElement {
   const [editing, setEditing] = useState<{ id: string; revision: number } | null>(null);
   const [restored, setRestored] = useState<{ id: string; public_id: string } | null>(null);
   const [reviewed, setReviewed] = useState<boolean>(false);
+  const [cardNumber, setCardNumber] = useState<number>(1);
+  const [previewPending, setPreviewPending] = useState<boolean>(true);
+  const [backupCursor, setBackupCursor] = useState<string | null>(null);
+  const [backupPart, setBackupPart] = useState<number>(1);
+  const [attemptHistory, setAttemptHistory] = useState<Record<string, AttemptHistory>>({});
   const [previewError, setPreviewError] = useState<string>('');
   const [json, setJson] = useState<string>('');
   const [showImport, setShowImport] = useState<boolean>(false);
@@ -157,6 +163,7 @@ export function App(): ReactElement {
   const [unknownId, setUnknownId] = useState<string | null>(null);
   const [acceptDuplicate, setAcceptDuplicate] = useState<boolean>(false);
   const preview = useRef<HTMLDivElement>(null);
+  const authenticated: boolean = state !== null;
   async function refresh(): Promise<void> {
     setState((await api('/api/state', 'GET', null, '')) as AppState);
   }
@@ -182,13 +189,19 @@ export function App(): ReactElement {
   }, []);
   useEffect(() => {
     let active: boolean = true;
+    if (page !== 'editor' || !authenticated) return;
     setPreviewError('');
+    setPreviewPending(true);
+    preview.current?.replaceChildren();
     if (restored) {
       const image: HTMLImageElement = document.createElement('img');
       image.src = `/images/${restored.public_id}.png`;
       image.alt = '복원한 PNG';
       image.onload = () => {
-        if (active) preview.current?.replaceChildren(image);
+        if (active) {
+          preview.current?.replaceChildren(image);
+          setPreviewPending(false);
+        }
       };
       image.onerror = () => {
         if (active)
@@ -198,14 +211,12 @@ export function App(): ReactElement {
         active = false;
       };
     }
-    void renderCard(
-      card,
-      editing
-        ? Math.max(1, (state?.cards.findIndex((item) => item.id === editing.id) ?? 0) + 1)
-        : 1,
-    )
+    void renderCard(card, cardNumber)
       .then((canvas) => {
-        if (active) preview.current?.replaceChildren(canvas);
+        if (active) {
+          preview.current?.replaceChildren(canvas);
+          setPreviewPending(false);
+        }
       })
       .catch((error: unknown) => {
         if (active) {
@@ -216,13 +227,14 @@ export function App(): ReactElement {
     return () => {
       active = false;
     };
-  }, [card, editing, page, state?.cards, restored]);
+  }, [authenticated, state?.now, card, cardNumber, page, restored]);
   async function perform(task: () => Promise<void>): Promise<void> {
     setBusy(true);
     setNotice(null);
     try {
       await task();
     } catch (error: unknown) {
+      if (error instanceof Error && 'status' in error && error.status === 401) setState(null);
       setNotice({ kind: 'error', text: errorMessage(error) });
     } finally {
       setBusy(false);
@@ -248,7 +260,7 @@ export function App(): ReactElement {
       return;
     }
     const input: CardInput = cardSchema.parse(card);
-    const blob: Blob = await pngBlob(await renderCard(input, 1));
+    const blob: Blob = await pngBlob(await renderCard(input, cardNumber));
     const saved = (await api(
       editing ? `/api/cards/${editing.id}` : '/api/cards',
       editing ? 'PUT' : 'POST',
@@ -290,13 +302,68 @@ export function App(): ReactElement {
     setSetupToken('');
     window.location.assign(result.url);
   }
+  async function loadMore<K extends Collection>(kind: K): Promise<void> {
+    const cursor: string | null | undefined = state?.cursors[kind];
+    if (!cursor) return;
+    const page = (await api(
+      `/api/page/${kind}?cursor=${encodeURIComponent(cursor)}`,
+      'GET',
+      null,
+      '',
+    )) as ResultPage<AppState[K][number]>;
+    setState((current) =>
+      current
+        ? {
+            ...current,
+            [kind]: [
+              ...current[kind],
+              ...page.items.filter(
+                (item) => !current[kind].some((existing) => existing.id === item.id),
+              ),
+            ],
+            cursors: { ...current.cursors, [kind]: page.next },
+          }
+        : current,
+    );
+  }
+  function moreButton(kind: Collection): ReactElement | null {
+    return state?.cursors[kind] ? (
+      <button
+        className="secondary wide"
+        disabled={busy}
+        onClick={() => void perform(() => loadMore(kind))}
+      >
+        더 불러오기 ({state[kind].length} / {state.totals[kind]})
+      </button>
+    ) : null;
+  }
+  async function backup(cursor: string | null, part: number): Promise<void> {
+    const data = (await api(
+      `/api/export${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''}`,
+      'GET',
+      null,
+      '',
+    )) as { schema_version: 1; cards: unknown[]; next_cursor: string | null };
+    downloadBlob(
+      new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+      `en-cards-${part}.json`,
+    );
+    setBackupCursor(data.next_cursor);
+    setBackupPart(part + 1);
+    setNotice({
+      kind: 'success',
+      text: data.next_cursor
+        ? `${part}번째 JSON ${data.cards.length}개를 백업했습니다. 다음 JSON 백업도 내려받으세요.`
+        : '모든 JSON 백업 파일을 내려받았습니다.',
+    });
+  }
   const readyCards = state?.cards.filter((item) => item.status === 'ready') ?? [];
-  const activeSchedules: number = state?.schedules.filter((item) => item.enabled === 1).length ?? 0;
+  const activeSchedules: number = state?.totals.active_schedules ?? 0;
   const storage: number = state?.usage.find((item) => item.day === 'storage')?.bytes ?? 0;
   const today = state?.usage.find((item) => item.day === kstDate(Date.now()));
   let next: number | null = null;
   try {
-    next = nextRun(schedule, Date.now());
+    next = nextRun(schedule, Date.now() + LIMITS.propagationMs - 1);
   } catch {
     next = null;
   }
@@ -328,7 +395,7 @@ export function App(): ReactElement {
             >
               <Icon name={item.id} />
               <span>{item.title}</span>
-              {item.id === 'library' && state ? <em>{state.cards.length}</em> : null}
+              {item.id === 'library' && state ? <em>{state.totals.cards}</em> : null}
             </button>
           ))}
         </nav>
@@ -477,7 +544,7 @@ export function App(): ReactElement {
                     {page === 'editor'
                       ? '작은 카드 한 장에, 오래 기억하고 싶은 영어를 담으세요.'
                       : page === 'library'
-                        ? `${state.cards.length}개의 카드 · 검토 완료 ${readyCards.length}개`
+                        ? `총 ${state.totals.cards}개의 카드 · 불러온 ${state.cards.length}개 중 검토 완료 ${readyCards.length}개`
                         : page === 'schedules'
                           ? '한국 시간으로 예약하고, 준비한 카드를 순서대로 보내세요.'
                           : page === 'history'
@@ -581,13 +648,14 @@ export function App(): ReactElement {
                         <input
                           type="checkbox"
                           checked={reviewed}
+                          disabled={previewPending || Boolean(previewError)}
                           onChange={(event) => setReviewed(event.target.checked)}
                         />
                         <span>내용과 미리보기를 직접 검토했습니다.</span>
                       </label>
                       <button
                         className="primary wide"
-                        disabled={Boolean(previewError) || busy}
+                        disabled={Boolean(previewError) || previewPending || busy}
                         onClick={() => void perform(save)}
                       >
                         {busy ? '저장 중…' : reviewed ? 'PNG 저장·검토 완료' : 'PNG와 초안 저장'}
@@ -609,6 +677,7 @@ export function App(): ReactElement {
                               const file = event.target.files?.[0];
                               if (file)
                                 void perform(async () => {
+                                  await validateBackup(file);
                                   const saved = (await api(
                                     `/api/cards/${editing.id}`,
                                     'PUT',
@@ -623,18 +692,7 @@ export function App(): ReactElement {
                                     state.csrf,
                                   );
                                   await refresh();
-                                  const latest = (await api(
-                                    '/api/state',
-                                    'GET',
-                                    null,
-                                    '',
-                                  )) as AppState;
-                                  const uploaded = latest.assets.find(
-                                    (item) => item.id === asset.id,
-                                  );
-                                  if (!uploaded)
-                                    throw new Error('복원한 이미지 정보를 찾지 못했습니다.');
-                                  setRestored({ id: uploaded.id, public_id: uploaded.public_id });
+                                  setRestored({ id: asset.id, public_id: asset.public_id });
                                   setReviewed(false);
                                   setNotice({
                                     kind: 'success',
@@ -669,14 +727,22 @@ export function App(): ReactElement {
                       <span>지금 보이는 그대로 저장됩니다.</span>
                       <button
                         className="secondary"
-                        disabled={busy || Boolean(previewError)}
+                        disabled={busy || previewPending || Boolean(previewError)}
                         onClick={() =>
-                          void perform(async () =>
-                            downloadBlob(
-                              await pngBlob(await renderCard(card, 1)),
-                              'english-card.png',
-                            ),
-                          )
+                          void perform(async () => {
+                            if (restored) {
+                              const response = await fetch(`/images/${restored.public_id}.png`);
+                              if (!response.ok)
+                                throw new Error(
+                                  '복원한 PNG를 내려받지 못했습니다. 다시 시도하세요.',
+                                );
+                              downloadBlob(await response.blob(), 'english-card.png');
+                            } else
+                              downloadBlob(
+                                await pngBlob(await renderCard(card, cardNumber)),
+                                'english-card.png',
+                              );
+                          })
                         }
                       >
                         PNG 다운로드 ↓
@@ -700,6 +766,7 @@ export function App(): ReactElement {
                       className="primary"
                       onClick={() => {
                         setEditing(null);
+                        setCardNumber(1);
                         setRestored(null);
                         setCard(EMPTY);
                         setReviewed(false);
@@ -721,27 +788,26 @@ export function App(): ReactElement {
                     <button
                       className="text-button"
                       disabled={busy}
-                      onClick={() =>
-                        void perform(async () => {
-                          const backup: unknown = await api('/api/export', 'GET', null, state.csrf);
-                          downloadBlob(
-                            new Blob([JSON.stringify(backup, null, 2)], {
-                              type: 'application/json',
-                            }),
-                            'en-cards.json',
-                          );
-                        })
-                      }
+                      onClick={() => void perform(() => backup(null, 1))}
                     >
-                      JSON 백업 ↓
+                      JSON 백업 ↓ (파일당 최대 100개)
                     </button>
                   </div>
+                  {backupCursor ? (
+                    <button
+                      className="secondary"
+                      disabled={busy}
+                      onClick={() => void perform(() => backup(backupCursor, backupPart))}
+                    >
+                      다음 JSON 백업 ↓ ({backupPart}번째 파일)
+                    </button>
+                  ) : null}
                   {showImport ? (
                     <section className="import-panel">
                       <h2>카드 JSON 가져오기</h2>
                       <p>
-                        schema_version: 1 형식을 사용합니다. 오류가 있으면 전체 저장을 멈추고 위치를
-                        안내합니다.
+                        schema_version: 1 형식, 파일당 최대 100개입니다. 오류가 있으면 해당 파일
+                        전체 저장을 멈추고 위치를 안내합니다.
                       </p>
                       <textarea
                         aria-label="가져올 JSON"
@@ -791,6 +857,7 @@ export function App(): ReactElement {
                               className="text-button"
                               onClick={() => {
                                 setEditing({ id: item.id, revision: item.revision });
+                                setCardNumber(index + 1);
                                 setRestored(null);
                                 setCard(item.content);
                                 setReviewed(false);
@@ -820,10 +887,23 @@ export function App(): ReactElement {
                   )}
                 </>
               ) : null}
+              {page === 'library' ? moreButton('cards') : null}
               {page === 'schedules' ? (
                 <div className="schedule-grid">
                   <section className="editor-panel">
                     <h2>{editingSchedule ? '예약 수정' : '새로운 예약'}</h2>
+                    {editingSchedule ? (
+                      <button
+                        className="text-button"
+                        disabled={busy}
+                        onClick={() => {
+                          setEditingSchedule(null);
+                          setSchedule(initialSchedule());
+                        }}
+                      >
+                        새 예약 작성
+                      </button>
+                    ) : null}
                     <fieldset disabled={busy}>
                       <TextField
                         label="예약 이름"
@@ -928,6 +1008,35 @@ export function App(): ReactElement {
                         보낼 카드 <span className="tiny">선택 순서대로</span>
                       </h3>
                       <div className="card-picker">
+                        {editingSchedule?.items
+                          .filter(
+                            (item) =>
+                              editingSchedule.asset_ids.indexOf(item.asset_id) >=
+                                editingSchedule.cursor &&
+                              !readyCards.some((card) => card.asset_id === item.asset_id),
+                          )
+                          .map((item) => (
+                            <label className="check-row" key={item.asset_id}>
+                              <input
+                                type="checkbox"
+                                checked={schedule.asset_ids.includes(item.asset_id)}
+                                onChange={(event) =>
+                                  setSchedule((current) => ({
+                                    ...current,
+                                    asset_ids: event.target.checked
+                                      ? [...current.asset_ids, item.asset_id]
+                                      : current.asset_ids.filter((id) => id !== item.asset_id),
+                                  }))
+                                }
+                              />
+                              <span>{item.title} · 예약에 저장한 이미지</span>
+                              <em>
+                                {schedule.asset_ids.includes(item.asset_id)
+                                  ? schedule.asset_ids.indexOf(item.asset_id) + 1
+                                  : ''}
+                              </em>
+                            </label>
+                          ))}
                         {readyCards.length ? (
                           readyCards.map((item) => (
                             <label className="check-row" key={item.id}>
@@ -953,12 +1062,20 @@ export function App(): ReactElement {
                           <p>보관함에서 카드의 PNG를 저장하고 검토를 완료하세요.</p>
                         )}
                       </div>
+                      {moreButton('cards')}
                       <div className="schedule-preview">
                         <span>다음 발송 예정</span>
                         <strong>{next ? formatKst(next) : '실행 가능한 시각을 선택하세요'}</strong>
                         <small>
                           {schedule.asset_ids.length}장 준비 · 최대{' '}
-                          {Math.floor(schedule.asset_ids.length / schedule.cards_per_occurrence)}
+                          {schedule.kind === 'once'
+                            ? Math.min(
+                                1,
+                                Math.floor(
+                                  schedule.asset_ids.length / schedule.cards_per_occurrence,
+                                ),
+                              )
+                            : Math.floor(schedule.asset_ids.length / schedule.cards_per_occurrence)}
                           회차
                         </small>
                       </div>
@@ -1039,6 +1156,7 @@ export function App(): ReactElement {
                           <div className="card-actions">
                             <button
                               className="text-button"
+                              disabled={busy || item.reason === 'cancelled'}
                               onClick={() => {
                                 setEditingSchedule(item);
                                 setSchedule({
@@ -1093,6 +1211,7 @@ export function App(): ReactElement {
                         </article>
                       ))
                     )}
+                    {moreButton('schedules')}
                     <button
                       className="secondary wide"
                       disabled={busy}
@@ -1119,7 +1238,11 @@ export function App(): ReactElement {
                     <div>
                       <span>실제 API 접수</span>
                       <strong>
-                        {state.deliveries.filter((item) => item.state === 'sent').length}
+                        {
+                          state.deliveries.filter(
+                            (item) => item.state === 'sent' && item.confirmed_by_user === 0,
+                          ).length
+                        }
                         <small>건</small>
                       </strong>
                     </div>
@@ -1151,25 +1274,52 @@ export function App(): ReactElement {
                     <div className="journal">
                       {state.deliveries.map((item) => (
                         <article key={item.id}>
-                          <span className={`badge ${item.state}`}>{label(item.state)}</span>
+                          <span className={`badge ${item.state}`}>
+                            {item.confirmed_by_user ? '사용자 수신 확인' : label(item.state)}
+                          </span>
                           <div>
                             <strong>{formatKst(item.due_at_utc)}</strong>
                             <p>{item.error ?? '발송 대기 중'}</p>
-                            <details>
-                              <summary>시도별 호출 기록</summary>
-                              {state.attempts
-                                .filter((attempt) => attempt.delivery_id === item.id)
-                                .map((attempt) => (
-                                  <p key={attempt.id}>
-                                    {formatKst(attempt.started_at)} · {label(attempt.outcome)}
-                                    <br />
-                                    {attempt.detail}
-                                  </p>
-                                ))}
+                            <details
+                              onToggle={(event) => {
+                                if (event.currentTarget.open)
+                                  void perform(async () => {
+                                    const history = (await api(
+                                      `/api/deliveries/${item.id}/attempts`,
+                                      'GET',
+                                      null,
+                                      '',
+                                    )) as AttemptHistory;
+                                    setAttemptHistory((current) => ({
+                                      ...current,
+                                      [item.id]: history,
+                                    }));
+                                  });
+                              }}
+                            >
+                              <summary>시도별 호출 기록 · 사용자 확인</summary>
+                              {attemptHistory[item.id]?.attempts.map((attempt) => (
+                                <p key={attempt.id}>
+                                  {formatKst(attempt.started_at)} · {label(attempt.outcome)}
+                                  <br />
+                                  {attempt.detail}
+                                </p>
+                              ))}
+                              {attemptHistory[item.id]?.decisions.map((decision, index) => (
+                                <p key={index}>
+                                  {formatKst(decision.created_at)} · 사용자가{' '}
+                                  {decision.action === 'retry'
+                                    ? '중복 가능성을 확인하고 재시도 선택'
+                                    : '채팅방 수신 확인'}
+                                </p>
+                              ))}
                             </details>
                             <small>
                               {item.mode === 'mock' ? '모의 발송' : '실제 API'} · 시도{' '}
-                              {item.attempts}회 · 카드 순서 {item.position + 1}
+                              {item.total_attempts}회 · 카드 순서 {item.position + 1} · 회차{' '}
+                              {item.occurrence_state === 'completed'
+                                ? '처리 종료'
+                                : label(item.occurrence_state)}
                             </small>
                           </div>
                           {item.state === 'unknown' ? (
@@ -1202,6 +1352,11 @@ export function App(): ReactElement {
                       ))}
                     </div>
                   )}
+                  {moreButton('deliveries')}
+                  <p className="help">
+                    발송 기록 {state.deliveries.length} / {state.totals.deliveries}건 표시 · 위
+                    집계는 불러온 기록 기준입니다.
+                  </p>
                   {unknownId ? (
                     <div className="modal-backdrop">
                       <section
@@ -1336,8 +1491,7 @@ export function App(): ReactElement {
                       {state.assets.map((asset) => (
                         <div key={asset.id}>
                           <span>
-                            {state.cards.find((item) => item.id === asset.card_id)?.content
-                              .expression ?? '카드'}
+                            {asset.expression}
                             <small>
                               {label(asset.state)} · {(asset.bytes / 1024).toFixed(0)} KB
                             </small>
@@ -1368,6 +1522,7 @@ export function App(): ReactElement {
                         </div>
                       ))}
                     </div>
+                    {moreButton('assets')}
                   </section>
                 </div>
               ) : null}

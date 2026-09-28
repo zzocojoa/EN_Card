@@ -164,7 +164,7 @@ describe('토큰 갱신', () => {
       await accessToken(h.env, NOW, async () =>
         Response.json({ access_token: 'new-access', expires_in: 3600 }),
       ),
-    ).toBe('new-access');
+    ).toEqual({ token: 'new-access', version: 2 });
     const row = await h.env.DB.prepare('SELECT * FROM credentials').first<Credentials>();
     expect(await decrypt(row!.refresh_token!, h.env.TOKEN_ENCRYPTION_KEY)).toBe('old-refresh');
     expect(row?.version).toBe(2);

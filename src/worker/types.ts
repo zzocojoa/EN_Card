@@ -26,6 +26,7 @@ export type Credentials = {
 };
 export type Session = { id: string; csrf: string; expires_at: number };
 export type Sender = (payload: FeedPayload, token: string) => Promise<SendResult>;
+export type TokenGrant = { token: string; version: number };
 export type Transport = (input: string, init: RequestInit) => Promise<Response>;
 export type AppError = Error & { status: number; code: string };
 export function appError(status: number, code: string, message: string): AppError {

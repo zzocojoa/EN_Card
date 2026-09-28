@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseImport } from '../src/shared/model';
 import { kstToUtc, nextRun } from '../src/shared/time';
 import { decrypt, encrypt } from '../src/worker/crypto';
-import { makePayload, sendKakao } from '../src/worker/kakao';
+import { kakaoOwner, makePayload, sendKakao } from '../src/worker/kakao';
 import { validatePng } from '../src/worker/storage';
 import { layoutCard } from '../src/web/canvas';
 import { SAMPLE, png } from './helpers';
@@ -58,6 +58,27 @@ describe('입력·시간·암호화', () => {
     new DataView(invalid.buffer).setUint32(16, 1);
     expect(() => validatePng(invalid)).toThrow('1080');
   });
+});
+
+it('읽기 전용 사용자 조회의 네트워크 실패를 세 번까지만 재시도한다', async () => {
+  let calls: number = 0;
+  expect(
+    await kakaoOwner('private-token', async () => {
+      calls += 1;
+      if (calls < 3) throw new TypeError('network');
+      return Response.json({ id: 42 });
+    }),
+  ).toBe('42');
+  expect(calls).toBe(3);
+  const last = new TypeError('last network error');
+  await expect(
+    kakaoOwner('private-token', async () => {
+      throw last;
+    }),
+  ).rejects.toBe(last);
+  await expect(
+    kakaoOwner('private-token', async () => new Response('<html>')),
+  ).rejects.toMatchObject({ code: 'OWNER_RESPONSE', status: 502 });
 });
 describe('카카오 실제 어댑터의 응답 계약', () => {
   const payload = makePayload(SAMPLE, 'abc', 'https://example.test');
