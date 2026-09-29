@@ -31,6 +31,32 @@ npm run dev
 
 앱 제한은 `src/shared/model.ts`와 DB 제약으로 강제합니다. 이미지 1MiB/장·총 200MB, 업로드 100회/일, 활성 예약 10개, 회차당 1~5장, 분당 실제 시도 3건, 하루 실제 시도 20건, 확실한 미접수 거절 최대 3회입니다. 앱 날짜는 KST, 제공사 한도 초기화는 제공사 정책을 따릅니다. D1 Free의 [호출당 50쿼리 제한](https://developers.cloudflare.com/d1/platform/limits/)을 고려해 예약 목록은 한 번에 최대 40개, 회차 생성은 Cron당 최대 2개입니다. JSON 가져오기는 최대 100개·본문 1,000,000바이트이며 json_each를 이용한 단일 INSERT로 해당 파일 전체를 원자적으로 저장합니다. 목록과 JSON 백업은 100개씩 이어서 조회합니다.
 
+## 계정이 없을 때 시작 순서
+
+가입·이메일 인증·약관 동의·로그인 승인은 운영자가 직접 수행합니다. 채팅에는 완료 여부와 막힌 화면의 항목명만 알려주고 비밀번호·인증 코드·키·Secret 값은 입력하지 않습니다.
+
+1. [Cloudflare 가입](https://dash.cloudflare.com/sign-up)에서 계정을 만들고 수신한 인증 메일의 링크로 이메일 인증을 완료합니다. [공식 가입 안내](https://developers.cloudflare.com/fundamentals/account/create-account/)를 따릅니다. 이 앱은 `workers.dev`를 사용하므로 도메인을 구매할 필요가 없습니다.
+2. Dashboard에서 Workers Free 플랜과 기존 공유 사용량을 확인합니다. 이 프로젝트를 위해 유료 플랜·결제 수단을 추가하지 않습니다. 확인이 끝나면 개발 worktree에서 `npx wrangler login`을 실행하고 브라우저에서 해당 계정으로 승인을 완료합니다. `npx wrangler whoami`로 로그인 대상 계정을 확인합니다.
+3. [Kakao Developers](https://developers.kakao.com/)에 메시지를 받을 본인의 카카오계정으로 로그인한 뒤 개발자 회원가입을 완료합니다. [공식 시작 안내](https://developers.kakao.com/docs/ko/tutorial/start)에 따라 등록합니다.
+4. 아래 원격 절차에서 실제 `APP_ORIGIN`을 확정한 뒤 카카오 앱을 생성합니다. 앱 이름은 `EN_Card`, 카테고리는 영어 학습 서비스에 맞는 항목을 선택합니다. 개인 개발자는 회사명에 개발자나 서비스 출처를 대표하는 이름을 입력할 수 있습니다. 앱 아이콘은 생략할 수 있으며 대표 도메인에는 확정된 HTTPS 주소를 사용합니다. 기존 EN_Card 앱이 있으면 재사용합니다.
+
+두 계정 등록이 끝난 뒤 이어서 할 작업은 무료 리소스 확인·생성, 주소 확정, 카카오 설정, Worker Secret 입력, `dry_run` 배포입니다. 화면에 입력할 정확한 주소는 실제 계정의 `workers.dev` 주소가 확인된 뒤 정합니다. 가입만으로 배포나 실제 메시지 수신이 완료되지는 않습니다.
+
+### 카카오 앱 설정 위치
+
+2026-09-29 공식 문서 기준 메뉴입니다. `APP_ORIGIN`은 placeholder가 아닌 실제 운영 HTTPS 주소이며 끝 슬래시를 넣지 않습니다.
+
+| 목적 | 메뉴와 입력값 |
+| ---- | ------------- |
+| 로그인 활성화 | 해당 앱의 `카카오 로그인 → 사용 설정 → 상태`를 ON |
+| OAuth 콜백 | `앱 → 플랫폼 키 → REST API 키 → 카카오 로그인 리다이렉트 URI`에 `APP_ORIGIN/auth/callback` 등록 |
+| 원본 보기 링크 | `앱 → 제품 링크 관리 → 웹 도메인`에 `APP_ORIGIN` 등록 |
+| 발송 동의 | `카카오 로그인 → 동의항목 → 접근권한 → 카카오톡 메시지 전송(talk_message)` 설정. 동의 목적은 본인의 영어 학습 카드 예약 발송 |
+| REST API 키 | `앱 → 플랫폼 키 → REST API 키`의 값을 해당 Worker의 `KAKAO_REST_API_KEY` Secret에 직접 입력 |
+| Client Secret | 같은 REST API 키의 `클라이언트 시크릿` 값을 Worker의 `KAKAO_CLIENT_SECRET` Secret에 직접 입력 |
+
+새 REST API 키는 Client Secret이 활성화된 상태로 생성됩니다. 값을 코드·설정 파일·Git에 넣지 않고 아래 Secret 입력 절차를 사용합니다. Redirect URI는 프로토콜·도메인·경로·끝 슬래시까지 요청과 정확히 일치해야 합니다. 출처: [카카오 로그인 설정](https://developers.kakao.com/docs/ko/kakaologin/prerequisite), [앱·키·제품 링크 설정](https://developers.kakao.com/docs/ko/app-setting/app).
+
 ## 운영 입력값과 확인 위치
 
 현재 원격 계정·리소스·Secret은 확인하지 않았습니다. 아래 표를 채운 뒤에만 원격 절차를 진행합니다. 값 자체를 채팅·Git·로그에 남기지 마세요. 기본 `wrangler.jsonc`는 placeholder와 `SEND_MODE=dry_run`을 유지합니다. 실제 값은 Git 제외 파일 `wrangler.deploy.jsonc`에 넣고 live는 `wrangler.live.jsonc`로 분리합니다. 둘 다 프로젝트 루트에 두어 소스·자산·마이그레이션 경로를 같게 합니다.
