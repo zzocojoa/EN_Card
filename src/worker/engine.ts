@@ -8,6 +8,7 @@ import {
 import { kstDate, nextRun } from '../shared/time';
 import { markReconnect } from './auth';
 import { validatePayload } from './kakao';
+import { isTokenError } from './token-errors';
 import { decodeSchedule } from './schedules';
 import { appError, type Env, type Sender, type TokenGrant } from './types';
 
@@ -65,7 +66,7 @@ export async function dryRun(env: Env, now: number): Promise<EngineReport> {
 }
 async function materialize(env: Env, now: number, mode: 'live' | 'mock'): Promise<void> {
   const due = await env.DB.prepare(
-    "SELECT * FROM schedules s WHERE enabled=1 AND next_run_at_utc<=? AND NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=s.id AND d.state='unknown') ORDER BY next_run_at_utc LIMIT 2",
+    "SELECT * FROM schedules s WHERE enabled=1 AND next_run_at_utc<=? AND NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=s.id AND d.state='unknown' AND d.resolution IS NULL) ORDER BY next_run_at_utc LIMIT 2",
   )
     .bind(now)
     .all<ScheduleRow>();
@@ -90,7 +91,7 @@ async function materialize(env: Env, now: number, mode: 'live' | 'mock'): Promis
     const exhausted: boolean = count.count - row.cards_per_occurrence < row.cards_per_occurrence;
     await env.DB.batch([
       env.DB.prepare(
-        'INSERT INTO occurrences(id,schedule_id,schedule_version,due_at_utc,mode,created_at) SELECT ?,id,version,next_run_at_utc,?,? FROM schedules WHERE id=? AND enabled=1 AND version=? AND cursor=? AND next_run_at_utc=? ON CONFLICT(schedule_id,schedule_version,due_at_utc) DO NOTHING',
+        `INSERT INTO occurrences(id,schedule_id,schedule_version,due_at_utc,mode,created_at) SELECT ?,id,version,next_run_at_utc,?,? FROM schedules WHERE id=? AND enabled=1 AND version=? AND cursor=? AND next_run_at_utc=? AND NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND d.state='unknown' AND d.resolution IS NULL) ON CONFLICT(schedule_id,schedule_version,due_at_utc) DO NOTHING`,
       ).bind(occurrence, mode, now, row.id, row.version, row.cursor, row.next_run_at_utc),
       env.DB.prepare(
         "INSERT INTO deliveries(id,occurrence_id,schedule_id,schedule_version,position,asset_id,payload,state,mode,due_at_utc,updated_at,error) SELECT ? || '-' || i.position,?,i.schedule_id,i.version,i.position,i.asset_id,i.payload,?,?,?, ?,? FROM schedule_items i WHERE i.schedule_id=? AND i.version=? AND i.position>=? AND i.position<? AND EXISTS(SELECT 1 FROM occurrences WHERE id=?)",
@@ -142,7 +143,7 @@ async function recover(env: Env, now: number): Promise<void> {
 const eligibleSchedule: string =
   "EXISTS(SELECT 1 FROM schedules s WHERE s.id=deliveries.schedule_id AND s.version=deliveries.schedule_version AND (s.enabled=1 OR s.reason IN ('completed','content_shortage')))";
 const ordered: string =
-  "NOT EXISTS(SELECT 1 FROM deliveries earlier WHERE earlier.schedule_id=deliveries.schedule_id AND (earlier.state='unknown' OR (earlier.occurrence_id=deliveries.occurrence_id AND earlier.position<deliveries.position AND earlier.state IN ('pending','claimed','sending','retry_wait','blocked'))))";
+  "NOT EXISTS(SELECT 1 FROM deliveries earlier WHERE earlier.schedule_id=deliveries.schedule_id AND ((earlier.state='unknown' AND earlier.resolution IS NULL) OR (earlier.occurrence_id=deliveries.occurrence_id AND earlier.position<deliveries.position AND earlier.state IN ('pending','claimed','sending','retry_wait','blocked'))))";
 async function claim(env: Env, now: number, owner: string): Promise<Delivery | null> {
   return env.DB.prepare(
     `UPDATE deliveries SET state='claimed',claim_owner=?,claim_until=?,updated_at=? WHERE id=(SELECT id FROM deliveries WHERE state IN ('pending','retry_wait') AND (retry_at IS NULL OR retry_at<=?) AND (due_at_utc>=? OR manual_retry_until>=?) AND ${eligibleSchedule} AND ${ordered} ORDER BY due_at_utc,position LIMIT 1) AND state IN ('pending','retry_wait') RETURNING *`,
@@ -236,22 +237,34 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
       const token = await runtime.token();
       grant = typeof token === 'string' ? { token, version: 0 } : token;
     } catch (error: unknown) {
-      if (!(error instanceof Error) || (!('code' in error) && error.name !== 'TOKEN_BUSY'))
+      if (
+        !isTokenError(error) &&
+        (!(error instanceof Error) ||
+          !['TOKEN_BUSY', 'TOKEN_CHANGED', 'NEEDS_RECONNECT'].includes(error.name))
+      )
         throw error;
-      const busy: boolean = ['TOKEN_BUSY', 'TOKEN_CHANGED'].includes(error.name);
+      const kind = isTokenError(error)
+        ? error.tokenFailure
+        : ['TOKEN_BUSY', 'TOKEN_CHANGED'].includes(error.name)
+          ? 'conflict'
+          : 'invalid';
+      const waiting: boolean = kind === 'conflict' || kind === 'transient';
+      const reconnect: boolean = kind === 'invalid' || kind === 'uncertain';
       await finish(
         env,
         item,
         owner,
-        busy ? 'retry_wait' : 'blocked',
-        busy
-          ? '토큰 갱신 중; 다음 실행에서 확인합니다.'
-          : `${error.message} 카카오 연결을 확인한 뒤 예약을 재개하세요.`,
-        busy ? runtime.clock() + 60_000 : null,
+        waiting ? 'retry_wait' : reconnect ? 'blocked' : 'failed',
+        error.message,
+        waiting
+          ? isTokenError(error)
+            ? (error.retryAt ?? runtime.clock() + 60_000)
+            : runtime.clock() + 60_000
+          : null,
         runtime.clock(),
         null,
       );
-      if (!busy)
+      if (reconnect)
         await env.DB.prepare(
           "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE id=? AND version=? AND reason IS NOT 'cancelled' AND reason IS NOT 'paused'",
         )
@@ -411,11 +424,13 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
 }
 export async function resolveUnknown(
   id: string,
-  action: 'confirm_sent' | 'retry',
+  action: 'confirm_sent' | 'retry' | 'abandon',
   env: Env,
   now: number,
 ): Promise<void> {
-  const item = await env.DB.prepare("SELECT * FROM deliveries WHERE id=? AND state='unknown'")
+  const item = await env.DB.prepare(
+    "SELECT * FROM deliveries WHERE id=? AND state='unknown' AND resolution IS NULL",
+  )
     .bind(id)
     .first<Delivery>();
   if (!item) throw appError(409, 'NOT_UNKNOWN', '결과 불명 상태의 발송만 처리할 수 있습니다.');
@@ -429,27 +444,31 @@ export async function resolveUnknown(
       throw appError(
         409,
         'SCHEDULE_INACTIVE',
-        '예약이 수정·중지·취소되어 재시도할 수 없습니다. 수신 여부를 확정한 뒤 새 예약을 만드세요.',
+        '예약이 수정·중지·취소되어 재시도할 수 없습니다. 수신 확인 또는 재전송하지 않고 종료한 뒤 새 예약을 만드세요.',
       );
   }
   const decision: string = crypto.randomUUID();
   const results = await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO manual_decisions(id,delivery_id,action,created_at,warning_accepted) SELECT ?,id,?,?,1 FROM deliveries WHERE id=? AND state='unknown' AND (?='confirm_sent' OR ${eligibleSchedule})`,
+      `INSERT INTO manual_decisions(id,delivery_id,action,created_at,warning_accepted) SELECT ?,id,?,?,1 FROM deliveries WHERE id=? AND state='unknown' AND resolution IS NULL AND (? IN ('confirm_sent','abandon') OR ${eligibleSchedule})`,
     ).bind(decision, action, now, id, action),
-    env.DB.prepare(
-      "UPDATE deliveries SET state=?,confirmed_by_user=?,attempts=0,auth_retries=0,manual_retry_until=?,retry_at=NULL,error=?,updated_at=? WHERE id=? AND state='unknown' AND EXISTS(SELECT 1 FROM manual_decisions WHERE id=?)",
-    ).bind(
-      action === 'retry' ? 'pending' : item.mode === 'mock' ? 'mock_sent' : 'sent',
-      action === 'confirm_sent' ? 1 : 0,
-      action === 'retry' ? now + LIMITS.graceMs : null,
-      action === 'retry'
-        ? '사용자가 중복 가능성을 확인하고 재시도 선택'
-        : '사용자가 채팅방 수신 확인',
-      now,
-      id,
-      decision,
-    ),
+    action === 'abandon'
+      ? env.DB.prepare(
+          "UPDATE deliveries SET resolution='abandoned',updated_at=? WHERE id=? AND state='unknown' AND resolution IS NULL AND EXISTS(SELECT 1 FROM manual_decisions WHERE id=?)",
+        ).bind(now, id, decision)
+      : env.DB.prepare(
+          "UPDATE deliveries SET state=?,confirmed_by_user=?,attempts=0,auth_retries=0,manual_retry_until=?,retry_at=NULL,error=?,updated_at=? WHERE id=? AND state='unknown' AND resolution IS NULL AND EXISTS(SELECT 1 FROM manual_decisions WHERE id=?)",
+        ).bind(
+          action === 'retry' ? 'pending' : item.mode === 'mock' ? 'mock_sent' : 'sent',
+          action === 'confirm_sent' ? 1 : 0,
+          action === 'retry' ? now + LIMITS.graceMs : null,
+          action === 'retry'
+            ? '사용자가 중복 가능성을 확인하고 재시도 선택'
+            : '사용자가 채팅방 수신 확인',
+          now,
+          id,
+          decision,
+        ),
   ]);
   if (!results[0]?.meta.changes)
     throw appError(

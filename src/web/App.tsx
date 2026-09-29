@@ -34,6 +34,7 @@ const LABELS: Record<string, string> = {
   retry_wait: '재시도 대기',
   failed: '실패',
   unknown: '결과 불명',
+  abandoned: '재전송 없이 종료 (수신 미확인)',
   cancelled: '취소',
   missed: '시각 지남',
   blocked: '확인 필요',
@@ -235,6 +236,8 @@ export function App(): ReactElement {
       await task();
     } catch (error: unknown) {
       if (error instanceof Error && 'status' in error && error.status === 401) setState(null);
+      if (error instanceof Error && 'code' in error && error.code === 'SCHEDULE_UNRESOLVED')
+        setPage('history');
       setNotice({ kind: 'error', text: errorMessage(error) });
     } finally {
       setBusy(false);
@@ -1258,8 +1261,10 @@ export function App(): ReactElement {
                       <span>확인이 필요한 결과</span>
                       <strong>
                         {
-                          state.deliveries.filter((item) =>
-                            ['unknown', 'failed', 'blocked'].includes(item.state),
+                          state.deliveries.filter(
+                            (item) =>
+                              item.resolution !== 'abandoned' &&
+                              ['unknown', 'failed', 'blocked'].includes(item.state),
                           ).length
                         }
                         <small>건</small>
@@ -1283,7 +1288,11 @@ export function App(): ReactElement {
                       {state.deliveries.map((item) => (
                         <article key={item.id}>
                           <span className={`badge ${item.state}`}>
-                            {item.confirmed_by_user ? '사용자 수신 확인' : label(item.state)}
+                            {item.resolution === 'abandoned'
+                              ? label('abandoned')
+                              : item.confirmed_by_user
+                                ? '사용자 수신 확인'
+                                : label(item.state)}
                           </span>
                           <div>
                             <strong>{formatKst(item.due_at_utc)}</strong>
@@ -1318,7 +1327,9 @@ export function App(): ReactElement {
                                   {formatKst(decision.created_at)} · 사용자가{' '}
                                   {decision.action === 'retry'
                                     ? '중복 가능성을 확인하고 재시도 선택'
-                                    : '채팅방 수신 확인'}
+                                    : decision.action === 'abandon'
+                                      ? '수신 여부를 확정하지 않고 재전송 포기'
+                                      : '채팅방 수신 확인'}
                                 </p>
                               ))}
                             </details>
@@ -1330,7 +1341,7 @@ export function App(): ReactElement {
                                 : label(item.occurrence_state)}
                             </small>
                           </div>
-                          {item.state === 'unknown' ? (
+                          {item.state === 'unknown' && item.resolution !== 'abandoned' ? (
                             <button
                               className="secondary"
                               onClick={() => {
@@ -1376,7 +1387,9 @@ export function App(): ReactElement {
                         <h2>먼저 나와의 채팅을 확인하세요.</h2>
                         <p>
                           이미 도착한 메시지를 재시도하면 중복으로 받을 수 있습니다. 사용자 확인
-                          사실과 새 시도는 별도로 기록됩니다.
+                          사실과 새 시도는 별도로 기록됩니다. 수신 여부를 알 수 없다면 재전송하지
+                          않고 종료할 수 있습니다. 이는 수신 확인이 아니며 이후 이 건을 다시 보내지
+                          않습니다.
                         </p>
                         <label className="check-row">
                           <input
@@ -1384,10 +1397,10 @@ export function App(): ReactElement {
                             checked={acceptDuplicate}
                             onChange={(event) => setAcceptDuplicate(event.target.checked)}
                           />
-                          채팅방을 확인했고 중복 가능성을 이해했습니다.
+                          재시도의 중복 위험과 재전송 없이 종료의 의미를 이해했습니다.
                         </label>
                         <div className="toolbar">
-                          {(['confirm_sent', 'retry'] as const).map((action) => (
+                          {(['confirm_sent', 'retry', 'abandon'] as const).map((action) => (
                             <button
                               className="secondary"
                               key={action}
@@ -1405,7 +1418,11 @@ export function App(): ReactElement {
                                 })
                               }
                             >
-                              {action === 'confirm_sent' ? '이미 수신함' : '다시 보내기'}
+                              {action === 'confirm_sent'
+                                ? '이미 수신함'
+                                : action === 'retry'
+                                  ? '다시 보내기'
+                                  : '재전송하지 않고 종료'}
                             </button>
                           ))}
                           <button className="text-button" onClick={() => setUnknownId(null)}>
@@ -1426,6 +1443,55 @@ export function App(): ReactElement {
                         ? '로컬 테스트'
                         : label(state.connection?.status ?? 'disconnected')}
                     </span>
+                    {state.connection?.refresh_failure ? (
+                      <div className="soft-notice" role="status">
+                        <p>
+                          {state.connection.refresh_failure === 'transient'
+                            ? '토큰 갱신 일시 오류로 대기 중입니다. 재로그인은 필요하지 않습니다.'
+                            : state.connection.refresh_failure === 'exhausted'
+                              ? '토큰 갱신 자동 재시도 3회를 소진했습니다. 인증 무효는 아닙니다. 제공사 복구 후 직접 재시도를 시작하세요.'
+                              : state.connection.refresh_failure === 'uncertain'
+                                ? '토큰 갱신 결과가 불명확합니다. 자동 재시도하지 않으므로 카카오를 다시 연결하세요.'
+                                : state.connection.refresh_failure === 'configuration'
+                                  ? '카카오 앱 설정을 확인한 뒤 갱신 재시도를 시작하세요.'
+                                  : '인증이 만료되었거나 철회되었습니다. 카카오를 다시 연결하세요.'}
+                        </p>
+                        <p>
+                          갱신 시도 {state.connection.refresh_attempts}/3 · HTTP{' '}
+                          {state.connection.refresh_http_status ?? '응답 없음'} ·{' '}
+                          {state.connection.refresh_provider_error ?? '제공사 오류 없음'} ·{' '}
+                          {state.connection.refresh_provider_code ?? '코드 없음'}
+                        </p>
+                        {state.connection.refresh_retry_at ? (
+                          <p>다음 갱신: {formatKst(state.connection.refresh_retry_at)}</p>
+                        ) : null}
+                        {['exhausted', 'configuration'].includes(
+                          state.connection.refresh_failure,
+                        ) ? (
+                          <button
+                            className="secondary"
+                            disabled={busy}
+                            onClick={() =>
+                              void perform(async () => {
+                                await api(
+                                  '/api/connection/retry',
+                                  'POST',
+                                  { version: state.connection!.version },
+                                  state.csrf,
+                                );
+                                await refresh();
+                              })
+                            }
+                          >
+                            토큰 갱신 다시 시도
+                          </button>
+                        ) : null}
+                        <p>
+                          갱신 대기는 메시지 발송 횟수를 사용하지 않습니다. 15분이 지난 회차는 새
+                          날짜로 예약하세요. 갱신 재시도는 다음 발송 시점에 수행합니다.
+                        </p>
+                      </div>
+                    ) : null}
                     <p>
                       로그아웃은 브라우저 세션만 종료합니다. 자동 발송 연결 해제는 예약을 중지하고
                       저장된 토큰을 제거합니다.

@@ -10,6 +10,7 @@ export const LIMITS = Object.freeze({
   attemptsPerDay: 20,
   graceMs: 15 * 60_000,
   automaticAttempts: 3,
+  tokenRefreshAttempts: 3,
   propagationMs: 120_000,
   claimMs: 60_000,
   importCards: 100,
@@ -149,6 +150,7 @@ export type Delivery = {
   error: string | null;
   updated_at: number;
   confirmed_by_user: number;
+  resolution: 'abandoned' | null;
 };
 export type DeliverySummary = Pick<
   Delivery,
@@ -163,6 +165,7 @@ export type DeliverySummary = Pick<
   | 'error'
   | 'updated_at'
   | 'confirmed_by_user'
+  | 'resolution'
 > & { total_attempts: number; occurrence_state: string };
 export type FeedPayload = {
   object_type: 'feed';

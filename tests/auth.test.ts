@@ -218,7 +218,7 @@ describe('토큰 갱신', () => {
       await h.env.DB.prepare('SELECT enabled,reason FROM schedules WHERE id=?').bind(id).first(),
     ).toEqual({ enabled: 0, reason: 'needs_reconnect' });
   });
-  it.each(['rejected', 'response_missing'] as const)(
+  it.each(['rejected', 'response_missing', 'temporary', 'success'] as const)(
     '이전 갱신의 %s 오류 뒤에도 새 연결로 다음 Cron에서 발송한다',
     async (failure) => {
       await storeCredentials();
@@ -231,6 +231,10 @@ describe('토큰 갱신', () => {
           accessToken(h.env, NOW, async () => {
             await finishOAuth(callback(auth.state, auth.browser), h.env, NOW, oauthTransport);
             if (failure === 'response_missing') throw new TypeError('모의 응답 유실');
+            if (failure === 'temporary')
+              return Response.json({ error: 'temporarily_unavailable' }, { status: 503 });
+            if (failure === 'success')
+              return Response.json({ access_token: 'stale-access', expires_in: 3600 });
             return Response.json({ error: 'invalid_grant', error_code: 'KOE322' }, { status: 400 });
           }),
         sender: async () => {

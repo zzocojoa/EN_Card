@@ -9,7 +9,11 @@ export type AttemptHistory = {
     detail: string | null;
     mode: SendMode;
   }[];
-  decisions: { action: 'confirm_sent' | 'retry'; created_at: number; warning_accepted: number }[];
+  decisions: {
+    action: 'confirm_sent' | 'retry' | 'abandon';
+    created_at: number;
+    warning_accepted: number;
+  }[];
 };
 export type AppState = {
   csrf: string;
@@ -27,7 +31,18 @@ export type AppState = {
     created_at: number;
   }[];
   usage: { day: string; uploads: number; sends: number; bytes: number }[];
-  connection: { status: string; expires_at: number; refresh_expires_at: number } | null;
+  connection: {
+    status: string;
+    expires_at: number;
+    refresh_expires_at: number;
+    version: number;
+    refresh_attempts: number;
+    refresh_retry_at: number | null;
+    refresh_failure: 'invalid' | 'transient' | 'uncertain' | 'configuration' | 'exhausted' | null;
+    refresh_http_status: number | null;
+    refresh_provider_error: string | null;
+    refresh_provider_code: string | null;
+  } | null;
   mode: SendMode;
   now: number;
 };
@@ -45,12 +60,16 @@ export async function api(
   });
   const result: unknown = await response.json();
   if (!response.ok) {
-    const error = result as { message?: string; details?: { index: number; message: string }[] };
+    const error = result as {
+      error?: string;
+      message?: string;
+      details?: { index: number; message: string }[];
+    };
     throw Object.assign(
       new Error(
         `${error.message ?? `HTTP ${response.status}`}${error.details ? ' ' + error.details.map((item) => `${item.index + 1}번째: ${item.message}`).join(' / ') : ''}`,
       ),
-      { status: response.status },
+      { status: response.status, code: error.error },
     );
   }
   return result;

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { CardInput, FeedPayload, SendResult } from '../shared/model';
 import { appError, type Env, type Transport } from './types';
+import { tokenError } from './token-errors';
 
 export const tokenSchema = z.object({
   access_token: z.string().min(1),
@@ -123,7 +124,16 @@ export async function requestTokens(
   transport: Transport,
 ): Promise<TokenResponse> {
   if (!env.KAKAO_REST_API_KEY || !env.KAKAO_CLIENT_SECRET)
-    throw appError(503, 'KAKAO_CONFIG', '카카오 REST API 키와 Client Secret을 설정하세요.');
+    throw tokenError(
+      'configuration',
+      'KAKAO_CONFIG',
+      503,
+      '카카오 REST API 키와 Client Secret을 설정하세요.',
+      null,
+      null,
+      null,
+      null,
+    );
   const requestParams: URLSearchParams = new URLSearchParams(params);
   requestParams.set('client_id', env.KAKAO_REST_API_KEY);
   requestParams.set('client_secret', env.KAKAO_CLIENT_SECRET);
@@ -139,38 +149,111 @@ export async function requestTokens(
       event: 'token_response_missing',
       error_type: error instanceof Error ? error.name : 'unknown',
     });
-    throw appError(
-      502,
+    throw tokenError(
+      'uncertain',
       'TOKEN_UNCERTAIN',
-      '토큰 응답이 유실되었습니다. 코드를 재사용하지 말고 카카오를 다시 연결하세요.',
+      502,
+      '토큰 응답이 유실되어 회전 여부를 알 수 없습니다. 자동 재시도하지 않습니다. 카카오를 다시 연결하세요.',
+      null,
+      null,
+      null,
+      null,
     );
   }
   let body: unknown;
   try {
     body = await response.json();
   } catch {
-    throw appError(
-      502,
+    throw tokenError(
+      'uncertain',
       'TOKEN_RESPONSE',
+      502,
       `토큰 API HTTP ${response.status}: 응답을 해석하지 못했습니다. 카카오를 다시 연결하세요.`,
+      response.status,
+      null,
+      null,
+      null,
     );
   }
   if (!response.ok) {
     const reason = z
-      .object({ error: z.string(), error_code: z.string().optional() })
+      .object({
+        error: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
+        error_code: z
+          .string()
+          .regex(/^[a-zA-Z0-9_-]{1,80}$/)
+          .optional(),
+      })
       .safeParse(body);
-    throw appError(
-      401,
-      'TOKEN_REJECTED',
-      `토큰 API HTTP ${response.status}, error=${reason.success ? reason.data.error : 'invalid_response'}, code=${reason.success ? (reason.data.error_code ?? 'none') : 'none'}. 카카오를 다시 연결하세요.`,
+    const providerError: string | null = reason.success ? reason.data.error : null;
+    const providerCode: string | null = reason.success ? (reason.data.error_code ?? null) : null;
+    const detail: string = `토큰 API HTTP ${response.status}, error=${providerError ?? 'invalid_response'}, code=${providerCode ?? 'none'}.`;
+    if (
+      (response.status === 503 && providerError === 'temporarily_unavailable') ||
+      ([400, 429].includes(response.status) &&
+        providerError === 'invalid_request' &&
+        providerCode === 'KOE237')
+    )
+      throw tokenError(
+        'transient',
+        'TOKEN_TEMPORARY',
+        response.status,
+        `${detail} 일시 오류로 갱신을 잠시 미룹니다.`,
+        response.status,
+        providerError,
+        providerCode,
+        null,
+      );
+    if (
+      [400, 401].includes(response.status) &&
+      providerError === 'invalid_grant' &&
+      (providerCode === null ||
+        providerCode === 'KOE322' ||
+        (params.get('grant_type') === 'authorization_code' && providerCode === 'KOE320'))
+    )
+      throw tokenError(
+        'invalid',
+        'TOKEN_REJECTED',
+        response.status,
+        `${detail} 인증이 유효하지 않습니다. 카카오를 다시 연결하세요.`,
+        response.status,
+        providerError,
+        providerCode,
+        null,
+      );
+    if (response.status >= 400 && response.status < 500 && reason.success)
+      throw tokenError(
+        'configuration',
+        'TOKEN_CONFIGURATION',
+        response.status,
+        `${detail} 카카오 앱 설정과 요청 구성을 확인하세요.`,
+        response.status,
+        providerError,
+        providerCode,
+        null,
+      );
+    throw tokenError(
+      'uncertain',
+      'TOKEN_UNCERTAIN',
+      response.status,
+      `${detail} 처리 결과를 확정할 수 없어 자동 재시도하지 않습니다. 카카오를 다시 연결하세요.`,
+      response.status,
+      providerError,
+      providerCode,
+      null,
     );
   }
   const parsed = tokenSchema.safeParse(body);
   if (!parsed.success)
-    throw appError(
-      502,
+    throw tokenError(
+      'uncertain',
       'TOKEN_RESPONSE',
+      502,
       '토큰 응답 필드가 누락되었습니다. 카카오를 다시 연결하세요.',
+      response.status,
+      null,
+      null,
+      null,
     );
   return parsed.data;
 }

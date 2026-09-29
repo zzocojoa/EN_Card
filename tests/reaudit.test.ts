@@ -113,7 +113,7 @@ it('재개와 수정이 겹쳐도 실패한 재개가 새 목록에 카드를 �
   const { id } = await saveSchedule(data, null, null, h.env, NOW);
   await stopSchedule(id, 1, 'paused', h.env, NOW);
   const db = afterFirst(h.env.DB, async (sql) => {
-    if (sql === 'SELECT * FROM schedules WHERE id=? AND version=?')
+    if (sql.includes('AS unresolved FROM schedules WHERE id=? AND version=?'))
       await saveSchedule(
         { ...data, asset_ids: [data.asset_ids[0]!] },
         id,
@@ -556,7 +556,7 @@ it('결과 불명 수동 처리의 패자는 이미 완료된 선택을 성공�
   });
   const id = await h.env.DB.prepare('SELECT id FROM deliveries').first<string>('id');
   const db = afterFirst(h.env.DB, async (sql) => {
-    if (sql === "SELECT * FROM deliveries WHERE id=? AND state='unknown'")
+    if (sql === "SELECT * FROM deliveries WHERE id=? AND state='unknown' AND resolution IS NULL")
       await resolveUnknown(id!, 'confirm_sent', h.env, NOW);
   });
   await expect(resolveUnknown(id!, 'retry', { ...h.env, DB: db }, NOW)).rejects.toThrow(
@@ -593,4 +593,69 @@ it('예약 수정 API는 편집 당시 소비 위치가 없거나 오래되면 �
       })
     ).status,
   ).toBe(200);
+});
+
+it('R1 종료 API는 경고 동의와 CSRF를 요구하고 원래 결과·감사 기록을 노출한다', async () => {
+  await dueSchedule(h.env, 1, NOW);
+  await runEngine(h.env, {
+    mode: 'mock',
+    clock: () => NOW,
+    token: async () => 'mock',
+    sender: async () => ({ outcome: 'unknown', detail: '원래 결과 불명' }),
+  });
+  const id: string = (await h.env.DB.prepare('SELECT id FROM deliveries').first<string>('id'))!;
+  const path: string = `/api/deliveries/${id}/resolve`;
+  expect(
+    (await handle(new Request(`${h.env.APP_ORIGIN}${path}`, { method: 'POST' }), h.env)).status,
+  ).toBe(401);
+  expect(
+    (await authenticated(path, 'POST', { action: 'abandon', warning_accepted: false })).status,
+  ).toBe(400);
+  expect(
+    (await authenticated(path, 'POST', { action: 'abandon', warning_accepted: true })).status,
+  ).toBe(200);
+  expect(
+    (await authenticated(path, 'POST', { action: 'abandon', warning_accepted: true })).status,
+  ).toBe(409);
+  const history = (await (
+    await authenticated(`/api/deliveries/${id}/attempts`, 'GET', null)
+  ).json()) as { attempts: { outcome: string }[]; decisions: { action: string }[] };
+  expect(history.attempts.map((attempt) => attempt.outcome)).toEqual(['unknown']);
+  expect(history.decisions.map((decision) => decision.action)).toEqual(['abandon']);
+});
+it('R2 갱신 재시작 API는 로그인·CSRF·현재 인증 버전을 검증한다', async () => {
+  await h.env.DB.prepare(
+    "INSERT INTO credentials(singleton,owner_id,expires_at,refresh_expires_at,version,status,refresh_attempts,refresh_failure) VALUES(1,'42',0,?,1,'connected',3,'exhausted')",
+  )
+    .bind(NOW + 86400_000)
+    .run();
+  expect(
+    (
+      await handle(
+        new Request(`${h.env.APP_ORIGIN}/api/connection/retry`, { method: 'POST' }),
+        h.env,
+      )
+    ).status,
+  ).toBe(401);
+  const session = await createSession(h.env, Date.now());
+  expect(
+    (
+      await handle(
+        new Request(`${h.env.APP_ORIGIN}/api/connection/retry`, {
+          method: 'POST',
+          headers: { Cookie: `en_session=${session.token}`, Origin: h.env.APP_ORIGIN },
+          body: JSON.stringify({ version: 1 }),
+        }),
+        h.env,
+      )
+    ).status,
+  ).toBe(403);
+  expect((await authenticated('/api/connection/retry', 'POST', { version: 2 })).status).toBe(409);
+  expect((await authenticated('/api/connection/retry', 'POST', { version: 1 })).status).toBe(200);
+  expect((await authenticated('/api/connection/retry', 'POST', { version: 1 })).status).toBe(409);
+  expect(
+    await h.env.DB.prepare(
+      'SELECT status,version,refresh_attempts,refresh_failure FROM credentials',
+    ).first(),
+  ).toEqual({ status: 'connected', version: 2, refresh_attempts: 0, refresh_failure: null });
 });

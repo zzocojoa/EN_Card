@@ -1,10 +1,19 @@
 import { z, ZodError } from 'zod';
 import { LIMITS, parseImport } from '../shared/model';
 import { kstDate } from '../shared/time';
-import { beginOAuth, cookie, disconnect, finishOAuth, liveToken, requireSession } from './auth';
+import {
+  beginOAuth,
+  cookie,
+  disconnect,
+  finishOAuth,
+  liveToken,
+  requireSession,
+  retryTokenRefresh,
+} from './auth';
 import { assetPage, cardPage, deliveryPage } from './catalog';
 import { dryRun, resolveUnknown, runEngine } from './engine';
 import { nativeTransport, sendKakao } from './kakao';
+import { isTokenError } from './token-errors';
 import { resumeSchedule, saveSchedule, schedulePage, stopSchedule } from './schedules';
 import { deleteImage, publicImage, readJson, reviewCard, saveCard, uploadImage } from './storage';
 import { appError, type AppError, type Env } from './types';
@@ -77,7 +86,7 @@ export async function route(request: Request, env: Env): Promise<Response> {
           .bind(kstDate(now))
           .all(),
         env.DB.prepare(
-          'SELECT status,expires_at,refresh_expires_at FROM credentials WHERE singleton=1',
+          'SELECT status,expires_at,refresh_expires_at,version,refresh_attempts,refresh_retry_at,refresh_failure,refresh_http_status,refresh_provider_error,refresh_provider_code FROM credentials WHERE singleton=1',
         ).first(),
         env.DB.prepare(
           "SELECT (SELECT count(*) FROM cards) AS cards,(SELECT count(*) FROM assets WHERE state!='deleted') AS assets,(SELECT count(*) FROM schedules) AS schedules,(SELECT count(*) FROM schedules WHERE enabled=1) AS active_schedules,(SELECT count(*) FROM deliveries) AS deliveries",
@@ -102,6 +111,14 @@ export async function route(request: Request, env: Env): Promise<Response> {
       mode: env.SEND_MODE,
       now,
     });
+  }
+  if (path === '/api/connection/retry' && request.method === 'POST') {
+    const body = z
+      .object({ version: z.number().int().positive() })
+      .strict()
+      .parse(await readJson(request));
+    await retryTokenRefresh(env, body.version);
+    return Response.json({ ok: true });
   }
   if (path === '/api/logout' && request.method === 'POST') {
     await env.DB.prepare('DELETE FROM auth_state WHERE id=?').bind(session.id).run();
@@ -217,7 +234,10 @@ export async function route(request: Request, env: Env): Promise<Response> {
     return Response.json(await dryRun(env, now));
   if (/^\/api\/deliveries\/[^/]+\/resolve$/.test(path) && request.method === 'POST') {
     const body = z
-      .object({ action: z.enum(['confirm_sent', 'retry']), warning_accepted: z.literal(true) })
+      .object({
+        action: z.enum(['confirm_sent', 'retry', 'abandon']),
+        warning_accepted: z.literal(true),
+      })
       .strict()
       .parse(await readJson(request));
     const id: string = path.split('/')[3] ?? '';
@@ -253,7 +273,19 @@ export async function handle(request: Request, env: Env): Promise<Response> {
     if (error instanceof Error && 'status' in error && 'code' in error) {
       const known: AppError = error as AppError;
       return Response.json(
-        { error: known.code, message: known.message },
+        {
+          error: known.code,
+          message: known.message,
+          ...(isTokenError(error)
+            ? {
+                token_failure: error.tokenFailure,
+                http_status: error.httpStatus,
+                provider_error: error.providerError,
+                provider_code: error.providerCode,
+                retry_at: error.retryAt,
+              }
+            : {}),
+        },
         { status: known.status, headers: failureHeaders },
       );
     }

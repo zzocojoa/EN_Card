@@ -116,7 +116,7 @@ export async function saveSchedule(
       ).bind(position, assetId, payload, scheduleId, mutation);
     }),
   ];
-  const results = await env.DB.batch(statements);
+  const results = await scheduleChange(env, statements);
   if (!results[0]?.meta.changes)
     throw appError(
       409,
@@ -133,7 +133,7 @@ export async function stopSchedule(
   now: number,
 ): Promise<void> {
   const mutation: string = crypto.randomUUID();
-  const results = await env.DB.batch([
+  const results = await scheduleChange(env, [
     env.DB.prepare(
       "UPDATE schedules SET enabled=0,reason=?,mutation_id=? WHERE id=? AND version=? AND (reason IS NOT 'cancelled' OR ?='cancelled')",
     ).bind(reason, mutation, id, version, reason),
@@ -150,10 +150,13 @@ export async function resumeSchedule(
   env: Env,
   now: number,
 ): Promise<void> {
-  const raw = await env.DB.prepare('SELECT * FROM schedules WHERE id=? AND version=?')
+  const raw = await env.DB.prepare(
+    "SELECT *,EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND (d.state='sending' OR (d.state='unknown' AND d.resolution IS NULL))) AS unresolved FROM schedules WHERE id=? AND version=?",
+  )
     .bind(id, version)
-    .first<ScheduleRow>();
+    .first<ScheduleRow & { unresolved: number }>();
   if (!raw) throw appError(409, 'SCHEDULE_CHANGED', '예약을 다시 불러오세요.');
+  if (raw.unresolved) throw unresolvedScheduleError();
   if (env.SEND_MODE === 'live' || raw.reason === 'needs_reconnect' || raw.reason === 'disconnected')
     await requireConnection(env);
   if (raw.reason === 'needs_reconnect' || raw.reason === 'daily_limit') {
@@ -171,7 +174,7 @@ export async function resumeSchedule(
       const repeat: boolean =
         raw.next_run_at_utc !== null && (remaining?.count ?? 0) >= raw.cards_per_occurrence;
       const mutation: string = crypto.randomUUID();
-      const resumed = await env.DB.batch([
+      const resumed = await scheduleChange(env, [
         env.DB.prepare(
           'UPDATE schedules SET reason=?,enabled=?,mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason=?',
         ).bind(
@@ -207,7 +210,7 @@ export async function resumeSchedule(
       '남은 카드가 부족합니다. 카드 목록을 추가하여 예약을 수정하세요.',
     );
   const mutation: string = crypto.randomUUID();
-  const results = await env.DB.batch([
+  const results = await scheduleChange(env, [
     env.DB.prepare(
       'UPDATE schedules SET enabled=1,reason=NULL,next_run_at_utc=?,version=version+1,cursor=0,mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason IS ?',
     ).bind(due, mutation, id, version, raw.reason),
@@ -228,4 +231,22 @@ async function requireConnection(env: Env): Promise<void> {
     ).first())
   )
     throw appError(409, 'NEEDS_RECONNECT', '먼저 카카오를 다시 연결한 뒤 예약을 활성화하세요.');
+}
+
+async function scheduleChange(env: Env, statements: D1PreparedStatement[]): Promise<D1Result[]> {
+  try {
+    return await env.DB.batch(statements);
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('schedule_unresolved_delivery'))
+      throw unresolvedScheduleError();
+    throw error;
+  }
+}
+
+function unresolvedScheduleError(): Error & { status: number; code: string } {
+  return appError(
+    409,
+    'SCHEDULE_UNRESOLVED',
+    '발송 결과를 먼저 확인하세요. 발송 기록의 결과 확인에서 수신 확인·재시도·재전송 없이 종료를 선택한 뒤 예약을 변경하세요. 응답 확인 중이면 완료를 기다리세요.',
+  );
 }

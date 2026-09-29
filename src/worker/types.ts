@@ -1,4 +1,5 @@
 import type { FeedPayload, SendMode, SendResult } from '../shared/model';
+import type { TokenFailure } from './token-errors';
 
 export type Env = {
   DB: D1Database;
@@ -23,6 +24,12 @@ export type Credentials = {
   status: 'connected' | 'needs_reconnect' | 'disconnected';
   lock_owner: string | null;
   lock_until: number | null;
+  refresh_attempts: number;
+  refresh_retry_at: number | null;
+  refresh_failure: Exclude<TokenFailure, 'conflict'> | null;
+  refresh_http_status: number | null;
+  refresh_provider_error: string | null;
+  refresh_provider_code: string | null;
 };
 export type Session = { id: string; csrf: string; expires_at: number };
 export type Sender = (payload: FeedPayload, token: string) => Promise<SendResult>;

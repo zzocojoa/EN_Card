@@ -2,6 +2,7 @@ import { defineConfig, devices } from '@playwright/test';
 const persistencePath: string = `.wrangler/e2e-${Date.now()}`;
 export default defineConfig({
   testDir: 'tests/e2e',
+  metadata: { persistencePath },
   fullyParallel: false,
   workers: 1,
   timeout: 60000,

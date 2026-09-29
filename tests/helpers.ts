@@ -16,6 +16,9 @@ export const SAMPLE: CardInput = {
 };
 export type Harness = { mf: Miniflare; env: Env };
 export async function harness(): Promise<Harness> {
+  return harnessThrough('9999');
+}
+export async function harnessThrough(lastMigration: string): Promise<Harness> {
   const mf: Miniflare = new Miniflare(
     convertV4MiniflareOptions({
       modules: true,
@@ -41,7 +44,7 @@ export async function harness(): Promise<Harness> {
   };
   const directory: URL = new URL('../migrations/', import.meta.url);
   const migrations: string[] = (await readdir(directory))
-    .filter((name) => name.endsWith('.sql'))
+    .filter((name) => name.endsWith('.sql') && name <= lastMigration)
     .sort();
   for (const name of migrations) {
     const sql: string = await readFile(new URL(name, directory), 'utf8');

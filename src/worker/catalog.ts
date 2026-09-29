@@ -27,7 +27,7 @@ export function assetPage(env: Env, cursor: string | null): Promise<Page<Asset>>
 export function deliveryPage(env: Env, cursor: string | null): Promise<Page<DeliverySummary>> {
   return readPage<DeliverySummary>(
     env.DB,
-    'SELECT id,occurrence_id,schedule_id,position,state,mode,due_at_utc,attempts,error,updated_at,confirmed_by_user,(SELECT count(*) FROM delivery_attempts a WHERE a.delivery_id=d.id) AS total_attempts,(SELECT state FROM occurrence_results o WHERE o.id=d.occurrence_id) AS occurrence_state,due_at_utc AS sort_key FROM deliveries d WHERE 1=1',
+    'SELECT id,occurrence_id,schedule_id,position,state,mode,due_at_utc,attempts,error,updated_at,confirmed_by_user,resolution,(SELECT count(*) FROM delivery_attempts a WHERE a.delivery_id=d.id) AS total_attempts,(SELECT state FROM occurrence_results o WHERE o.id=d.occurrence_id) AS occurrence_state,due_at_utc AS sort_key FROM deliveries d WHERE 1=1',
     'due_at_utc',
     cursor,
     100,
