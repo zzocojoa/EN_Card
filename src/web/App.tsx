@@ -5,11 +5,13 @@ import {
   type CardInput,
   type Schedule,
   type ScheduleInput,
+  type PausePreview,
 } from '../shared/model';
 import { formatKst, kstDate, nextRun } from '../shared/time';
 import seeds from '../../seed/cards.json';
 import { api, upload, type AppState, type AttemptHistory, type Boot, type Collection } from './api';
 import type { Page as ResultPage } from '../worker/pagination';
+import { PauseDialog, RecoveryDialog } from './PauseDialogs';
 import { downloadBlob, pngBlob, renderCard, validateBackup } from './canvas';
 
 type Page = 'editor' | 'library' | 'schedules' | 'history' | 'settings';
@@ -161,6 +163,8 @@ export function App(): ReactElement {
   const [setupToken, setSetupToken] = useState<string>('');
   const [schedule, setSchedule] = useState<ScheduleInput>(initialSchedule);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [pauseConfirm, setPauseConfirm] = useState<PausePreview | null>(null);
+  const [recovery, setRecovery] = useState<PausePreview | null>(null);
   const [unknownId, setUnknownId] = useState<string | null>(null);
   const [acceptDuplicate, setAcceptDuplicate] = useState<boolean>(false);
   const preview = useRef<HTMLDivElement>(null);
@@ -1186,20 +1190,47 @@ export function App(): ReactElement {
                             </button>
                             <button
                               className="text-button"
-                              disabled={busy || item.reason === 'cancelled'}
+                              disabled={busy}
                               onClick={() =>
                                 void perform(async () => {
-                                  await api(
-                                    `/api/schedules/${item.id}/${item.enabled ? 'pause' : 'resume'}`,
-                                    'POST',
-                                    { version: item.version },
-                                    state.csrf,
-                                  );
+                                  if (item.enabled) {
+                                    setPauseConfirm(
+                                      (await api(
+                                        `/api/schedules/${item.id}/pause-preview?version=${item.version}`,
+                                        'GET',
+                                        null,
+                                        '',
+                                      )) as PausePreview,
+                                    );
+                                  } else if (
+                                    item.reason === 'paused' ||
+                                    item.reason === 'cancelled'
+                                  ) {
+                                    setRecovery(
+                                      (await api(
+                                        `/api/schedules/${item.id}/recovery?version=${item.version}`,
+                                        'GET',
+                                        null,
+                                        '',
+                                      )) as PausePreview,
+                                    );
+                                  } else {
+                                    await api(
+                                      `/api/schedules/${item.id}/resume`,
+                                      'POST',
+                                      { version: item.version },
+                                      state.csrf,
+                                    );
+                                  }
                                   await refresh();
                                 })
                               }
                             >
-                              {item.enabled ? '일시정지' : '재개'}
+                              {item.enabled
+                                ? '일시정지'
+                                : item.reason === 'cancelled'
+                                  ? '중지 카드 확인'
+                                  : '재개'}
                             </button>
                             <button
                               className="text-button danger"
@@ -1222,6 +1253,76 @@ export function App(): ReactElement {
                         </article>
                       ))
                     )}
+                    {pauseConfirm ? (
+                      <PauseDialog
+                        preview={pauseConfirm}
+                        busy={busy}
+                        onClose={() => setPauseConfirm(null)}
+                        onPause={() =>
+                          void perform(async () => {
+                            const result = (await api(
+                              `/api/schedules/${pauseConfirm.schedule_id}/pause`,
+                              'POST',
+                              { version: pauseConfirm.version },
+                              state.csrf,
+                            )) as PausePreview;
+                            setPauseConfirm(null);
+                            setRecovery(result);
+                            await refresh();
+                            setNotice({
+                              kind: 'success',
+                              text: `일시정지했습니다. 실제 중지 결과와 복구·제외 대상을 확인하세요.`,
+                            });
+                          })
+                        }
+                      />
+                    ) : null}
+                    {recovery ? (
+                      <RecoveryDialog
+                        key={recovery.items
+                          .filter((item) => item.decision === null)
+                          .map((item) => item.delivery_id)
+                          .join(',')}
+                        preview={recovery}
+                        busy={busy}
+                        onClose={() => setRecovery(null)}
+                        onDecide={(input) =>
+                          void perform(async () => {
+                            await api(
+                              `/api/schedules/${recovery.schedule_id}/recovery`,
+                              'POST',
+                              input,
+                              state.csrf,
+                            );
+                            setRecovery(
+                              (await api(
+                                `/api/schedules/${recovery.schedule_id}/recovery?version=${recovery.version}`,
+                                'GET',
+                                null,
+                                '',
+                              )) as PausePreview,
+                            );
+                            await refresh();
+                          })
+                        }
+                        onResume={() =>
+                          void perform(async () => {
+                            await api(
+                              `/api/schedules/${recovery.schedule_id}/resume`,
+                              'POST',
+                              { version: recovery.version },
+                              state.csrf,
+                            );
+                            setRecovery(null);
+                            await refresh();
+                            setNotice({
+                              kind: 'success',
+                              text: '기존 예약의 남은 목록을 재개했습니다.',
+                            });
+                          })
+                        }
+                      />
+                    ) : null}
                     {moreButton('schedules')}
                     <button
                       className="secondary wide"

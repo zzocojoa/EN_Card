@@ -1,6 +1,8 @@
 import { LIMITS, cardSchema, type CardInput } from '../shared/model';
+import { validatePng } from './png';
 import { kstDate } from '../shared/time';
 import { appError, type Env } from './types';
+export { validatePng } from './png';
 
 export async function readBody(request: Request, max: number): Promise<Uint8Array<ArrayBuffer>> {
   const declared: string | null = request.headers.get('Content-Length');
@@ -40,21 +42,6 @@ export async function readJson(request: Request): Promise<unknown> {
       throw appError(400, 'JSON_INVALID', 'JSON 문법을 확인하세요.');
     throw error;
   }
-}
-export function validatePng(bytes: Uint8Array<ArrayBuffer>): void {
-  const signature: number[] = [137, 80, 78, 71, 13, 10, 26, 10];
-  if (bytes.byteLength < 33 || !signature.every((value, index) => bytes[index] === value))
-    throw appError(400, 'PNG_SIGNATURE', 'PNG 파일만 업로드할 수 있습니다.');
-  const view: DataView = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  if (
-    view.getUint32(8) !== 13 ||
-    new TextDecoder().decode(bytes.slice(12, 16)) !== 'IHDR' ||
-    view.getUint32(16) !== 1080 ||
-    view.getUint32(20) !== 1080
-  )
-    throw appError(400, 'PNG_DIMENSIONS', '1080×1080 PNG를 사용하세요.');
-  if (bytes.length > LIMITS.imageBytes)
-    throw appError(413, 'IMAGE_LIMIT', 'PNG 크기는 1MiB 이하여야 합니다.');
 }
 async function retainUploadCleanup(assetId: string, env: Env): Promise<void> {
   await env.DB.prepare(

@@ -1,3 +1,4 @@
+import { validPng } from './png-fixture';
 import { readFile, readdir } from 'node:fs/promises';
 import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import type { CardInput, ScheduleInput } from '../src/shared/model';
@@ -53,14 +54,7 @@ export async function harnessThrough(lastMigration: string): Promise<Harness> {
   return { mf, env };
 }
 export function png(): Uint8Array<ArrayBuffer> {
-  const bytes: Uint8Array<ArrayBuffer> = new Uint8Array(33);
-  bytes.set([137, 80, 78, 71, 13, 10, 26, 10]);
-  const view: DataView = new DataView(bytes.buffer);
-  view.setUint32(8, 13);
-  bytes.set(new TextEncoder().encode('IHDR'), 12);
-  view.setUint32(16, 1080);
-  view.setUint32(20, 1080);
-  return bytes;
+  return validPng();
 }
 export async function readyCard(
   env: Env,

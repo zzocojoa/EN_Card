@@ -35,7 +35,7 @@ describe('이미지와 원자적 용량 예약', () => {
     const asset = await readyCard(h.env, NOW);
     const response = await publicImage(asset.publicId, h.env);
     expect(response.headers.get('Content-Type')).toBe('image/png');
-    expect((await response.arrayBuffer()).byteLength).toBe(33);
+    expect((await response.arrayBuffer()).byteLength).toBe(png().length);
   });
   it('수정된 카드의 이전 revision 업로드를 거부한다', async () => {
     const card = await saveCard(SAMPLE, null, null, h.env, NOW);
@@ -60,7 +60,9 @@ describe('이미지와 원자적 용량 예약', () => {
   });
   it('동시 저장량 예약은 실패한 횟수 증가도 롤백한다', async () => {
     const card = await saveCard(SAMPLE, null, null, h.env, NOW);
-    await h.env.DB.prepare("UPDATE usage_counters SET bytes=199999967 WHERE day='storage'").run();
+    await h.env.DB.prepare("UPDATE usage_counters SET bytes=? WHERE day='storage'")
+      .bind(200000000 - png().length)
+      .run();
     const result = await Promise.allSettled([
       uploadRequest(card.id, h.env),
       uploadRequest(card.id, h.env),
@@ -108,7 +110,7 @@ describe('이미지와 원자적 용량 예약', () => {
     expect(row?.state).toBe('cleanup_needed');
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
-    ).toBe(33);
+    ).toBe(png().length);
     await deleteImage(row!.id, h.env, NOW);
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
@@ -138,7 +140,7 @@ describe('이미지와 원자적 용량 예약', () => {
     expect(await h.env.CARD_IMAGES.get(row!.id, 'arrayBuffer')).not.toBeNull();
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
-    ).toBe(33);
+    ).toBe(png().length);
     await deleteImage(row!.id, h.env, NOW);
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
@@ -163,7 +165,7 @@ describe('이미지와 원자적 용량 예약', () => {
     expect(await h.env.DB.prepare('SELECT state FROM assets').first('state')).toBe('deleting');
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
-    ).toBe(33);
+    ).toBe(png().length);
     await deleteImage(asset.assetId, h.env, NOW);
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
@@ -243,7 +245,7 @@ describe('이미지와 원자적 용량 예약', () => {
     expect(await h.env.CARD_IMAGES.get(row!.id, 'arrayBuffer')).not.toBeNull();
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
-    ).toBe(33);
+    ).toBe(png().length);
     await deleteImage(row!.id, h.env, NOW);
     await expect(deleteImage(row!.id, h.env, NOW)).rejects.toThrow('이미지가 없거나');
     expect(
@@ -278,7 +280,7 @@ describe('이미지와 원자적 용량 예약', () => {
     expect(await h.env.CARD_IMAGES.get(row!.id, 'arrayBuffer')).not.toBeNull();
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
-    ).toBe(33);
+    ).toBe(png().length);
     await deleteImage(row!.id, h.env, NOW);
     expect(await h.env.CARD_IMAGES.get(row!.id, 'arrayBuffer')).toBeNull();
     expect(
@@ -319,7 +321,9 @@ describe('이미지와 원자적 용량 예약', () => {
   it('반환된 용량을 다른 업로드가 사용해도 늦은 파일의 정리 용량을 누락하지 않고 신규 업로드를 막는다', async () => {
     const card = await saveCard(SAMPLE, null, null, h.env, NOW);
     const other = await saveCard(SAMPLE, null, null, h.env, NOW);
-    await h.env.DB.prepare("UPDATE usage_counters SET bytes=199999967 WHERE day='storage'").run();
+    await h.env.DB.prepare("UPDATE usage_counters SET bytes=? WHERE day='storage'")
+      .bind(200000000 - png().length)
+      .run();
     const kv = new Proxy(h.env.CARD_IMAGES, {
       get(target, key) {
         if (key === 'put')
@@ -346,7 +350,7 @@ describe('이미지와 원자적 용량 예약', () => {
     expect(await h.env.CARD_IMAGES.get(row!.id, 'arrayBuffer')).not.toBeNull();
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
-    ).toBe(200000033);
+    ).toBe(200000000 + png().length);
     await expect(uploadRequest(other.id, h.env)).rejects.toThrow('image_storage_limit');
     expect(
       await h.env.DB.prepare('SELECT uploads FROM usage_counters WHERE day=?')
@@ -409,7 +413,7 @@ describe('이미지와 원자적 용량 예약', () => {
     expect(await h.env.CARD_IMAGES.get(row!.id, 'arrayBuffer')).not.toBeNull();
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),
-    ).toBe(33);
+    ).toBe(png().length);
     await deleteImage(row!.id, h.env, NOW);
     expect(
       await h.env.DB.prepare("SELECT bytes FROM usage_counters WHERE day='storage'").first('bytes'),

@@ -1,13 +1,39 @@
 import { readFile, readdir } from 'node:fs/promises';
 import { strict as assert } from 'node:assert';
 import { parse } from 'jsonc-parser';
+import { parseArgs } from 'node:util';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
-const configErrors = [];
-const config = parse(
-  await readFile(new URL('../wrangler.jsonc', import.meta.url), 'utf8'),
-  configErrors,
-  { allowTrailingComma: true },
+const { values } = parseArgs({
+  options: { config: { type: 'string' }, mode: { type: 'string' } },
+  strict: true,
+  allowPositionals: false,
+});
+const root = fileURLToPath(new URL('../', import.meta.url));
+const defaultPath = resolve(root, 'wrangler.jsonc');
+const configPath = values.config ? resolve(values.config) : defaultPath;
+const mode = values.mode ?? 'dry_run';
+assert(['dry_run', 'live'].includes(mode), '검사 모드는 dry_run 또는 live만 허용합니다.');
+assert.equal(
+  dirname(configPath),
+  resolve(root),
+  '배포 설정은 프로젝트 루트에 두세요. 상대 자산·소스·마이그레이션 경로를 동일하게 유지합니다.',
 );
+assert(
+  mode !== 'live' || (values.config && configPath !== defaultPath),
+  'live 검사는 별도 --config 파일을 명시해야 합니다. 기본 설정은 변경하지 마세요.',
+);
+const defaultErrors = [];
+const defaultConfig = parse(await readFile(defaultPath, 'utf8'), defaultErrors, {
+  allowTrailingComma: true,
+});
+assert.equal(defaultErrors.length, 0, '기본 Wrangler JSONC 구문을 확인하세요.');
+assert.equal(defaultConfig.vars.SEND_MODE, 'dry_run', '기본 설정은 항상 dry_run이어야 합니다.');
+const configText = await readFile(configPath, 'utf8');
+const configErrors = [];
+const config = parse(configText, configErrors, { allowTrailingComma: true });
 assert.equal(configErrors.length, 0, 'Wrangler JSONC 구문이 잘못되었습니다.');
 const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
 const allowed = new Set([
@@ -30,11 +56,7 @@ assert(
 assert.equal(config.main, 'src/worker/index.ts');
 assert.equal(config.workers_dev, true);
 assert.equal(config.vars.COST_MODE, 'free_only');
-assert.equal(
-  config.vars.SEND_MODE,
-  'dry_run',
-  '배포 기본값은 dry_run이어야 합니다. 실제 발송 준비 후 별도 승인된 설정으로 변경하세요.',
-);
+assert.equal(config.vars.SEND_MODE, mode, '검사 모드와 실제 배포 설정의 SEND_MODE가 다릅니다.');
 assert(new URL(config.vars.APP_ORIGIN).protocol === 'https:');
 assert.deepEqual(Object.keys(config.vars).sort(), ['APP_ORIGIN', 'COST_MODE', 'SEND_MODE']);
 assert.deepEqual(config.triggers.crons, ['* * * * *']);
@@ -87,6 +109,10 @@ console.log(
       runtime: ['Workers Free', 'D1 Free', 'KV Free'],
       externalHosts: [...new Set(urls)],
       defaultMode: 'dry_run',
+      checkedMode: mode,
+      configPath,
+      configSha256: createHash('sha256').update(configText).digest('hex'),
+      deploymentPerformed: false,
       accountPlan: '미확인',
       remoteCpu: '미검증',
       billingGuarantee: false,

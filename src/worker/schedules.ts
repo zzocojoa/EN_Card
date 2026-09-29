@@ -237,6 +237,12 @@ async function scheduleChange(env: Env, statements: D1PreparedStatement[]): Prom
   try {
     return await env.DB.batch(statements);
   } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('pause_recovery_decision_required'))
+      throw appError(
+        409,
+        'RECOVERY_DECISION_REQUIRED',
+        '미발송 카드 다시 예약 화면에서 중지된 카드의 복구 또는 제외를 먼저 선택하세요.',
+      );
     if (error instanceof Error && error.message.includes('schedule_unresolved_delivery'))
       throw unresolvedScheduleError();
     throw error;

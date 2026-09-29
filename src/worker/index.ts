@@ -14,6 +14,7 @@ import { assetPage, cardPage, deliveryPage } from './catalog';
 import { dryRun, resolveUnknown, runEngine } from './engine';
 import { nativeTransport, sendKakao } from './kakao';
 import { isTokenError } from './token-errors';
+import { decideRecovery, pausePreview, recoveryPreview } from './pause-recovery';
 import { resumeSchedule, saveSchedule, schedulePage, stopSchedule } from './schedules';
 import { deleteImage, publicImage, readJson, reviewCard, saveCard, uploadImage } from './storage';
 import { appError, type AppError, type Env } from './types';
@@ -213,6 +214,23 @@ export async function route(request: Request, env: Env): Promise<Response> {
       ),
     );
   }
+  if (
+    /^\/api\/schedules\/[^/]+\/(pause-preview|recovery)$/.test(path) &&
+    request.method === 'GET'
+  ) {
+    const version: number = z.coerce
+      .number()
+      .int()
+      .positive()
+      .parse(new URL(request.url).searchParams.get('version'));
+    return Response.json(
+      await (path.endsWith('/pause-preview')
+        ? pausePreview(pathId(path, 3), version, env)
+        : recoveryPreview(pathId(path, 3), version, env)),
+    );
+  }
+  if (/^\/api\/schedules\/[^/]+\/recovery$/.test(path) && request.method === 'POST')
+    return Response.json(await decideRecovery(pathId(path, 3), await readJson(request), env, now));
   if (/^\/api\/schedules\/[^/]+\/(pause|cancel|resume)$/.test(path) && request.method === 'POST') {
     const body = z
       .object({ version: z.number().int().positive() })
@@ -228,6 +246,7 @@ export async function route(request: Request, env: Env): Promise<Response> {
         env,
         now,
       );
+    if (path.endsWith('/pause')) return Response.json(await recoveryPreview(id, body.version, env));
     return Response.json({ ok: true });
   }
   if (path === '/api/dry-run' && request.method === 'POST')

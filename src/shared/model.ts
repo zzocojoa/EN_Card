@@ -107,6 +107,45 @@ export const scheduleSchema = z
       });
   });
 export type ScheduleInput = z.infer<typeof scheduleSchema>;
+export const recoverySchema = z
+  .object({
+    version: z.number().int().positive(),
+    recover_ids: z.array(z.string().min(1).max(100)).max(40),
+    exclude_ids: z.array(z.string().min(1).max(100)).max(40),
+    date: calendarDate.nullable(),
+    time: z
+      .string()
+      .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+      .nullable(),
+    warning_accepted: z.literal(true),
+  })
+  .strict()
+  .superRefine((input, context) => {
+    const ids: string[] = [...input.recover_ids, ...input.exclude_ids];
+    if (!ids.length || new Set(ids).size !== ids.length)
+      context.addIssue({
+        code: 'custom',
+        message: '복구·제외 대상은 중복 없이 한 번씩 선택하세요.',
+      });
+  });
+export type RecoveryInput = z.infer<typeof recoverySchema>;
+export type RecoveryItem = {
+  delivery_id: string;
+  title: string;
+  state: string;
+  available: boolean;
+  reason: string;
+  decision: 'reschedule' | 'exclude' | null;
+  target_schedule_id: string | null;
+};
+export type PausePreview = {
+  schedule_id: string;
+  version: number;
+  remaining: number;
+  can_resume: boolean;
+  unresolved: boolean;
+  items: RecoveryItem[];
+};
 export type Schedule = ScheduleInput & {
   id: string;
   version: number;

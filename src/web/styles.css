@@ -937,6 +937,8 @@ footer > span:last-child {
   border-radius: 12px;
   padding: 30px;
   width: min(520px, 100%);
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
 }
 .modal .toolbar {
   margin-bottom: 0;

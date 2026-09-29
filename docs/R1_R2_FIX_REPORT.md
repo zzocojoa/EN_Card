@@ -1,5 +1,7 @@
 # R1·R2 수정 및 검증 보고서
 
+이 문서는 R1·R2 검토 커밋의 검증 기록입니다. 이후 R3·R4와 M5 준비의 현재 결과는 [R3_R4_M5_READINESS.md](R3_R4_M5_READINESS.md)를 참고하세요.
+
 검증일: 2026-09-29 KST. 작업 브랜치: `codex/development`. 시작 HEAD: `ff9c0e2ffc0d3c371fd0e6a6a0b8b4181e11260d`.
 
 첨부 리뷰 원문은 `EN_Card_Review_2026-09-29.md`에 보존했다. 상세 지시 파일 `EN_Card_R1_R2_GOAL_PROMPT.txt`는 Downloads에 없으며 대화의 명시적 목표를 기준으로 작업했다. 원격 배포·live 전환·실제 카카오 발송·원격 DB 변경·요금제 변경·PR 병합은 수행하지 않았다.
