@@ -34,7 +34,15 @@ beforeEach(async () => {
     'migrations/0001_initial.sql',
   ])
     await copyFile(resolve(path), join(directory, path));
-  await symlink(resolve('node_modules'), join(directory, 'node_modules'));
+  // Windows에서는 symlink 권한 변경 없이 같은 의존성 디렉터리를 공유한다.
+  await symlink(
+    resolve('node_modules'),
+    join(directory, 'node_modules'),
+    process.platform === 'win32' ? 'junction' : 'dir',
+  );
+  expect(await realpath(join(directory, 'node_modules'))).toBe(
+    await realpath(resolve('node_modules')),
+  );
   await writeFile(join(directory, '.worker-build/index.js'), 'export default {};');
   await writeFile(join(directory, 'src/worker/index.ts'), "const url = 'https://kapi.kakao.com';");
   config = parse(await readFile('wrangler.jsonc', 'utf8')) as Configuration;

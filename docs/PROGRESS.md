@@ -45,3 +45,9 @@
 - 기본 dry_run은 유지하고 명시한 live 파일에도 동일한 무료 구성을 검사한다. 검사 대상 파일과 SHA를 출력하고 배포나 발송을 수행하지 않는다.
 - 0001~0008은 보존하고 0009를 후속 적용한다. 원격 실행 절차와 계정/Secret 입력 표는 SETUP.md, 중단·복원은 OPERATIONS.md에 있다. 실제 Free 계정과 CPU, OAuth 갱신, 휴대전화 수신·PC 종료 검증은 남아 있다.
 - 변경·실패 재현·검증의 상세 근거: [R3_R4_M5_READINESS.md](R3_R4_M5_READINESS.md). 검증된 변경은 보고서와 함께 codex/development의 후속 커밋에 묶는다. GitHub 반영과 실제 운영 배포는 구분한다.
+
+## Windows 무료 구성 테스트 준비 코드 호환성 — 2026-09-30
+
+- tests/free-config.test.ts의 node_modules 연결을 Windows에서는 junction으로 생성하며 realpath로 실제 설치 디렉터리와 동일한지 검증한다. 기존 검사 조건과 제품 코드는 유지한다.
+- 실패했던 focused 8개와 최종 전체 Vitest 177개가 모두 통과했다. 최종 타입 검사·웹 빌드·Worker dry-run·무료 구성 검사 및 Chromium E2E 10개도 통과했다. 첫 전체 검사의 연결 중단 기록은 보존하며 최종 단계별 종료코드는 모두 0이다.
+- OS 개발자 모드·권한·보안 설정과 lockfile은 변경하지 않았다. 45장 복구 결함은 별도 미해결 범위로 유지한다. 상세 근거는 VERIFICATION.md의 Windows 추가 기록을 따른다.

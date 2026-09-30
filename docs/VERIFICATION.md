@@ -70,3 +70,31 @@ R3·R4 정상 기대 테스트 2개는 구현 수정 전 실패하고 수정 후
 - PC·브라우저·Codex 종료 후 미래 예약 수신. 확인 주체와 기기·예정/수신 시각 기록 필요.
 
 위 항목은 M0 원격 검증 및 M5 운영 검증으로 남습니다. 원격 리소스 생성·배포·실제 발송은 수행하지 않았습니다.
+
+## Windows symlink EPERM 수정 — 2026-09-30 중간 결과
+
+환경: DESKTOP-SS5CURC, Windows, Node 22.22.2, npm 10.9.7. 기준 HEAD: 55d63986afc3c06fb199f67a25715c6847da610b. 로컬 미커밋 수정이며 push·merge·배포·실제 발송은 수행하지 않았다.
+
+원인은 테스트 beforeEach의 디렉터리 symlink 생성에 필요한 Windows 권한 부재였다. Windows에서는 Node의 junction 타입을 사용하고 다른 플랫폼에서는 dir 타입을 지정한다. 같은 설치된 node_modules를 가리키는지 realpath assertion을 모든 fixture 준비에 추가했다. symlink는 격리된 검사 프로세스에 의존성을 제공하기 위한 수단이며 검사 대상이 아니다. 기존 정상·오설정·유료 바인딩 거부 assertion을 삭제하거나 완화하지 않았다. Node API 근거: https://nodejs.org/docs/latest-v22.x/api/fs.html#fspromisessymlinktarget-path-type
+
+- npm test -- tests/free-config.test.ts --reporter=verbose: 8개 모두 통과, 1.69초.
+- npm test -- --reporter=verbose: 로그에 116개 통과, 실패 기록 없음. 실행 서버 연결 단절 뒤 로그가 2026-09-30T05:22:53Z에서 멈췄으며 05:24:29Z에 Vitest 프로세스 0개와 최종 요약 부재를 확인했다. 전체 통과로 보고하지 않는다. 중복 재실행하지 않았으며 전체 재검증은 대기 중이다.
+- 최종 수정 후 타입·빌드·무료 구성 검사와 필요한 E2E는 아직 미실시다. 앞선 checkout 검증 결과로 대체하지 않는다.
+- 근거 로그: C:/Users/user/Documents/Codex/2026-09-30/task/en-card-windows-focused.log 및 en-card-windows-all-final.log. 후자는 연결로 중단된 부분 기록이다.
+
+OS 설정·관리자 권한·보안 정책·lockfile·제품 코드·마이그레이션은 변경하지 않았다. 45장 복구 결함과 원격 검증 미실시 항목은 유지한다.
+
+### 최종 Windows 재검증 완료
+
+최종 실행 ID: 20260930T053655Z. 종료 시각: 2026-09-30T05:44:53.5363590Z. 앞의 중간 기록 이후 같은 테스트 수정으로 재검증했으며, 다음 결과가 현재 완료 상태다.
+
+| 명령 | 최종 결과 | 종료코드 |
+| --- | --- | --- |
+| npm test -- --reporter=verbose | 12개 파일, 177개 모두 통과; Vitest 430.25초 | 0 |
+| npm run build | strict TypeScript·Vite·Worker deploy --dry-run 통과 | 0 |
+| npm run check:free | 기본 dry_run 무료 구성·운영 번들 검사 통과 | 0 |
+| npm run test:e2e | Chromium 10개 통과, Playwright 40.4초 | 0 |
+
+전체 테스트의 8개 무료 구성 검사는 junction 대상 realpath 일치와 기존 dry_run/live·유료 바인딩·외부 서비스·기본 모드 보호를 그대로 확인했다. 단계별 실행 시간과 종료코드는 C:/Users/user/Documents/Codex/2026-09-30/task/en-card-windows-validation-status.json에, 출력은 기존 en-card-windows-all-final.log의 VALIDATION_RUN_BEGIN 20260930T053655Z 이후에 기록했다. 앞의 116개 부분 결과 및 로그 기록 명령의 초기 오류는 이전 실행 기록으로 구분한다.
+
+이번 결과는 로컬 Miniflare DB/KV·모의 HTTP와 로컬 Chromium에 대한 것이다. 실제 Free 계정·원격 CPU·OAuth·카카오 수신은 여전히 미검증이며, 45장 복구 결함은 수정하지 않았다. 제품 소스·lockfile·OS 설정은 그대로 유지했다. 커밋·push·merge·원격 리소스 변경·배포·발송은 수행하지 않았다.
