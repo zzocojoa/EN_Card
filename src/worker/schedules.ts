@@ -10,9 +10,18 @@ import { makePayload } from './kakao';
 import { readPage, type Page } from './pagination';
 import { appError, type Env } from './types';
 
-type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items'> & { weekdays: string };
+type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items' | 'pending_delivery_count'> & {
+  weekdays: string;
+  pending_delivery_count?: number;
+};
 export function decodeSchedule(row: ScheduleRow): Schedule {
-  return { ...row, weekdays: JSON.parse(row.weekdays) as number[], asset_ids: [], items: [] };
+  return {
+    ...row,
+    weekdays: JSON.parse(row.weekdays) as number[],
+    pending_delivery_count: row.pending_delivery_count ?? 0,
+    asset_ids: [],
+    items: [],
+  };
 }
 export async function listSchedules(env: Env): Promise<Schedule[]> {
   return (await schedulePage(env, null)).items;
@@ -20,7 +29,7 @@ export async function listSchedules(env: Env): Promise<Schedule[]> {
 export async function schedulePage(env: Env, cursor: string | null): Promise<Page<Schedule>> {
   const page = await readPage<ScheduleRow & { items_json: string }>(
     env.DB,
-    `SELECT s.*,enabled AS sort_key,(SELECT json_group_array(json_object('asset_id',asset_id,'title',json_extract(payload,'$.content.title'))) FROM (SELECT asset_id,payload FROM schedule_items WHERE schedule_id=s.id AND version=s.version ORDER BY position)) AS items_json FROM schedules s WHERE 1=1`,
+    `SELECT s.*,enabled AS sort_key,(SELECT count(*) FROM deliveries d WHERE d.schedule_id=s.id AND d.schedule_version=s.version AND d.state IN ('pending','claimed','retry_wait','blocked')) AS pending_delivery_count,(SELECT json_group_array(json_object('asset_id',asset_id,'title',json_extract(payload,'$.content.title'))) FROM (SELECT asset_id,payload FROM schedule_items WHERE schedule_id=s.id AND version=s.version ORDER BY position)) AS items_json FROM schedules s WHERE 1=1`,
     'enabled',
     cursor,
     100,

@@ -31,6 +31,7 @@ beforeEach(async () => {
     'scripts/check-free.mjs',
     'package.json',
     'wrangler.jsonc',
+    'wrangler.delivery.jsonc',
     'migrations/0001_initial.sql',
   ])
     await copyFile(resolve(path), join(directory, path));
@@ -93,6 +94,27 @@ it.each(['r2_buckets', 'services', 'browser', 'ai', 'usage_model'])(
     );
   },
 );
+it.each(['workers_dev', 'preview_urls'])(
+  '비공개 발송 Worker의 %s 공개 노출을 거부한다',
+  async (field) => {
+    const path = join(directory, 'wrangler.delivery.jsonc');
+    const delivery = parse(await readFile(path, 'utf8'));
+    delivery[field] = true;
+    await writeFile(path, JSON.stringify(delivery));
+    await expect(check([])).rejects.toThrow('공개 접근');
+  },
+);
+it('비공개 발송 Worker에 다른 DB·유료 바인딩·Cron을 추가할 수 없다', async () => {
+  const path = join(directory, 'wrangler.delivery.jsonc');
+  const delivery = parse(await readFile(path, 'utf8'));
+  await writeFile(path, JSON.stringify({ ...delivery, triggers: { crons: ['* * * * *'] } }));
+  await expect(check([])).rejects.toThrow('허용되지 않은');
+  await writeFile(path, JSON.stringify({ ...delivery, r2_buckets: [{ binding: 'PAID' }] }));
+  await expect(check([])).rejects.toThrow('허용되지 않은');
+  delivery.d1_databases[0].database_id = crypto.randomUUID();
+  await writeFile(path, JSON.stringify(delivery));
+  await expect(check([])).rejects.toThrow('같은 D1');
+});
 it('M5 live도 모의 진입점·외부 서비스·변조한 기본값을 거부한다', async () => {
   config.main = 'src/worker/local.ts';
   await liveConfig();

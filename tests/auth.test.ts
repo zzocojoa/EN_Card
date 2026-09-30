@@ -60,9 +60,36 @@ const oauthTransport: Transport = async (url) =>
         expires_in: 3600,
         refresh_token: 'refresh',
         refresh_token_expires_in: 86400,
+        scope: 'talk_message',
       })
     : Response.json({ id: 42 });
 describe('OAuth·접근 제어', () => {
+  it.each([undefined, '', 'profile', 'talk_message_extra'])(
+    '메시지 권한이 없는 OAuth 응답(%s)을 연결됨으로 저장하지 않는다',
+    async (scope) => {
+      await storeCredentials();
+      const original = await h.env.DB.prepare('SELECT * FROM credentials').first();
+      const auth = await start();
+      let calls = 0;
+      const transport: Transport = async (url, init) => {
+        calls += 1;
+        const response = await oauthTransport(url, init);
+        return url.includes('/oauth/token')
+          ? Response.json({ ...((await response.json()) as Record<string, unknown>), scope })
+          : response;
+      };
+      await expect(
+        finishOAuth(callback(auth.state, auth.browser), h.env, NOW, transport),
+      ).rejects.toMatchObject({ code: 'KAKAO_SCOPE' });
+      expect(calls).toBe(1);
+      expect(await h.env.DB.prepare('SELECT * FROM credentials').first()).toEqual(original);
+      expect(
+        await h.env.DB.prepare("SELECT count(*) AS n FROM auth_state WHERE kind='session'").first(
+          'n',
+        ),
+      ).toBe(0);
+    },
+  );
   it('SETUP_TOKEN 없이 최초 등록을 시작하지 못한다', async () => {
     await expect(
       beginOAuth(
@@ -165,7 +192,7 @@ describe('토큰 갱신', () => {
       await accessToken(h.env, NOW, async () =>
         Response.json({ access_token: 'new-access', expires_in: 3600 }),
       ),
-    ).toEqual({ token: 'new-access', version: 2 });
+    ).toEqual({ token: 'new-access', version: 2, expiresAt: NOW + 3600_000 });
     const row = await h.env.DB.prepare('SELECT * FROM credentials').first<Credentials>();
     expect(await decrypt(row!.refresh_token!, h.env.TOKEN_ENCRYPTION_KEY)).toBe('old-refresh');
     expect(row?.version).toBe(2);
@@ -186,19 +213,36 @@ describe('토큰 갱신', () => {
   });
   it('동시 갱신은 외부 호출을 직렬화한다', async () => {
     await storeCredentials();
+    let release!: () => void;
+    let started!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const entered = new Promise<void>((resolve) => {
+      started = resolve;
+    });
     let calls: number = 0;
     const transport: Transport = async () => {
       calls += 1;
-      await new Promise((resolve) => setTimeout(resolve, 30));
+      started();
+      await gate;
       return Response.json({ access_token: 'new', expires_in: 3600 });
     };
-    const result = await Promise.allSettled([
-      accessToken(h.env, NOW, transport),
-      accessToken(h.env, NOW, transport),
-    ]);
+    const first = accessToken(h.env, NOW, transport);
+    await entered;
+    try {
+      await expect(accessToken(h.env, NOW, transport)).rejects.toMatchObject({
+        code: 'TOKEN_BUSY',
+      });
+    } finally {
+      release();
+      await first;
+    }
+    await expect(accessToken(h.env, NOW, transport)).resolves.toMatchObject({
+      token: 'new',
+      version: 2,
+    });
     expect(calls).toBe(1);
-    expect(result.filter((item) => item.status === 'fulfilled')).toHaveLength(1);
-    expect(result.filter((item) => item.status === 'rejected')).toHaveLength(1);
   });
   it('권한 철회·갱신 실패 뒤 외부 호출을 반복하지 않는다', async () => {
     await storeCredentials();

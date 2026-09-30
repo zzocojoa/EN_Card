@@ -1,4 +1,4 @@
-import type { FeedPayload, SendMode, SendResult } from '../shared/model';
+import type { Delivery, FeedPayload, SendMode, SendResult } from '../shared/model';
 import type { TokenFailure } from './token-errors';
 
 export type Env = {
@@ -13,6 +13,7 @@ export type Env = {
   TOKEN_ENCRYPTION_KEY: string;
   KAKAO_REST_API_KEY?: string;
   KAKAO_CLIENT_SECRET?: string;
+  DELIVERY_SERVICE?: Fetcher;
 };
 export type Credentials = {
   owner_id: string;
@@ -33,7 +34,14 @@ export type Credentials = {
 };
 export type Session = { id: string; csrf: string; expires_at: number };
 export type Sender = (payload: FeedPayload, token: string) => Promise<SendResult>;
-export type TokenGrant = { token: string; version: number };
+export type TokenGrant = { token: string; version: number; expiresAt?: number };
+export type DeliveryJob = {
+  item: Delivery;
+  owner: string;
+  payload?: FeedPayload;
+  grant: TokenGrant;
+};
+export type DeliveryReport = { processed: 0 | 1; reuseGrant: boolean; stop: boolean };
 export type Transport = (input: string, init: RequestInit) => Promise<Response>;
 export type AppError = Error & { status: number; code: string };
 export function appError(status: number, code: string, message: string): AppError {

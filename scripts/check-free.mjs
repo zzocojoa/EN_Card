@@ -7,7 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 
 const { values } = parseArgs({
-  options: { config: { type: 'string' }, mode: { type: 'string' } },
+  options: {
+    config: { type: 'string' },
+    mode: { type: 'string' },
+    'delivery-config': { type: 'string' },
+  },
   strict: true,
   allowPositionals: false,
 });
@@ -48,6 +52,7 @@ const allowed = new Set([
   'kv_namespaces',
   'triggers',
   'observability',
+  'services',
 ]);
 assert(
   Object.keys(config).every((key) => allowed.has(key)),
@@ -64,6 +69,55 @@ assert.equal(config.d1_databases.length, 1);
 assert.equal(config.kv_namespaces.length, 1);
 assert.equal(config.d1_databases[0].binding, 'DB');
 assert.equal(config.kv_namespaces[0].binding, 'CARD_IMAGES');
+assert(
+  JSON.stringify(config.services) ===
+    JSON.stringify([{ binding: 'DELIVERY_SERVICE', service: 'en-card-delivery' }]),
+  '허용되지 않은 발송 서비스 설정입니다.',
+);
+const deliveryConfigPath = values['delivery-config']
+  ? resolve(values['delivery-config'])
+  : resolve(root, 'wrangler.delivery.jsonc');
+assert.equal(
+  dirname(deliveryConfigPath),
+  resolve(root),
+  '발송 Worker 설정도 프로젝트 루트에 두세요.',
+);
+const deliveryConfigText = await readFile(deliveryConfigPath, 'utf8');
+const deliveryErrors = [];
+const deliveryConfig = parse(deliveryConfigText, deliveryErrors, { allowTrailingComma: true });
+assert.equal(deliveryErrors.length, 0, '발송 Worker JSONC 구문을 확인하세요.');
+const deliveryAllowed = new Set([
+  '$schema',
+  'name',
+  'main',
+  'compatibility_date',
+  'workers_dev',
+  'preview_urls',
+  'vars',
+  'd1_databases',
+  'observability',
+]);
+assert(
+  Object.keys(deliveryConfig).every((key) => deliveryAllowed.has(key)),
+  '허용되지 않은 발송 Worker 바인딩/서비스 설정입니다.',
+);
+assert.equal(deliveryConfig.name, 'en-card-delivery');
+assert.equal(deliveryConfig.main, 'src/worker/delivery-service.ts');
+assert.equal(deliveryConfig.workers_dev, false, '발송 Worker의 공개 접근을 끄세요.');
+assert.equal(deliveryConfig.preview_urls, false, '발송 Worker의 preview 공개 접근을 끄세요.');
+assert.deepEqual(deliveryConfig.vars, {
+  APP_ORIGIN: config.vars.APP_ORIGIN,
+  COST_MODE: 'free_only',
+  SEND_MODE: 'live',
+});
+assert.equal(deliveryConfig.d1_databases.length, 1);
+assert.equal(deliveryConfig.d1_databases[0].binding, 'DB');
+assert.equal(
+  deliveryConfig.d1_databases[0].database_id,
+  config.d1_databases[0].database_id,
+  '발송 Worker는 같은 D1을 사용해야 합니다.',
+);
+assert.equal(deliveryConfig.d1_databases[0].database_name, config.d1_databases[0].database_name);
 assert.deepEqual(Object.keys(pkg.dependencies).sort(), ['react', 'react-dom', 'zod']);
 assert(
   Object.values({ ...pkg.dependencies, ...pkg.devDependencies }).every((version) =>
@@ -112,6 +166,8 @@ console.log(
       checkedMode: mode,
       configPath,
       configSha256: createHash('sha256').update(configText).digest('hex'),
+      deliveryConfigPath,
+      deliveryConfigSha256: createHash('sha256').update(deliveryConfigText).digest('hex'),
       deploymentPerformed: false,
       accountPlan: '미확인',
       remoteCpu: '미검증',

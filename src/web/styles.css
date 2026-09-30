@@ -91,7 +91,7 @@ h3 {
 }
 p {
   color: #737d8e;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.85;
 }
 small,
@@ -198,7 +198,7 @@ small,
   font-size: 12px;
 }
 .sidebar-bottom p {
-  font-size: 10px;
+  font-size: 16px;
   line-height: 1.8;
   margin-top: 9px;
   margin-bottom: 17px;
@@ -436,7 +436,7 @@ summary span {
   color: var(--blue);
 }
 .help {
-  font-size: 10px;
+  font-size: 16px;
   line-height: 1.8;
   margin: 11px 0 0;
   color: #8b94a4;
@@ -505,7 +505,7 @@ summary span {
   padding-top: 3px;
 }
 .tip p {
-  font-size: 11px;
+  font-size: 16px;
   margin: 0;
   color: #858e9f;
 }
@@ -595,11 +595,11 @@ summary span {
   overflow-wrap: anywhere;
 }
 .library-card p {
-  font-size: 12px;
+  font-size: 16px;
   overflow-wrap: anywhere;
 }
 .library-card .blue {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--blue);
   font-weight: 600;
 }
@@ -669,7 +669,7 @@ summary span {
   margin: 12px 0;
 }
 .card-picker p {
-  font-size: 11px;
+  font-size: 16px;
   padding: 12px 0;
   margin: 0;
 }
@@ -704,7 +704,7 @@ summary span {
   font-size: 21px;
 }
 .schedule-card p {
-  font-size: 11px;
+  font-size: 16px;
   margin-bottom: 7px;
 }
 .soft-notice {
@@ -771,7 +771,7 @@ summary span {
   font-size: 14px;
 }
 .journal p {
-  font-size: 12px;
+  font-size: 16px;
   margin: 6px 0;
 }
 .journal details {
@@ -827,7 +827,7 @@ meter::-webkit-meter-optimum-value {
 .usage-lines p {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 16px;
   margin: 13px 0;
 }
 .usage-lines strong {
@@ -887,7 +887,7 @@ footer > span:last-child {
   z-index: 1;
 }
 .welcome > p {
-  font-size: 15px;
+  font-size: 16px;
 }
 .login-panel {
   position: relative;
@@ -905,7 +905,7 @@ footer > span:last-child {
   font-size: 10px;
 }
 .login-panel p {
-  font-size: 12px;
+  font-size: 16px;
 }
 .welcome-word {
   position: absolute;
@@ -1162,7 +1162,7 @@ footer > span:last-child {
     letter-spacing: 1.3px;
   }
   .page-heading p {
-    font-size: 11px;
+    font-size: 16px;
   }
   .page-heading > .secondary {
     padding: 8px;
@@ -1237,7 +1237,7 @@ footer > span:last-child {
     font-size: 37px;
   }
   .welcome > p {
-    font-size: 13px;
+    font-size: 16px;
   }
   .welcome-word {
     top: 180px;

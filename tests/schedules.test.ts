@@ -28,6 +28,51 @@ async function input(): Promise<ScheduleInput> {
   };
 }
 describe('예약 상태와 카드 버전', () => {
+  it.each(['once', 'daily', 'weekly'] as const)(
+    '%s 마지막 5장 회차가 비활성화되어도 미발송 2장과 중지 후 0장을 제공한다',
+    async (kind) => {
+      const data = await input();
+      const extra = await Promise.all(
+        Array.from({ length: 3 }, () => readyCard(h.env, NOW - 300_000)),
+      );
+      data.kind = kind;
+      data.weekdays = [1];
+      data.cards_per_occurrence = 5;
+      data.asset_ids.push(...extra.map((item) => item.assetId));
+      const { id } = await saveSchedule(data, null, null, h.env, NOW);
+      await runEngine(h.env, {
+        mode: 'mock',
+        clock: () => NOW + 300_000,
+        token: async () => 'mock',
+        sender: sendMock,
+      });
+      expect((await listSchedules(h.env)).find((item) => item.id === id)).toMatchObject({
+        enabled: 0,
+        reason: kind === 'once' ? 'completed' : 'content_shortage',
+        cursor: 5,
+        pending_delivery_count: 2,
+      });
+      await stopSchedule(id, 1, 'paused', h.env, NOW + 300_000);
+      expect((await listSchedules(h.env)).find((item) => item.id === id)).toMatchObject({
+        reason: 'paused',
+        pending_delivery_count: 0,
+      });
+      expect(
+        await h.env.DB.prepare(
+          "SELECT count(*) AS n FROM deliveries WHERE schedule_id=? AND state='mock_sent'",
+        )
+          .bind(id)
+          .first('n'),
+      ).toBe(3);
+      expect(
+        await h.env.DB.prepare(
+          'SELECT count(*) AS n FROM pause_recoveries p JOIN deliveries d ON d.id=p.delivery_id WHERE d.schedule_id=?',
+        )
+          .bind(id)
+          .first('n'),
+      ).toBe(2);
+    },
+  );
   it('반복은 순서대로 소진하고 부족하면 멈춘다', async () => {
     const data = await input();
     const { id } = await saveSchedule(data, null, null, h.env, NOW);

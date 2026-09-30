@@ -1,5 +1,5 @@
 import { useState, type ReactElement } from 'react';
-import type { PausePreview, RecoveryInput } from '../shared/model';
+import { LIMITS, type PausePreview, type RecoveryInput } from '../shared/model';
 import { kstDate } from '../shared/time';
 
 type PauseProps = {
@@ -54,7 +54,9 @@ export function RecoveryDialog({
   onDecide,
   onResume,
 }: RecoveryProps): ReactElement {
-  const pending = preview.items.filter((item) => item.decision === null);
+  const undecided = preview.items.filter((item) => item.decision === null);
+  const pending = undecided.slice(0, LIMITS.recoveryBatchSize);
+  const pendingCount: number = preview.pending_count ?? undecided.length;
   const [selected, setSelected] = useState<string[]>(
     pending.filter((item) => item.available).map((item) => item.delivery_id),
   );
@@ -85,6 +87,42 @@ export function RecoveryDialog({
             응답 확인 중·미해결 결과 불명이 있습니다. 발송 기록에서 결과를 처리한 뒤
             복구·재개하세요.
           </p>
+        ) : null}
+        {pending.length ? (
+          <>
+            <p>
+              미결정 총 {pendingCount}장 · 이번 {pending.length}장
+            </p>
+            {pendingCount > pending.length ? (
+              <p>
+                이번 선택을 저장하면 남은 {pendingCount - pending.length}장을 이어서 처리합니다.
+              </p>
+            ) : null}
+            <div className="toolbar">
+              <button
+                className="secondary"
+                disabled={busy || preview.unresolved}
+                onClick={() => {
+                  setSelected(
+                    pending.filter((item) => item.available).map((item) => item.delivery_id),
+                  );
+                  setAccepted(false);
+                }}
+              >
+                이번 {pending.length}장 모두 복구
+              </button>
+              <button
+                className="secondary"
+                disabled={busy || preview.unresolved}
+                onClick={() => {
+                  setSelected([]);
+                  setAccepted(false);
+                }}
+              >
+                이번 {pending.length}장 모두 제외
+              </button>
+            </div>
+          </>
         ) : null}
         {pending.map((item) => (
           <div key={item.delivery_id}>

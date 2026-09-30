@@ -8,8 +8,22 @@ export const tokenSchema = z.object({
   expires_in: z.number().positive(),
   refresh_token: z.string().min(1).optional(),
   refresh_token_expires_in: z.number().positive().optional(),
+  scope: z.string().max(2000).optional(),
 });
 export type TokenResponse = z.infer<typeof tokenSchema>;
+// Build provider response validators once per isolate, outside the Cron hot path.
+const messageResponseSchema = z.object({
+  result_code: z.number().optional(),
+  code: z.number().optional(),
+});
+const tokenErrorSchema = z.object({
+  error: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
+  error_code: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]{1,80}$/)
+    .optional(),
+});
+const ownerSchema = z.object({ id: z.number().int().safe().positive() });
 const linkSchema = z.object({ web_url: z.url(), mobile_web_url: z.url() }).strict();
 const feedSchema = z
   .object({
@@ -96,9 +110,7 @@ export async function sendKakao(
       detail: `HTTP ${response.status}: JSON 응답이 아닙니다. 접수 여부를 확인하세요.`,
     };
   }
-  const parsed = z
-    .object({ result_code: z.number().optional(), code: z.number().optional() })
-    .safeParse(body);
+  const parsed = messageResponseSchema.safeParse(body);
   const code: number | undefined = parsed.success ? parsed.data.code : undefined;
   const detail: string = `카카오 메시지 API HTTP ${response.status}, code=${String(code)}, result_code=${parsed.success ? String(parsed.data.result_code) : 'invalid'}; payload_title=${payload.content.title}`;
   if (response.ok && parsed.success && parsed.data.result_code === 0)
@@ -176,15 +188,7 @@ export async function requestTokens(
     );
   }
   if (!response.ok) {
-    const reason = z
-      .object({
-        error: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
-        error_code: z
-          .string()
-          .regex(/^[a-zA-Z0-9_-]{1,80}$/)
-          .optional(),
-      })
-      .safeParse(body);
+    const reason = tokenErrorSchema.safeParse(body);
     const providerError: string | null = reason.success ? reason.data.error : null;
     const providerCode: string | null = reason.success ? (reason.data.error_code ?? null) : null;
     const detail: string = `토큰 API HTTP ${response.status}, error=${providerError ?? 'invalid_response'}, code=${providerCode ?? 'none'}.`;
@@ -294,7 +298,7 @@ export async function kakaoOwner(token: string, transport: Transport): Promise<s
         `사용자 조회 HTTP ${response.status}: JSON 응답을 해석하지 못했습니다.`,
       );
     }
-    const parsed = z.object({ id: z.number().int().safe().positive() }).safeParse(body);
+    const parsed = ownerSchema.safeParse(body);
     if (!parsed.success)
       throw appError(502, 'OWNER_RESPONSE', '사용자 조회 응답에 올바른 운영자 ID가 없습니다.');
     return String(parsed.data.id);

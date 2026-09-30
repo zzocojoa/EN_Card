@@ -128,6 +128,13 @@ function TextAreaField({ label: caption, value, onChange }: FieldProps): ReactEl
     </div>
   );
 }
+function canPauseSchedule(item: Schedule): boolean {
+  return Boolean(
+    item.enabled ||
+    (['completed', 'content_shortage'].includes(item.reason ?? '') &&
+      item.pending_delivery_count > 0),
+  );
+}
 function initialSchedule(): ScheduleInput {
   const future: number = Date.now() + 10 * 60_000;
   return {
@@ -366,6 +373,9 @@ export function App(): ReactElement {
   }
   const readyCards = state?.cards.filter((item) => item.status === 'ready') ?? [];
   const activeSchedules: number = state?.totals.active_schedules ?? 0;
+  const credentialStorageFailure: boolean =
+    state?.connection?.status === 'needs_reconnect' &&
+    state.connection.refresh_failure === 'configuration';
   const storage: number = state?.usage.find((item) => item.day === 'storage')?.bytes ?? 0;
   const today = state?.usage.find((item) => item.day === kstDate(Date.now()));
   let next: number | null = null;
@@ -398,6 +408,7 @@ export function App(): ReactElement {
             <button
               key={item.id}
               className={page === item.id ? 'nav-item selected' : 'nav-item'}
+              aria-label={item.title}
               disabled={busy}
               onClick={() => setPage(item.id)}
             >
@@ -1193,7 +1204,7 @@ export function App(): ReactElement {
                               disabled={busy}
                               onClick={() =>
                                 void perform(async () => {
-                                  if (item.enabled) {
+                                  if (canPauseSchedule(item)) {
                                     setPauseConfirm(
                                       (await api(
                                         `/api/schedules/${item.id}/pause-preview?version=${item.version}`,
@@ -1226,7 +1237,7 @@ export function App(): ReactElement {
                                 })
                               }
                             >
-                              {item.enabled
+                              {canPauseSchedule(item)
                                 ? '일시정지'
                                 : item.reason === 'cancelled'
                                   ? '중지 카드 확인'
@@ -1540,9 +1551,11 @@ export function App(): ReactElement {
                   <section className="editor-panel">
                     <h2>카카오 연결</h2>
                     <span className="badge">
-                      {boot?.local
-                        ? '로컬 테스트'
-                        : label(state.connection?.status ?? 'disconnected')}
+                      {credentialStorageFailure
+                        ? '저장 인증정보 오류'
+                        : boot?.local
+                          ? '로컬 테스트'
+                          : label(state.connection?.status ?? 'disconnected')}
                     </span>
                     {state.connection?.refresh_failure ? (
                       <div className="soft-notice" role="status">
@@ -1554,7 +1567,9 @@ export function App(): ReactElement {
                               : state.connection.refresh_failure === 'uncertain'
                                 ? '토큰 갱신 결과가 불명확합니다. 자동 재시도하지 않으므로 카카오를 다시 연결하세요.'
                                 : state.connection.refresh_failure === 'configuration'
-                                  ? '카카오 앱 설정을 확인한 뒤 갱신 재시도를 시작하세요.'
+                                  ? credentialStorageFailure
+                                    ? '저장 인증정보를 읽을 수 없어 자동 발송을 중지했습니다. 원래 암호화 설정을 복구한 뒤 설정 복구 확인을 실행하거나 카카오를 다시 연결하세요.'
+                                    : '카카오 앱 설정을 확인한 뒤 갱신 재시도를 시작하세요.'
                                   : '인증이 만료되었거나 철회되었습니다. 카카오를 다시 연결하세요.'}
                         </p>
                         <p>
@@ -1581,10 +1596,15 @@ export function App(): ReactElement {
                                   state.csrf,
                                 );
                                 await refresh();
+                                if (credentialStorageFailure)
+                                  setNotice({
+                                    kind: 'success',
+                                    text: '저장 인증정보를 확인했습니다. 예약은 별도로 재개하세요.',
+                                  });
                               })
                             }
                           >
-                            토큰 갱신 다시 시도
+                            {credentialStorageFailure ? '설정 복구 확인' : '토큰 갱신 다시 시도'}
                           </button>
                         ) : null}
                         <p>

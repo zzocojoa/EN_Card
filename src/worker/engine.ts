@@ -10,7 +10,14 @@ import { markReconnect } from './auth';
 import { validatePayload } from './kakao';
 import { isTokenError } from './token-errors';
 import { decodeSchedule } from './schedules';
-import { appError, type Env, type Sender, type TokenGrant } from './types';
+import {
+  appError,
+  type Env,
+  type Sender,
+  type TokenGrant,
+  type DeliveryJob,
+  type DeliveryReport,
+} from './types';
 
 type Runtime = (
   | { mode: 'live'; token: () => Promise<TokenGrant> }
@@ -18,8 +25,12 @@ type Runtime = (
 ) & {
   sender: Sender;
   clock: () => number;
+  dispatch?: (job: DeliveryJob) => Promise<DeliveryReport>;
+  prepare?: () => Promise<void>;
 };
-type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items'> & { weekdays: string };
+type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items' | 'pending_delivery_count'> & {
+  weekdays: string;
+};
 type EngineReport = { mode: 'live' | 'mock' | 'dry_run'; processed: number; detail: string };
 export async function dryRun(env: Env, now: number): Promise<EngineReport> {
   const schedules = await env.DB.prepare(
@@ -207,18 +218,195 @@ async function releaseBeforeCall(
     attempt,
   );
 }
-export async function runEngine(env: Env, runtime: Runtime): Promise<EngineReport> {
-  const now: number = runtime.clock();
+export async function deliverClaimed(
+  env: Env,
+  job: DeliveryJob,
+  runtime: Pick<Runtime, 'mode' | 'sender' | 'clock'>,
+): Promise<DeliveryReport> {
+  const { item, owner, grant } = job;
+  let payload: FeedPayload;
+  try {
+    payload = job.payload ?? validatePayload(JSON.parse(item.payload) as unknown, env.APP_ORIGIN);
+  } catch {
+    await finish(
+      env,
+      item,
+      owner,
+      'failed',
+      '저장된 피드 형식이 올바르지 않습니다. 카드와 예약을 수정하세요.',
+      null,
+      runtime.clock(),
+      null,
+    );
+    return { processed: 0, reuseGrant: false, stop: false };
+  }
+  const attempt: string = crypto.randomUUID();
+  const callTime: number = runtime.clock();
+  const credentialGuard: string =
+    runtime.mode === 'live'
+      ? `EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND status='connected' AND version=?)`
+      : '?=0';
+  try {
+    const budget = await env.DB.prepare(
+      `INSERT INTO delivery_attempts(id,delivery_id,claim_owner,started_at,usage_day,outcome,mode) SELECT ?,id,?,?,?,'sending',? FROM deliveries WHERE id=? AND state='claimed' AND claim_owner=? AND claim_until>? AND (due_at_utc>=? OR manual_retry_until>=?) AND ${eligibleSchedule} AND ${ordered} AND ${credentialGuard} RETURNING id`,
+    )
+      .bind(
+        attempt,
+        owner,
+        callTime,
+        kstDate(callTime),
+        runtime.mode,
+        item.id,
+        owner,
+        callTime,
+        callTime - LIMITS.graceMs,
+        callTime,
+        grant.version,
+      )
+      .first<{ id: string }>();
+    if (!budget) {
+      // A repeated RPC must not reset a durable sending operation owned by the first call.
+      const current = await env.DB.prepare(
+        'SELECT state FROM deliveries WHERE id=? AND claim_owner=?',
+      )
+        .bind(item.id, owner)
+        .first<{ state: string }>();
+      if (current?.state === 'claimed') await releaseBeforeCall(env, item, owner, callTime, null);
+      return { processed: 0, reuseGrant: false, stop: false };
+    }
+  } catch (error: unknown) {
+    const message: string = error instanceof Error ? error.message : String(error);
+    if (!message.includes('CHECK constraint failed')) throw error;
+    const day = await env.DB.prepare('SELECT sends FROM usage_counters WHERE day=?')
+      .bind(kstDate(callTime))
+      .first<{ sends: number }>();
+    const daily: boolean = (day?.sends ?? 0) >= LIMITS.attemptsPerDay;
+    await finish(
+      env,
+      item,
+      owner,
+      daily ? 'blocked' : 'retry_wait',
+      daily
+        ? '하루 발송 시도 20회 한도입니다. 예약을 수정하거나 다음 날 재개하세요.'
+        : '분당 3건 한도; 다음 실행에서 처리합니다.',
+      daily ? null : callTime + 60_000,
+      callTime,
+      null,
+    );
+    if (daily)
+      await env.DB.prepare(
+        "UPDATE schedules SET enabled=0,reason='daily_limit' WHERE id=? AND version=? AND reason IS NOT 'cancelled' AND reason IS NOT 'paused'",
+      )
+        .bind(item.schedule_id, item.schedule_version)
+        .run();
+    return { processed: 0, reuseGrant: false, stop: true };
+  }
+  const stillValid = await env.DB.prepare(
+    `SELECT id FROM deliveries WHERE id=? AND claim_owner=? AND state='sending' AND ${eligibleSchedule} AND ${credentialGuard} AND claim_until>?`,
+  )
+    .bind(item.id, owner, grant.version, runtime.clock())
+    .first<{ id: string }>();
+  if (!stillValid) {
+    await releaseBeforeCall(env, item, owner, runtime.clock(), attempt);
+    return { processed: 0, reuseGrant: false, stop: false };
+  }
+  let result: SendResult;
+  try {
+    result = await runtime.sender(payload, grant.token);
+  } catch (error: unknown) {
+    console.warn({
+      event: 'sender_interrupted',
+      delivery_id: item.id,
+      error_type: error instanceof Error ? error.name : 'unknown',
+    });
+    result = {
+      outcome: 'unknown',
+      detail: '호출 후 결과를 확인하지 못했습니다. 채팅방을 확인하세요.',
+    };
+  }
+  const reuseGrant = result.outcome === 'sent' || result.outcome === 'mock_sent';
+  if (
+    result.outcome === 'unauthorized' &&
+    item.auth_retries === 0 &&
+    item.attempts + 1 < LIMITS.automaticAttempts
+  ) {
+    await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE credentials SET expires_at=0 WHERE singleton=1 AND version=? AND status='connected'",
+      ).bind(grant.version),
+      env.DB.prepare('UPDATE deliveries SET auth_retries=1 WHERE id=? AND claim_owner=?').bind(
+        item.id,
+        owner,
+      ),
+    ]);
+    await finish(
+      env,
+      item,
+      owner,
+      'retry_wait',
+      result.detail,
+      runtime.clock() + 60_000,
+      runtime.clock(),
+      attempt,
+    );
+  } else if (result.outcome === 'unauthorized' || result.outcome === 'reconnect') {
+    const changed: boolean = await markReconnect(env, grant.version);
+    if (!changed && runtime.mode === 'live') {
+      const retry: boolean = item.attempts + 1 < LIMITS.automaticAttempts;
+      await finish(
+        env,
+        item,
+        owner,
+        retry ? 'retry_wait' : 'failed',
+        '이전 인증의 거절 응답입니다. 변경된 연결 상태는 유지합니다.',
+        retry ? runtime.clock() + 60_000 : null,
+        runtime.clock(),
+        attempt,
+      );
+      return { processed: 1, reuseGrant: false, stop: false };
+    }
+    await finish(env, item, owner, 'blocked', result.detail, null, runtime.clock(), attempt);
+    await env.DB.prepare(
+      "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE id=? AND version=? AND reason IS NOT 'cancelled' AND reason IS NOT 'paused'",
+    )
+      .bind(item.schedule_id, item.schedule_version)
+      .run();
+  } else if (result.outcome === 'retry') {
+    const retry: boolean = item.attempts + 1 < LIMITS.automaticAttempts;
+    await finish(
+      env,
+      item,
+      owner,
+      retry ? 'retry_wait' : 'failed',
+      result.detail,
+      retry ? runtime.clock() + 60_000 * 2 ** item.attempts : null,
+      runtime.clock(),
+      attempt,
+    );
+  } else {
+    await finish(env, item, owner, result.outcome, result.detail, null, runtime.clock(), attempt);
+  }
+  return { processed: 1, reuseGrant, stop: false };
+}
+
+export async function prepareEngine(env: Env, now: number, mode: 'live' | 'mock'): Promise<void> {
   await recover(env, now);
-  await materialize(env, now, runtime.mode);
+  await materialize(env, now, mode);
+}
+export async function runEngine(env: Env, runtime: Runtime): Promise<EngineReport> {
+  if (runtime.prepare) await runtime.prepare();
+  else await prepareEngine(env, runtime.clock(), runtime.mode);
   let processed: number = 0;
+  // Invocation-local only. Every call still checks the credential version/status in D1.
+  let cachedGrant: TokenGrant | null = null;
   for (let index: number = 0; index < LIMITS.sendsPerTick; index += 1) {
     const owner: string = crypto.randomUUID();
     const item: Delivery | null = await claim(env, runtime.clock(), owner);
     if (!item) break;
-    let payload: FeedPayload;
+    let payload: FeedPayload | undefined;
     try {
-      payload = validatePayload(JSON.parse(item.payload) as unknown, env.APP_ORIGIN);
+      if (!runtime.dispatch)
+        payload = validatePayload(JSON.parse(item.payload) as unknown, env.APP_ORIGIN);
     } catch {
       await finish(
         env,
@@ -234,9 +422,14 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
     }
     let grant: TokenGrant;
     try {
-      const token = await runtime.token();
-      grant = typeof token === 'string' ? { token, version: 0 } : token;
+      if (cachedGrant?.expiresAt && cachedGrant.expiresAt > runtime.clock() + 60_000)
+        grant = cachedGrant;
+      else {
+        const token = await runtime.token();
+        grant = typeof token === 'string' ? { token, version: 0 } : token;
+      }
     } catch (error: unknown) {
+      cachedGrant = null;
       if (
         !isTokenError(error) &&
         (!(error instanceof Error) ||
@@ -249,7 +442,10 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
           ? 'conflict'
           : 'invalid';
       const waiting: boolean = kind === 'conflict' || kind === 'transient';
-      const reconnect: boolean = kind === 'invalid' || kind === 'uncertain';
+      const reconnect: boolean =
+        kind === 'invalid' ||
+        kind === 'uncertain' ||
+        (isTokenError(error) && error.code === 'TOKEN_STORAGE_CONFIG');
       await finish(
         env,
         item,
@@ -272,146 +468,28 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
           .run();
       continue;
     }
-    const attempt: string = crypto.randomUUID();
-    const callTime: number = runtime.clock();
-    const credentialGuard: string =
-      runtime.mode === 'live'
-        ? `EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND status='connected' AND version=?)`
-        : '?=0';
-    try {
-      const budget = await env.DB.prepare(
-        `INSERT INTO delivery_attempts(id,delivery_id,claim_owner,started_at,usage_day,outcome,mode) SELECT ?,id,?,?,?,'sending',? FROM deliveries WHERE id=? AND state='claimed' AND claim_owner=? AND claim_until>? AND (due_at_utc>=? OR manual_retry_until>=?) AND ${eligibleSchedule} AND ${ordered} AND ${credentialGuard} RETURNING id`,
-      )
-        .bind(
-          attempt,
-          owner,
-          callTime,
-          kstDate(callTime),
-          runtime.mode,
-          item.id,
-          owner,
-          callTime,
-          callTime - LIMITS.graceMs,
-          callTime,
-          grant.version,
-        )
-        .first<{ id: string }>();
-      if (!budget) {
-        await releaseBeforeCall(env, item, owner, callTime, null);
-        continue;
+    let report: DeliveryReport;
+    if (runtime.dispatch) {
+      try {
+        report = await runtime.dispatch({ item, owner, grant });
+      } catch (error: unknown) {
+        // The child may already be sending or have committed a result. Never fall back to a second call.
+        console.warn({
+          event: 'delivery_dispatch_interrupted',
+          delivery_id: item.id,
+          error_type: error instanceof Error ? error.name : 'unknown',
+        });
+        break;
       }
-    } catch (error: unknown) {
-      const message: string = error instanceof Error ? error.message : String(error);
-      if (!message.includes('CHECK constraint failed')) throw error;
-      const day = await env.DB.prepare('SELECT sends FROM usage_counters WHERE day=?')
-        .bind(kstDate(callTime))
-        .first<{ sends: number }>();
-      const daily: boolean = (day?.sends ?? 0) >= LIMITS.attemptsPerDay;
-      await finish(
+    } else
+      report = await deliverClaimed(
         env,
-        item,
-        owner,
-        daily ? 'blocked' : 'retry_wait',
-        daily
-          ? '하루 발송 시도 20회 한도입니다. 예약을 수정하거나 다음 날 재개하세요.'
-          : '분당 3건 한도; 다음 실행에서 처리합니다.',
-        daily ? null : callTime + 60_000,
-        callTime,
-        null,
+        { item, owner, grant, ...(payload ? { payload } : {}) },
+        runtime,
       );
-      if (daily)
-        await env.DB.prepare(
-          "UPDATE schedules SET enabled=0,reason='daily_limit' WHERE id=? AND version=? AND reason IS NOT 'cancelled' AND reason IS NOT 'paused'",
-        )
-          .bind(item.schedule_id, item.schedule_version)
-          .run();
-      break;
-    }
-    const stillValid = await env.DB.prepare(
-      `SELECT id FROM deliveries WHERE id=? AND claim_owner=? AND state='sending' AND ${eligibleSchedule} AND ${credentialGuard} AND claim_until>?`,
-    )
-      .bind(item.id, owner, grant.version, runtime.clock())
-      .first<{ id: string }>();
-    if (!stillValid) {
-      await releaseBeforeCall(env, item, owner, runtime.clock(), attempt);
-      continue;
-    }
-    let result: SendResult;
-    try {
-      result = await runtime.sender(payload, grant.token);
-    } catch (error: unknown) {
-      console.warn({
-        event: 'sender_interrupted',
-        delivery_id: item.id,
-        error_type: error instanceof Error ? error.name : 'unknown',
-      });
-      result = {
-        outcome: 'unknown',
-        detail: '호출 후 결과를 확인하지 못했습니다. 채팅방을 확인하세요.',
-      };
-    }
-    processed += 1;
-    if (
-      result.outcome === 'unauthorized' &&
-      item.auth_retries === 0 &&
-      item.attempts + 1 < LIMITS.automaticAttempts
-    ) {
-      await env.DB.batch([
-        env.DB.prepare(
-          "UPDATE credentials SET expires_at=0 WHERE singleton=1 AND version=? AND status='connected'",
-        ).bind(grant.version),
-        env.DB.prepare('UPDATE deliveries SET auth_retries=1 WHERE id=? AND claim_owner=?').bind(
-          item.id,
-          owner,
-        ),
-      ]);
-      await finish(
-        env,
-        item,
-        owner,
-        'retry_wait',
-        result.detail,
-        runtime.clock() + 60_000,
-        runtime.clock(),
-        attempt,
-      );
-    } else if (result.outcome === 'unauthorized' || result.outcome === 'reconnect') {
-      const changed: boolean = await markReconnect(env, grant.version);
-      if (!changed && runtime.mode === 'live') {
-        const retry: boolean = item.attempts + 1 < LIMITS.automaticAttempts;
-        await finish(
-          env,
-          item,
-          owner,
-          retry ? 'retry_wait' : 'failed',
-          '이전 인증의 거절 응답입니다. 변경된 연결 상태는 유지합니다.',
-          retry ? runtime.clock() + 60_000 : null,
-          runtime.clock(),
-          attempt,
-        );
-        continue;
-      }
-      await finish(env, item, owner, 'blocked', result.detail, null, runtime.clock(), attempt);
-      await env.DB.prepare(
-        "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE id=? AND version=? AND reason IS NOT 'cancelled' AND reason IS NOT 'paused'",
-      )
-        .bind(item.schedule_id, item.schedule_version)
-        .run();
-    } else if (result.outcome === 'retry') {
-      const retry: boolean = item.attempts + 1 < LIMITS.automaticAttempts;
-      await finish(
-        env,
-        item,
-        owner,
-        retry ? 'retry_wait' : 'failed',
-        result.detail,
-        retry ? runtime.clock() + 60_000 * 2 ** item.attempts : null,
-        runtime.clock(),
-        attempt,
-      );
-    } else {
-      await finish(env, item, owner, result.outcome, result.detail, null, runtime.clock(), attempt);
-    }
+    processed += report.processed;
+    cachedGrant = report.reuseGrant ? grant : null;
+    if (report.stop) break;
   }
   return {
     mode: runtime.mode,

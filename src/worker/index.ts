@@ -12,12 +12,12 @@ import {
 } from './auth';
 import { assetPage, cardPage, deliveryPage } from './catalog';
 import { dryRun, resolveUnknown, runEngine } from './engine';
-import { nativeTransport, sendKakao } from './kakao';
+import { nativeTransport } from './kakao';
 import { isTokenError } from './token-errors';
 import { decideRecovery, pausePreview, recoveryPreview } from './pause-recovery';
 import { resumeSchedule, saveSchedule, schedulePage, stopSchedule } from './schedules';
 import { deleteImage, publicImage, readJson, reviewCard, saveCard, uploadImage } from './storage';
-import { appError, type AppError, type Env } from './types';
+import { appError, type AppError, type DeliveryReport, type Env } from './types';
 
 const failureHeaders = {
   'Cache-Control': 'no-store',
@@ -118,7 +118,7 @@ export async function route(request: Request, env: Env): Promise<Response> {
       .object({ version: z.number().int().positive() })
       .strict()
       .parse(await readJson(request));
-    await retryTokenRefresh(env, body.version);
+    await retryTokenRefresh(env, body.version, now);
     return Response.json({ ok: true });
   }
   if (path === '/api/logout' && request.method === 'POST') {
@@ -367,6 +367,8 @@ function validateProduction(env: Env): void {
       'CONFIG',
       '운영 환경은 HTTPS, free_only, dry_run 또는 live 설정이 필요합니다.',
     );
+  if (env.SEND_MODE === 'live' && !env.DELIVERY_SERVICE)
+    throw appError(503, 'DELIVERY_CONFIG', '비공개 발송 Worker 연결을 확인하세요.');
 }
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -383,7 +385,40 @@ export default {
       mode: 'live',
       clock: Date.now,
       token: () => liveToken(env, Date.now()),
-      sender: (payload, token) => sendKakao(payload, token, nativeTransport),
+      sender: async () => {
+        throw appError(503, 'DELIVERY_CONFIG', '비공개 발송 Worker 연결을 확인하세요.');
+      },
+      prepare: async () => {
+        const response = await env.DELIVERY_SERVICE!.fetch(
+          new Request(`${env.APP_ORIGIN}/_internal/prepare`, { method: 'POST' }),
+        );
+        if (response.status !== 204)
+          throw appError(
+            503,
+            'PREPARATION_UNAVAILABLE',
+            '예약 준비를 완료하지 못했습니다. 다음 실행에서 다시 확인합니다.',
+          );
+      },
+      dispatch: async (job) => {
+        const response = await env.DELIVERY_SERVICE!.fetch(
+          new Request(`${env.APP_ORIGIN}/_internal/deliver`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(job),
+          }),
+        );
+        if (!response.ok)
+          throw appError(503, 'DELIVERY_UNAVAILABLE', '발송 처리 결과를 확인하지 못했습니다.');
+        const report = (await response.json()) as DeliveryReport;
+        if (
+          !report ||
+          ![0, 1].includes(report.processed) ||
+          typeof report.reuseGrant !== 'boolean' ||
+          typeof report.stop !== 'boolean'
+        )
+          throw appError(502, 'DELIVERY_RESPONSE', '발송 처리 결과를 확인하지 못했습니다.');
+        return report;
+      },
     });
   },
 };

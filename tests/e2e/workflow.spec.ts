@@ -10,6 +10,15 @@ const sample = {
   example_ko: '저장 전에 카드를 확인하세요.',
 };
 
+test('태블릿 메뉴에 접근성 이름이 유지된다', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 900 });
+  await page.goto('/');
+  const menu = page.getByRole('navigation', { name: '주 메뉴' });
+  for (const name of ['카드 만들기', '카드 보관함', '발송 예약', '발송 기록', '연결 및 설정']) {
+    await expect(menu.getByRole('button', { name, exact: true })).toHaveCount(1);
+  }
+});
+
 test('카드 작성 → 실제 PNG → 저장·검토 → 예약 → 비소비 미리검증', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));

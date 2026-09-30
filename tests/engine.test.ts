@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Delivery } from '../src/shared/model';
-import { dryRun, runEngine, resolveUnknown } from '../src/worker/engine';
+import {
+  deliverClaimed,
+  prepareEngine,
+  dryRun,
+  runEngine,
+  resolveUnknown,
+} from '../src/worker/engine';
 import { sendMock } from '../src/worker/mock';
 import { stopSchedule } from '../src/worker/schedules';
 import { dueSchedule, harness, NOW, type Harness } from './helpers';
@@ -17,6 +23,261 @@ async function states(): Promise<Delivery[]> {
     .results;
 }
 describe('실제 로컬 D1의 발송 일관성', () => {
+  it('분리 발송은 준비 후 세 장의 고정 내용·순서·예산을 보존한다', async () => {
+    await dueSchedule(h.env, 3, NOW);
+    const sent: string[] = [];
+    const report = await runEngine(h.env, {
+      mode: 'mock',
+      clock: () => NOW,
+      token: async () => 'mock',
+      sender: async () => {
+        throw new Error('Direct fallback forbidden');
+      },
+      prepare: () => prepareEngine(h.env, NOW, 'mock'),
+      dispatch: (job) =>
+        deliverClaimed(h.env, job, {
+          mode: 'mock',
+          clock: () => NOW,
+          sender: async () => {
+            sent.push(job.item.id);
+            return { outcome: 'mock_sent', detail: 'mock' };
+          },
+        }),
+    });
+    expect(report.processed).toBe(3);
+    expect(sent).toEqual((await states()).map((row) => row.id));
+    expect((await states()).map((row) => row.state)).toEqual(Array(3).fill('mock_sent'));
+    expect(await h.env.DB.prepare('SELECT count(*) FROM delivery_attempts').first('count(*)')).toBe(
+      3,
+    );
+  });
+  it('분리 발송의 같은 claim 중복 호출은 첫 sending을 되돌리거나 중복 전송하지 않는다', async () => {
+    await dueSchedule(h.env, 1, NOW);
+    let calls = 0;
+    await runEngine(h.env, {
+      mode: 'mock',
+      clock: () => NOW,
+      token: async () => 'mock',
+      sender: async () => {
+        throw new Error('Direct fallback forbidden');
+      },
+      dispatch: async (job) => {
+        let release!: () => void, started!: () => void;
+        const gate = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        const entering = new Promise<void>((resolve) => {
+          started = resolve;
+        });
+        const runtime = {
+          mode: 'mock' as const,
+          clock: () => NOW,
+          sender: async () => {
+            calls += 1;
+            started();
+            await gate;
+            return { outcome: 'mock_sent' as const, detail: 'mock' };
+          },
+        };
+        const first = deliverClaimed(h.env, job, runtime);
+        await entering;
+        const duplicate = await deliverClaimed(h.env, job, runtime);
+        expect(duplicate.processed).toBe(0);
+        expect((await states())[0]?.state).toBe('sending');
+        release();
+        return first;
+      },
+    });
+    expect(calls).toBe(1);
+    expect((await states())[0]?.state).toBe('mock_sent');
+    expect(await h.env.DB.prepare('SELECT count(*) FROM delivery_attempts').first('count(*)')).toBe(
+      1,
+    );
+  });
+  it('분리 발송 성공 저장 후 내부 응답이 유실돼도 다음 Cron에서 재전송하지 않는다', async () => {
+    await dueSchedule(h.env, 1, NOW);
+    let calls = 0;
+    const sender = async () => {
+      calls += 1;
+      return { outcome: 'mock_sent' as const, detail: 'mock' };
+    };
+    await runEngine(h.env, {
+      mode: 'mock',
+      clock: () => NOW,
+      token: async () => 'mock',
+      sender,
+      dispatch: async (job) => {
+        await deliverClaimed(h.env, job, { mode: 'mock', clock: () => NOW, sender });
+        throw new Error('Response lost');
+      },
+    });
+    await runEngine(h.env, {
+      mode: 'mock',
+      clock: () => NOW + 61_000,
+      token: async () => 'mock',
+      sender,
+    });
+    expect(calls).toBe(1);
+    expect((await states())[0]?.state).toBe('mock_sent');
+    expect(await h.env.DB.prepare('SELECT count(*) FROM delivery_attempts').first('count(*)')).toBe(
+      1,
+    );
+  });
+  it('분리 준비 실패는 회차·목록·예산을 소비하지 않고 직접 준비로 우회하지 않는다', async () => {
+    await dueSchedule(h.env, 1, NOW);
+    await expect(
+      runEngine(h.env, {
+        mode: 'mock',
+        clock: () => NOW,
+        token: async () => 'mock',
+        sender: sendMock,
+        prepare: async () => {
+          throw new Error('Preparation unavailable');
+        },
+      }),
+    ).rejects.toThrow('Preparation unavailable');
+    expect(await h.env.DB.prepare('SELECT count(*) FROM occurrences').first('count(*)')).toBe(0);
+    expect(await h.env.DB.prepare('SELECT cursor FROM schedules').first('cursor')).toBe(0);
+    expect(await h.env.DB.prepare('SELECT count(*) FROM delivery_attempts').first('count(*)')).toBe(
+      0,
+    );
+  });
+  it('분리 발송 Worker도 손상된 피드를 검증하고 외부 호출·예산 없이 실패 처리한다', async () => {
+    await dueSchedule(h.env, 1, NOW);
+    await h.env.DB.prepare("UPDATE schedule_items SET payload='{}'").run();
+    let calls = 0;
+    const sender = async () => {
+      calls += 1;
+      return { outcome: 'mock_sent' as const, detail: 'mock' };
+    };
+    await runEngine(h.env, {
+      mode: 'mock',
+      clock: () => NOW,
+      token: async () => 'mock',
+      sender,
+      dispatch: (job) => deliverClaimed(h.env, job, { mode: 'mock', clock: () => NOW, sender }),
+    });
+    expect(calls).toBe(0);
+    expect((await states())[0]?.state).toBe('failed');
+    expect(await h.env.DB.prepare('SELECT count(*) FROM delivery_attempts').first('count(*)')).toBe(
+      0,
+    );
+  });
+  it('내부 발송 호출이 시작 전에 실패하면 직접 우회 발송하지 않고 claim 만료 후 복구한다', async () => {
+    await dueSchedule(h.env, 1, NOW);
+    let calls = 0;
+    const runtime = {
+      mode: 'mock' as const,
+      clock: () => NOW,
+      token: async () => 'mock',
+      sender: async () => {
+        calls += 1;
+        return { outcome: 'mock_sent' as const, detail: 'mock' };
+      },
+      dispatch: async () => {
+        throw new Error('RPC response unavailable');
+      },
+    };
+    const report = await runEngine(h.env, runtime);
+    expect(report.processed).toBe(0);
+    expect(calls).toBe(0);
+    expect((await states())[0]?.state).toBe('claimed');
+    expect(await h.env.DB.prepare('SELECT count(*) FROM delivery_attempts').first('count(*)')).toBe(
+      0,
+    );
+    await runEngine(h.env, {
+      mode: 'mock',
+      clock: () => NOW + 61_000,
+      token: async () => 'mock',
+      sender: runtime.sender,
+    });
+    expect(calls).toBe(1);
+    expect((await states())[0]?.state).toBe('mock_sent');
+  });
+  it('한 Cron의 토큰 재사용은 유효한 인증 조회·복호화를 한 번만 수행한다', async () => {
+    await dueSchedule(h.env, 3, NOW);
+    await h.env.DB.prepare(
+      "INSERT INTO credentials(singleton,owner_id,expires_at,refresh_expires_at,version,status) VALUES(1,'fixture',?,?,1,'connected')",
+    )
+      .bind(NOW + 3600_000, NOW + 86400_000)
+      .run();
+    let reads = 0;
+    const report = await runEngine(h.env, {
+      mode: 'live',
+      clock: () => NOW,
+      token: async () => {
+        reads += 1;
+        return { token: 'fixture', version: 1, expiresAt: NOW + 3600_000 };
+      },
+      sender: async () => ({ outcome: 'sent', detail: '격리된 모의 응답' }),
+    });
+    expect(report.processed).toBe(3);
+    expect(reads).toBe(1);
+    expect((await states()).map((row) => row.state)).toEqual(Array(3).fill('sent'));
+  });
+  it('한 Cron의 토큰 재사용 중 재연결되면 옛 토큰의 추가 호출·예산을 막는다', async () => {
+    await dueSchedule(h.env, 3, NOW);
+    await h.env.DB.prepare(
+      "INSERT INTO credentials(singleton,owner_id,expires_at,refresh_expires_at,version,status) VALUES(1,'fixture',?,?,1,'connected')",
+    )
+      .bind(NOW + 3600_000, NOW + 86400_000)
+      .run();
+    let reads = 0,
+      calls = 0;
+    const token = async () => {
+      reads += 1;
+      const version = await h.env.DB.prepare('SELECT version FROM credentials').first<number>(
+        'version',
+      );
+      return { token: version === 1 ? 'old' : 'new', version: version!, expiresAt: NOW + 3600_000 };
+    };
+    const sender = async (_payload: unknown, usedToken: string) => {
+      calls += 1;
+      if (calls === 1) {
+        expect(usedToken).toBe('old');
+        await h.env.DB.prepare('UPDATE credentials SET version=2').run();
+      } else expect(usedToken).toBe('new');
+      return { outcome: 'sent' as const, detail: '격리된 모의 응답' };
+    };
+    await runEngine(h.env, { mode: 'live', clock: () => NOW, token, sender });
+    expect(calls).toBe(1);
+    expect(reads).toBe(1);
+    expect(await h.env.DB.prepare('SELECT count(*) FROM delivery_attempts').first('count(*)')).toBe(
+      1,
+    );
+    expect((await states()).map((row) => row.state)).toEqual(['sent', 'retry_wait', 'pending']);
+    await runEngine(h.env, { mode: 'live', clock: () => NOW + 60_000, token, sender });
+    expect(calls).toBe(3);
+    expect(reads).toBe(2);
+  });
+  it('한 Cron의 토큰 재사용은 만료 1분 전에 다시 인증을 조회한다', async () => {
+    await dueSchedule(h.env, 3, NOW);
+    await h.env.DB.prepare(
+      "INSERT INTO credentials(singleton,owner_id,expires_at,refresh_expires_at,version,status) VALUES(1,'fixture',?,?,1,'connected')",
+    )
+      .bind(NOW + 3600_000, NOW + 86400_000)
+      .run();
+    let reads = 0,
+      now = NOW;
+    await runEngine(h.env, {
+      mode: 'live',
+      clock: () => now,
+      token: async () => {
+        reads += 1;
+        return {
+          token: 'fixture',
+          version: 1,
+          expiresAt: reads === 1 ? NOW + 60_001 : NOW + 3600_000,
+        };
+      },
+      sender: async () => {
+        now = NOW + 2000;
+        return { outcome: 'sent', detail: '격리된 모의 응답' };
+      },
+    });
+    expect(reads).toBe(2);
+    expect((await states()).map((row) => row.state)).toEqual(Array(3).fill('sent'));
+  });
   it('동시 Cron도 회차·카드를 한 번만 소비한다', async () => {
     const id = await dueSchedule(h.env, 3, NOW);
     let calls: number = 0;

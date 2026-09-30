@@ -101,7 +101,10 @@ export async function recoveryPreview(
 ): Promise<PausePreview> {
   const row: Source = await source(id, version, env);
   const items: RecoveryItem[] = [];
-  for (const item of await candidates(id, env)) items.push(await recoveryItem(item, env));
+  const all: Candidate[] = await candidates(id, env);
+  const pending: Candidate[] = all.filter((item) => item.decision === null);
+  const current: Candidate[] = pending.length ? pending.slice(0, LIMITS.recoveryBatchSize) : all;
+  for (const item of current) items.push(await recoveryItem(item, env));
   return {
     schedule_id: id,
     version,
@@ -109,6 +112,7 @@ export async function recoveryPreview(
     can_resume: row.reason !== 'cancelled',
     unresolved: row.unresolved === 1,
     items,
+    pending_count: pending.length,
   };
 }
 export async function decideRecovery(
@@ -127,13 +131,15 @@ export async function decideRecovery(
     );
   if (row.enabled || !['paused', 'cancelled'].includes(row.reason ?? ''))
     throw appError(409, 'RECOVERY_STATE', '일시정지·취소 상태에서 미발송 카드를 처리하세요.');
-  const pending: Candidate[] = (await candidates(id, env)).filter((item) => item.decision === null);
   const ids: string[] = [...data.recover_ids, ...data.exclude_ids];
-  if (pending.length !== ids.length || pending.some((item) => !ids.includes(item.delivery_id)))
+  const pending: Candidate[] = (await candidates(id, env)).filter(
+    (item) => item.decision === null && ids.includes(item.delivery_id),
+  );
+  if (pending.length !== ids.length)
     throw appError(
       409,
       'RECOVERY_CHANGED',
-      '대상 목록이 변경되었습니다. 모든 미발송 카드의 복구 또는 제외를 다시 확인하세요.',
+      '선택한 대상 목록이 변경되었습니다. 복구 또는 제외 대상을 다시 확인하세요.',
     );
   const recovering: Candidate[] = pending.filter((item) =>
     data.recover_ids.includes(item.delivery_id),
@@ -165,8 +171,8 @@ export async function decideRecovery(
   const mutation: string = crypto.randomUUID();
   const statements: D1PreparedStatement[] = [
     env.DB.prepare(
-      "UPDATE schedules SET mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason IN ('paused','cancelled') AND NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND (d.state='sending' OR (d.state='unknown' AND d.resolution IS NULL))) AND (SELECT count(*) FROM pause_recovery_candidates p WHERE p.schedule_id=schedules.id AND p.decision IS NULL)=? AND NOT EXISTS(SELECT 1 FROM pause_recovery_candidates p WHERE p.schedule_id=schedules.id AND p.decision IS NULL AND p.delivery_id NOT IN (SELECT value FROM json_each(?)))",
-    ).bind(mutation, id, data.version, ids.length, JSON.stringify(ids)),
+      "UPDATE schedules SET mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason IN ('paused','cancelled') AND NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND (d.state='sending' OR (d.state='unknown' AND d.resolution IS NULL))) AND (SELECT count(*) FROM pause_recovery_candidates p WHERE p.schedule_id=schedules.id AND p.decision IS NULL AND p.delivery_id IN (SELECT value FROM json_each(?)))=?",
+    ).bind(mutation, id, data.version, JSON.stringify(ids), ids.length),
   ];
   const scheduleIds: string[] = [];
   for (let start: number = 0; start < recovering.length; start += LIMITS.cardsPerOccurrence) {

@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { afterEach, beforeEach, expect, it } from 'vitest';
-import type { RecoveryInput } from '../src/shared/model';
+import { recoverySchema, type RecoveryInput } from '../src/shared/model';
 import { runEngine } from '../src/worker/engine';
 import { decideRecovery, pausePreview, recoveryPreview } from '../src/worker/pause-recovery';
 import { resumeSchedule, saveSchedule, stopSchedule } from '../src/worker/schedules';
@@ -314,4 +314,225 @@ it('R3 기존 0008 DB의 취소 이력을 보존하며 0009가 복구 후보를 
   expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
   expect((await recoveryPreview(id, 1, h.env)).items).toHaveLength(2);
   await decideRecovery(id, await selection(id), h.env, due);
+});
+
+async function accumulatedPause(count: number = 45): Promise<string> {
+  await h.mf.dispose();
+  h = await harnessThrough('0008_token_refresh_recovery.sql');
+  const id: string = await prepared();
+  const occurrences = Array.from({ length: Math.ceil(count / 5) }, (_, index) => ({
+    id: crypto.randomUUID(),
+    due: due - (9 - index) * 86_400_000,
+  }));
+  const deliveries = occurrences
+    .flatMap((occurrence) =>
+      Array.from({ length: 5 }, (_, position) => ({
+        id: crypto.randomUUID(),
+        occurrence: occurrence.id,
+        due: occurrence.due,
+        position,
+      })),
+    )
+    .slice(0, count);
+  await h.env.DB.batch([
+    h.env.DB.prepare("UPDATE schedules SET cursor=5,enabled=0,reason='paused' WHERE id=?").bind(id),
+    h.env.DB.prepare(
+      "INSERT INTO occurrences SELECT json_extract(value,'$.id'),?,1,json_extract(value,'$.due'),'mock',json_extract(value,'$.due') FROM json_each(?)",
+    ).bind(id, JSON.stringify(occurrences)),
+    h.env.DB.prepare(
+      "INSERT INTO deliveries(id,occurrence_id,schedule_id,schedule_version,position,asset_id,payload,state,mode,due_at_utc,attempts,error,updated_at) SELECT json_extract(j.value,'$.id'),json_extract(j.value,'$.occurrence'),i.schedule_id,1,i.position,i.asset_id,i.payload,'cancelled','mock',json_extract(j.value,'$.due'),0,'paused',json_extract(j.value,'$.due') FROM json_each(?) j JOIN schedule_items i ON i.schedule_id=? AND i.version=1 AND i.position=json_extract(j.value,'$.position')",
+    ).bind(JSON.stringify(deliveries), id),
+  ]);
+  await h.env.DB.exec(
+    (
+      await readFile(new URL('../migrations/0009_pause_recovery.sql', import.meta.url), 'utf8')
+    ).replaceAll('\n', ' '),
+  );
+  return id;
+}
+
+it.each([40, 41, 45])(
+  '%i장 누적 중지 이력을 40장씩 제외하며 모든 결정 전 재개·이미지 삭제를 막는다',
+  async (count) => {
+    const id: string = await accumulatedPause(count);
+    const original = (await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results;
+    const plan = await recoveryPreview(id, 1, h.env);
+    const ids = plan.items.slice(0, 40).map((item) => item.delivery_id);
+    await expect(
+      decideRecovery(
+        id,
+        {
+          version: 1,
+          recover_ids: [],
+          exclude_ids: ids,
+          date: null,
+          time: null,
+          warning_accepted: true,
+        },
+        h.env,
+        due,
+      ),
+    ).resolves.toEqual({ schedule_ids: [], recovered: 0, excluded: 40 });
+    const remaining = await recoveryPreview(id, 1, h.env);
+    expect(remaining.items.filter((item) => item.decision === null)).toHaveLength(count - 40);
+    if (count === 40) {
+      await resumeSchedule(id, 1, h.env, due);
+      expect(
+        (await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results,
+      ).toEqual(original);
+      return;
+    }
+    await expect(resumeSchedule(id, 1, h.env, due)).rejects.toMatchObject({
+      code: 'RECOVERY_DECISION_REQUIRED',
+    });
+    const protectedAsset = await h.env.DB.prepare('SELECT asset_id FROM deliveries WHERE id=?')
+      .bind(remaining.items.find((item) => item.decision === null)!.delivery_id)
+      .first<string>('asset_id');
+    await expect(deleteImage(protectedAsset!, h.env, due)).rejects.toThrow('asset_in_use');
+    await decideRecovery(
+      id,
+      {
+        version: 1,
+        recover_ids: [],
+        exclude_ids: remaining.items
+          .filter((item) => item.decision === null)
+          .map((item) => item.delivery_id),
+        date: null,
+        time: null,
+        warning_accepted: true,
+      },
+      h.env,
+      due,
+    );
+    expect((await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results).toEqual(
+      original,
+    );
+    await resumeSchedule(id, 1, h.env, due);
+    expect(
+      await h.env.DB.prepare('SELECT version,enabled,cursor FROM schedules WHERE id=?')
+        .bind(id)
+        .first(),
+    ).toEqual({ version: 2, enabled: 1, cursor: 0 });
+    expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+  },
+);
+
+it('45장 미리보기는 이번 40장만 이미지 확인하고 미결정 총량을 제공한다', async () => {
+  const id: string = await accumulatedPause();
+  let reads = 0;
+  const images = new Proxy(h.env.CARD_IMAGES, {
+    get(target, key) {
+      const value: unknown = Reflect.get(target, key);
+      if (key === 'get')
+        return (...args: Parameters<KVNamespace['get']>) => {
+          reads += 1;
+          return Reflect.apply(target.get, target, args);
+        };
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  const plan = await recoveryPreview(id, 1, { ...h.env, CARD_IMAGES: images });
+  expect(plan).toMatchObject({ pending_count: 45 });
+  expect(plan.items).toHaveLength(40);
+  expect(reads).toBe(40);
+});
+
+it('누적 이력의 복구·제외 혼합 묶음은 고정 내용을 보존하고 발송 예산을 소비하지 않는다', async () => {
+  const id: string = await accumulatedPause();
+  const original = (await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results;
+  const usage = (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results;
+  const first = await recoveryPreview(id, 1, h.env);
+  const result = await decideRecovery(
+    id,
+    {
+      version: 1,
+      recover_ids: first.items.slice(0, 35).map((item) => item.delivery_id),
+      exclude_ids: first.items.slice(35).map((item) => item.delivery_id),
+      date: '2026-09-28',
+      time: '12:10',
+      warning_accepted: true,
+    },
+    h.env,
+    due,
+  );
+  expect(result).toMatchObject({ recovered: 35, excluded: 5 });
+  expect(result.schedule_ids).toHaveLength(7);
+  const next = await recoveryPreview(id, 1, h.env);
+  expect(next).toMatchObject({ pending_count: 5 });
+  await decideRecovery(
+    id,
+    {
+      version: 1,
+      recover_ids: next.items.map((item) => item.delivery_id),
+      exclude_ids: [],
+      date: '2026-09-28',
+      time: '12:30',
+      warning_accepted: true,
+    },
+    h.env,
+    due,
+  );
+  expect((await recoveryPreview(id, 1, h.env)).pending_count).toBe(0);
+  expect(
+    await h.env.DB.prepare(
+      "SELECT count(*) AS n FROM pause_recoveries p JOIN deliveries d ON d.id=p.delivery_id JOIN schedule_items i ON i.schedule_id=p.target_schedule_id AND i.position=p.target_position WHERE p.decision='reschedule' AND i.asset_id=d.asset_id AND i.payload=d.payload",
+    ).first('n'),
+  ).toBe(40);
+  const times = (
+    await h.env.DB.prepare(
+      'SELECT next_run_at_utc FROM schedules WHERE enabled=1 ORDER BY next_run_at_utc',
+    ).all<{ next_run_at_utc: number }>()
+  ).results;
+  expect(times).toHaveLength(8);
+  expect(
+    times
+      .slice(1)
+      .every((item, index) => item.next_run_at_utc - times[index]!.next_run_at_utc >= 120_000),
+  ).toBe(true);
+  expect((await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results).toEqual(
+    original,
+  );
+  expect(
+    (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results,
+  ).toEqual(usage);
+  expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+});
+
+it('부분 결정의 겹친 요청은 한 번만 성공하고 별도 묶음은 처리하며 오래된 ID를 거부한다', async () => {
+  const id: string = await accumulatedPause();
+  const ids = (await recoveryPreview(id, 1, h.env)).items.map((item) => item.delivery_id);
+  const request = (selected: string[]): RecoveryInput => ({
+    version: 1,
+    recover_ids: [],
+    exclude_ids: selected,
+    date: null,
+    time: null,
+    warning_accepted: true,
+  });
+  const duplicate = await Promise.allSettled([
+    decideRecovery(id, request(ids.slice(0, 10)), h.env, due),
+    decideRecovery(id, request(ids.slice(0, 10)), h.env, due),
+  ]);
+  expect(duplicate.filter((item) => item.status === 'fulfilled')).toHaveLength(1);
+  expect(duplicate.find((item) => item.status === 'rejected')).toMatchObject({
+    reason: { code: 'RECOVERY_CHANGED' },
+  });
+  const disjoint = await Promise.allSettled([
+    decideRecovery(id, request(ids.slice(10, 20)), h.env, due),
+    decideRecovery(id, request(ids.slice(20, 30)), h.env, due),
+  ]);
+  expect(disjoint.every((item) => item.status === 'fulfilled')).toBe(true);
+  await expect(decideRecovery(id, request([ids[0]!, ids[30]!]), h.env, due)).rejects.toMatchObject({
+    code: 'RECOVERY_CHANGED',
+  });
+  await expect(
+    decideRecovery(id, request([crypto.randomUUID(), ids[30]!]), h.env, due),
+  ).rejects.toMatchObject({ code: 'RECOVERY_CHANGED' });
+  expect((await recoveryPreview(id, 1, h.env)).pending_count).toBe(15);
+  expect(
+    await h.env.DB.prepare(
+      "SELECT count(*) AS n FROM pause_recoveries WHERE decision='exclude'",
+    ).first('n'),
+  ).toBe(30);
+  expect(recoverySchema.safeParse({ ...request(ids), recover_ids: ['extra'] }).success).toBe(false);
 });

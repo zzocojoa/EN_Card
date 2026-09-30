@@ -2,6 +2,46 @@ import { expect, test } from '@playwright/test';
 import type { AppState, AttemptHistory } from '../../src/web/api';
 import { seed } from './db';
 
+test('R7 저장 인증정보 오류를 표시하고 잘못된 설정의 복구 확인을 거부한다', async ({
+  page,
+}, info) => {
+  const now = Date.now();
+  await seed(
+    `INSERT INTO credentials(singleton,owner_id,access_token,refresh_token,expires_at,refresh_expires_at,version,status,refresh_failure) VALUES(1,'storage-test','invalid-access','invalid-refresh',${now + 3600_000},${now + 86400_000},1,'needs_reconnect','configuration');`,
+    info,
+  );
+  try {
+    await page.goto('/');
+    await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+    await page.getByRole('button', { name: '연결 및 설정', exact: true }).click();
+    await expect(page.getByText('저장 인증정보 오류', { exact: true })).toBeVisible();
+    await expect(
+      page.getByText('저장 인증정보를 읽을 수 없어 자동 발송을 중지했습니다.', { exact: false }),
+    ).toBeVisible();
+    await expect(page.getByRole('button', { name: '토큰 갱신 다시 시도' })).toHaveCount(0);
+    const response = page.waitForResponse((result) =>
+      result.url().endsWith('/api/connection/retry'),
+    );
+    await page.getByRole('button', { name: '설정 복구 확인', exact: true }).click();
+    const result = await response;
+    expect(result.status()).toBe(503);
+    const body = (await result.json()) as { error: string; message: string };
+    expect(body.error).toBe('TOKEN_STORAGE_CONFIG');
+    expect(body.message).not.toContain('invalid-access');
+    expect(body.message).not.toContain('invalid-refresh');
+    const state = (await (await page.request.get('/api/state')).json()) as AppState;
+    expect(state.connection).toMatchObject({
+      status: 'needs_reconnect',
+      refresh_failure: 'configuration',
+      version: 1,
+    });
+    expect(state.connection).not.toHaveProperty('access_token');
+    expect(state.connection).not.toHaveProperty('refresh_token');
+  } finally {
+    await seed("DELETE FROM credentials WHERE owner_id='storage-test';", info);
+  }
+});
+
 test('이전 버전·취소 예약의 결과 불명을 수신 확인 없이 종료하고 이력을 표시한다', async ({
   page,
 }, info) => {

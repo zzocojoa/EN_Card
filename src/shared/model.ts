@@ -14,6 +14,7 @@ export const LIMITS = Object.freeze({
   propagationMs: 120_000,
   claimMs: 60_000,
   importCards: 100,
+  recoveryBatchSize: 40,
   jsonBytes: 1_000_000,
 });
 const shortText = z.string().trim().max(200);
@@ -110,8 +111,8 @@ export type ScheduleInput = z.infer<typeof scheduleSchema>;
 export const recoverySchema = z
   .object({
     version: z.number().int().positive(),
-    recover_ids: z.array(z.string().min(1).max(100)).max(40),
-    exclude_ids: z.array(z.string().min(1).max(100)).max(40),
+    recover_ids: z.array(z.string().min(1).max(100)).max(LIMITS.recoveryBatchSize),
+    exclude_ids: z.array(z.string().min(1).max(100)).max(LIMITS.recoveryBatchSize),
     date: calendarDate.nullable(),
     time: z
       .string()
@@ -126,6 +127,11 @@ export const recoverySchema = z
       context.addIssue({
         code: 'custom',
         message: '복구·제외 대상은 중복 없이 한 번씩 선택하세요.',
+      });
+    if (ids.length > LIMITS.recoveryBatchSize)
+      context.addIssue({
+        code: 'custom',
+        message: `복구·제외는 합계 ${LIMITS.recoveryBatchSize}장씩 처리하세요.`,
       });
   });
 export type RecoveryInput = z.infer<typeof recoverySchema>;
@@ -144,6 +150,7 @@ export type PausePreview = {
   remaining: number;
   can_resume: boolean;
   unresolved: boolean;
+  pending_count?: number;
   items: RecoveryItem[];
 };
 export type Schedule = ScheduleInput & {
@@ -154,6 +161,7 @@ export type Schedule = ScheduleInput & {
   cursor: number;
   enabled: number;
   reason: string | null;
+  pending_delivery_count: number;
   items: { asset_id: string; title: string }[];
 };
 export type SendMode = 'dry_run' | 'mock' | 'live';

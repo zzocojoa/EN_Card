@@ -136,6 +136,12 @@ export async function finishOAuth(
     env,
     transport,
   );
+  if (!tokens.scope?.split(/\s+/).includes('talk_message'))
+    throw appError(
+      403,
+      'KAKAO_SCOPE',
+      '카카오톡 메시지 전송 동의가 확인되지 않았습니다. 다시 연결하고 해당 항목을 선택하세요.',
+    );
   if (!tokens.refresh_token || !tokens.refresh_token_expires_in)
     throw appError(
       502,
@@ -188,6 +194,8 @@ function tokenChangedError(): TokenError {
   );
 }
 function storedRefreshError(row: Credentials): TokenError {
+  if (row.status === 'needs_reconnect' && row.refresh_failure === 'configuration')
+    return storageConfigError();
   const kind: TokenFailure = row.refresh_failure ?? 'invalid';
   const code: string =
     kind === 'transient'
@@ -219,6 +227,34 @@ function storedRefreshError(row: Credentials): TokenError {
     row.refresh_provider_code,
     row.refresh_retry_at,
   );
+}
+function storageConfigError(): TokenError {
+  return tokenError(
+    'configuration',
+    'TOKEN_STORAGE_CONFIG',
+    503,
+    '저장 인증정보를 읽을 수 없어 자동 발송을 중지했습니다. 원래 암호화 설정을 복구한 뒤 설정 복구 확인을 실행하거나 카카오를 다시 연결하세요.',
+    null,
+    null,
+    null,
+    null,
+  );
+}
+async function readStoredToken(value: string, row: Credentials, env: Env): Promise<string> {
+  try {
+    const token = await decrypt(value, env.TOKEN_ENCRYPTION_KEY);
+    if (!token) throw storageConfigError();
+    return token;
+  } catch {
+    const results = await env.DB.batch([
+      env.DB.prepare(
+        "UPDATE credentials SET status='needs_reconnect',refresh_failure='configuration',refresh_retry_at=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL,lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1 AND version=? AND status='connected' AND lock_owner IS NULL AND lock_until IS NULL",
+      ).bind(row.version),
+      reconnectSchedules(env, row.version + 1),
+    ]);
+    if (!results[0]?.meta.changes) throw tokenChangedError();
+    throw storageConfigError();
+  }
 }
 async function recordRefreshFailure(
   env: Env,
@@ -295,8 +331,9 @@ export async function accessToken(
   if (row.status !== 'connected') throw storedRefreshError(row);
   if (row.expires_at > now + 60_000)
     return {
-      token: await decrypt(row.access_token, env.TOKEN_ENCRYPTION_KEY),
+      token: await readStoredToken(row.access_token, row, env),
       version: row.version,
+      expiresAt: row.expires_at,
     };
   if (row.refresh_expires_at <= now) {
     if (!(await markReconnect(env, row.version))) throw tokenChangedError();
@@ -335,6 +372,18 @@ export async function accessToken(
     (row.refresh_retry_at !== null && row.refresh_retry_at > now)
   )
     throw storedRefreshError(row);
+  if (row.lock_owner)
+    throw tokenError(
+      'conflict',
+      'TOKEN_BUSY',
+      409,
+      '다른 실행이 토큰을 갱신하고 있습니다. 다음 실행에서 확인합니다.',
+      null,
+      null,
+      null,
+      now + 60_000,
+    );
+  const refreshToken: string = await readStoredToken(row.refresh_token, row, env);
   const owner: string = randomToken();
   const locked = await env.DB.prepare(
     "UPDATE credentials SET lock_owner=?,lock_until=?,refresh_attempts=refresh_attempts+1 WHERE singleton=1 AND version=? AND status='connected' AND lock_owner IS NULL AND refresh_attempts=? AND refresh_attempts<? AND (refresh_retry_at IS NULL OR refresh_retry_at<=?) AND (refresh_failure IS NULL OR refresh_failure='transient') RETURNING *",
@@ -356,7 +405,7 @@ export async function accessToken(
     const tokens = await requestTokens(
       new URLSearchParams({
         grant_type: 'refresh_token',
-        refresh_token: await decrypt(row.refresh_token, env.TOKEN_ENCRYPTION_KEY),
+        refresh_token: refreshToken,
       }),
       env,
       transport,
@@ -390,7 +439,11 @@ export async function accessToken(
       )
       .first<{ owner_id: string }>();
     if (!result) throw tokenChangedError();
-    return { token: tokens.access_token, version: row.version + 1 };
+    return {
+      token: tokens.access_token,
+      version: row.version + 1,
+      expiresAt: now + tokens.expires_in * 1000,
+    };
   } catch (error: unknown) {
     if (isTokenError(error) && error.tokenFailure === 'conflict') throw error;
     const failure: TokenError = isTokenError(error)
@@ -408,7 +461,47 @@ export async function accessToken(
     throw await recordRefreshFailure(env, locked, owner, failure, now);
   }
 }
-export async function retryTokenRefresh(env: Env, version: number): Promise<void> {
+export async function retryTokenRefresh(
+  env: Env,
+  version: number,
+  now: number = Date.now(),
+): Promise<void> {
+  const row = await env.DB.prepare('SELECT * FROM credentials WHERE singleton=1 AND version=?')
+    .bind(version)
+    .first<Credentials>();
+  if (!row) throw tokenChangedError();
+  if (row.status === 'needs_reconnect' && row.refresh_failure === 'configuration') {
+    if (row.lock_owner || row.lock_until !== null) throw tokenChangedError();
+    try {
+      if (!row.access_token || !row.refresh_token) throw storageConfigError();
+      if (
+        !(await decrypt(row.access_token, env.TOKEN_ENCRYPTION_KEY)) ||
+        !(await decrypt(row.refresh_token, env.TOKEN_ENCRYPTION_KEY))
+      )
+        throw storageConfigError();
+    } catch {
+      throw storageConfigError();
+    }
+    const expired: boolean = row.refresh_expires_at <= now;
+    const restored = await env.DB.prepare(
+      "UPDATE credentials SET status=?,refresh_attempts=0,refresh_retry_at=NULL,refresh_failure=?,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL,version=version+1 WHERE singleton=1 AND version=? AND status='needs_reconnect' AND refresh_failure='configuration' AND lock_owner IS NULL AND lock_until IS NULL RETURNING owner_id",
+    )
+      .bind(expired ? 'needs_reconnect' : 'connected', expired ? 'invalid' : null, version)
+      .first<{ owner_id: string }>();
+    if (!restored) throw tokenChangedError();
+    if (expired)
+      throw tokenError(
+        'invalid',
+        'TOKEN_RECONNECT_REQUIRED',
+        409,
+        '암호화 설정은 확인했지만 리프레시 토큰이 만료되었습니다. 카카오를 다시 연결하세요.',
+        null,
+        null,
+        null,
+        null,
+      );
+    return;
+  }
   const changed = await env.DB.prepare(
     "UPDATE credentials SET refresh_attempts=0,refresh_retry_at=NULL,refresh_failure=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL,version=version+1 WHERE singleton=1 AND version=? AND status='connected' AND lock_owner IS NULL AND refresh_failure IN ('exhausted','configuration') RETURNING owner_id",
   )
