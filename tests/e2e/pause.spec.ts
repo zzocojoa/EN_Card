@@ -242,6 +242,10 @@ test('누적 중지 45장을 화면에서 40장·5장씩 제외하고 매번 확
     await confirm.check();
     await save.click();
     await expect(recovery).toContainText('추가 선택이 필요한 미발송 카드가 없습니다.');
+    await expect(recovery.locator('li')).toHaveCount(40);
+    await recovery.getByRole('button', { name: '완료 이력 더 보기' }).click();
+    await expect(recovery.locator('li')).toHaveCount(45);
+    await expect(recovery.getByRole('button', { name: '완료 이력 더 보기' })).toHaveCount(0);
     await recovery.getByRole('button', { name: '남은 1장 예약 재개' }).click();
     await expect(recovery).toHaveCount(0);
     const after = (await (await page.request.get('/api/state')).json()) as AppState;

@@ -7,6 +7,7 @@ import {
 } from '../shared/model';
 import { kstDate, kstToUtc } from '../shared/time';
 import { appError, type Env } from './types';
+import { readPage, type Page } from './pagination';
 
 type Source = {
   id: string;
@@ -40,12 +41,12 @@ async function source(id: string, version: number, env: Env): Promise<Source> {
   if (!row) throw appError(409, 'SCHEDULE_CHANGED', '예약 버전이 변경되었습니다. 다시 불러오세요.');
   return row;
 }
-async function candidates(id: string, env: Env): Promise<Candidate[]> {
+async function candidates(id: string, env: Env, ids?: string[]): Promise<Candidate[]> {
   return (
     await env.DB.prepare(
-      "SELECT p.*,json_extract(p.payload,'$.content.title') AS title,a.state AS asset_state,a.kv_key,a.created_at FROM pause_recovery_candidates p LEFT JOIN assets a ON a.id=p.asset_id WHERE p.schedule_id=? ORDER BY p.due_at_utc,p.schedule_version,p.position,p.delivery_id",
+      `SELECT p.*,json_extract(p.payload,'$.content.title') AS title,a.state AS asset_state,a.kv_key,a.created_at FROM pause_recovery_candidates p LEFT JOIN assets a ON a.id=p.asset_id WHERE p.schedule_id=? AND p.decision IS NULL ${ids ? 'AND p.delivery_id IN (SELECT value FROM json_each(?))' : ''} ORDER BY p.due_at_utc,p.schedule_version,p.position,p.delivery_id LIMIT ?`,
     )
-      .bind(id)
+      .bind(id, ...(ids ? [JSON.stringify(ids)] : []), LIMITS.recoveryBatchSize)
       .all<Candidate>()
   ).results;
 }
@@ -101,9 +102,13 @@ export async function recoveryPreview(
 ): Promise<PausePreview> {
   const row: Source = await source(id, version, env);
   const items: RecoveryItem[] = [];
-  const all: Candidate[] = await candidates(id, env);
-  const pending: Candidate[] = all.filter((item) => item.decision === null);
-  const current: Candidate[] = pending.length ? pending.slice(0, LIMITS.recoveryBatchSize) : all;
+  const pendingCount = await env.DB.prepare(
+    'SELECT count(*) AS n FROM pause_recoveries r JOIN deliveries d ON d.id=r.delivery_id WHERE d.schedule_id=? AND r.decision IS NULL',
+  )
+    .bind(id)
+    .first<number>('n');
+  const history = pendingCount ? null : await recoveryHistory(id, version, env, null);
+  const current: Candidate[] = pendingCount ? await candidates(id, env) : [];
   for (const item of current) items.push(await recoveryItem(item, env));
   return {
     schedule_id: id,
@@ -111,8 +116,29 @@ export async function recoveryPreview(
     remaining: row.remaining,
     can_resume: row.reason !== 'cancelled',
     unresolved: row.unresolved === 1,
-    items,
-    pending_count: pending.length,
+    items: history?.items ?? items,
+    pending_count: pendingCount ?? 0,
+    history_next: history?.next ?? null,
+  };
+}
+export async function recoveryHistory(
+  id: string,
+  version: number,
+  env: Env,
+  cursor: string | null,
+): Promise<Page<RecoveryItem>> {
+  await source(id, version, env);
+  const page = await readPage<Candidate & { id: string }>(
+    env.DB,
+    "SELECT * FROM (SELECT p.*,p.delivery_id AS id,p.decided_at AS sort_key,json_extract(p.payload,'$.content.title') AS title,a.state AS asset_state,a.kv_key,a.created_at FROM pause_recovery_candidates p LEFT JOIN assets a ON a.id=p.asset_id) WHERE schedule_id=? AND decision IS NOT NULL",
+    'decided_at',
+    cursor,
+    LIMITS.recoveryBatchSize,
+    [id],
+  );
+  return {
+    items: await Promise.all(page.items.map((item) => recoveryItem(item, env))),
+    next: page.next,
   };
 }
 export async function decideRecovery(
@@ -132,9 +158,7 @@ export async function decideRecovery(
   if (row.enabled || !['paused', 'cancelled'].includes(row.reason ?? ''))
     throw appError(409, 'RECOVERY_STATE', '일시정지·취소 상태에서 미발송 카드를 처리하세요.');
   const ids: string[] = [...data.recover_ids, ...data.exclude_ids];
-  const pending: Candidate[] = (await candidates(id, env)).filter(
-    (item) => item.decision === null && ids.includes(item.delivery_id),
-  );
+  const pending: Candidate[] = await candidates(id, env, ids);
   if (pending.length !== ids.length)
     throw appError(
       409,

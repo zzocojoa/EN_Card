@@ -10,6 +10,7 @@ export async function readPage<T extends { id: string }>(
   orderColumn: string,
   cursor: string | null,
   size: number,
+  parameters: (number | string)[] = [],
 ): Promise<Page<T>> {
   let boundary: [number, string] | null = null;
   if (cursor !== null) {
@@ -27,7 +28,7 @@ export async function readPage<T extends { id: string }>(
     : [size + 1];
   const result = await db
     .prepare(`${selection}${condition} ORDER BY ${orderColumn} DESC,id DESC LIMIT ?`)
-    .bind(...values)
+    .bind(...parameters, ...values)
     .all<T & { sort_key: number }>();
   const rows = result.results.slice(0, size);
   const last = rows.at(-1);

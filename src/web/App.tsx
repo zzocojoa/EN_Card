@@ -1297,6 +1297,21 @@ export function App(): ReactElement {
                         preview={recovery}
                         busy={busy}
                         onClose={() => setRecovery(null)}
+                        onHistoryMore={() =>
+                          void perform(async () => {
+                            const result = (await api(
+                              `/api/schedules/${recovery.schedule_id}/recovery-history?version=${recovery.version}&cursor=${encodeURIComponent(recovery.history_next!)}`,
+                              'GET',
+                              null,
+                              '',
+                            )) as { items: PausePreview['items']; next: string | null };
+                            setRecovery({
+                              ...recovery,
+                              items: [...recovery.items, ...result.items],
+                              history_next: result.next,
+                            });
+                          })
+                        }
                         onDecide={(input) =>
                           void perform(async () => {
                             await api(

@@ -46,6 +46,7 @@ type RecoveryProps = {
   onClose: () => void;
   onDecide: (input: RecoveryInput) => void;
   onResume: () => void;
+  onHistoryMore: () => void;
 };
 export function RecoveryDialog({
   preview,
@@ -53,6 +54,7 @@ export function RecoveryDialog({
   onClose,
   onDecide,
   onResume,
+  onHistoryMore,
 }: RecoveryProps): ReactElement {
   const undecided = preview.items.filter((item) => item.decision === null);
   const pending = undecided.slice(0, LIMITS.recoveryBatchSize);
@@ -217,6 +219,11 @@ export function RecoveryDialog({
                 </li>
               ))}
             </ul>
+            {preview.history_next ? (
+              <button className="secondary" disabled={busy} onClick={onHistoryMore}>
+                완료 이력 더 보기
+              </button>
+            ) : null}
             <button
               disabled={
                 busy || preview.unresolved || preview.remaining === 0 || !preview.can_resume

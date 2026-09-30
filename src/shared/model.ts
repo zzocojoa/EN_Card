@@ -151,6 +151,7 @@ export type PausePreview = {
   can_resume: boolean;
   unresolved: boolean;
   pending_count?: number;
+  history_next?: string | null;
   items: RecoveryItem[];
 };
 export type Schedule = ScheduleInput & {

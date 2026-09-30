@@ -14,7 +14,7 @@ import { assetPage, cardPage, deliveryPage } from './catalog';
 import { dryRun, resolveUnknown, runEngine } from './engine';
 import { nativeTransport } from './kakao';
 import { isTokenError } from './token-errors';
-import { decideRecovery, pausePreview, recoveryPreview } from './pause-recovery';
+import { decideRecovery, pausePreview, recoveryPreview, recoveryHistory } from './pause-recovery';
 import { resumeSchedule, saveSchedule, schedulePage, stopSchedule } from './schedules';
 import { deleteImage, publicImage, readJson, reviewCard, saveCard, uploadImage } from './storage';
 import { appError, type AppError, type DeliveryReport, type Env } from './types';
@@ -215,7 +215,7 @@ export async function route(request: Request, env: Env): Promise<Response> {
     );
   }
   if (
-    /^\/api\/schedules\/[^/]+\/(pause-preview|recovery)$/.test(path) &&
+    /^\/api\/schedules\/[^/]+\/(pause-preview|recovery|recovery-history)$/.test(path) &&
     request.method === 'GET'
   ) {
     const version: number = z.coerce
@@ -223,6 +223,10 @@ export async function route(request: Request, env: Env): Promise<Response> {
       .int()
       .positive()
       .parse(new URL(request.url).searchParams.get('version'));
+    if (path.endsWith('/recovery-history'))
+      return Response.json(
+        await recoveryHistory(pathId(path, 3), version, env, url.searchParams.get('cursor')),
+      );
     return Response.json(
       await (path.endsWith('/pause-preview')
         ? pausePreview(pathId(path, 3), version, env)

@@ -174,8 +174,8 @@ async function finish(
 ): Promise<void> {
   const statements: D1PreparedStatement[] = [
     env.DB.prepare(
-      "UPDATE deliveries SET state=?,error=?,retry_at=?,claim_owner=NULL,claim_until=NULL,updated_at=? WHERE id=? AND claim_owner=? AND state IN ('claimed','sending')",
-    ).bind(state, detail, retryAt, now, item.id, owner),
+      "UPDATE deliveries SET state=CASE WHEN ? IN ('retry_wait','blocked','failed') AND EXISTS(SELECT 1 FROM schedules s WHERE s.id=deliveries.schedule_id AND s.reason='paused') THEN 'cancelled' ELSE ? END,error=?,retry_at=CASE WHEN EXISTS(SELECT 1 FROM schedules s WHERE s.id=deliveries.schedule_id AND s.reason='paused') THEN NULL ELSE ? END,claim_owner=NULL,claim_until=NULL,updated_at=? WHERE id=? AND claim_owner=? AND state IN ('claimed','sending')",
+    ).bind(state, state, detail, retryAt, now, item.id, owner),
   ];
   if (attempt)
     statements.push(

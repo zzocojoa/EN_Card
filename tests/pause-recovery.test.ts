@@ -2,7 +2,12 @@ import { readFile } from 'node:fs/promises';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { recoverySchema, type RecoveryInput } from '../src/shared/model';
 import { runEngine } from '../src/worker/engine';
-import { decideRecovery, pausePreview, recoveryPreview } from '../src/worker/pause-recovery';
+import {
+  decideRecovery,
+  pausePreview,
+  recoveryPreview,
+  recoveryHistory,
+} from '../src/worker/pause-recovery';
 import { resumeSchedule, saveSchedule, stopSchedule } from '../src/worker/schedules';
 import { deleteImage, saveCard } from '../src/worker/storage';
 import { harness, harnessThrough, NOW, readyCard, SAMPLE, type Harness } from './helpers';
@@ -435,6 +440,72 @@ it('45장 미리보기는 이번 40장만 이미지 확인하고 미결정 총�
   expect(plan).toMatchObject({ pending_count: 45 });
   expect(plan.items).toHaveLength(40);
   expect(reads).toBe(40);
+});
+
+it('85건 미결정 조회·선택 처리와 완료 이력은 DB 제한·동률 커서 페이지를 사용한다', async () => {
+  const id = await accumulatedPause(85);
+  const queries: string[] = [];
+  const prepare = h.env.DB.prepare.bind(h.env.DB);
+  const env = {
+    ...h.env,
+    DB: new Proxy(h.env.DB, {
+      get(target, key) {
+        if (key === 'prepare')
+          return (sql: string) => {
+            queries.push(sql);
+            return prepare(sql);
+          };
+        const value: unknown = Reflect.get(target, key);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    }),
+  };
+  for (const count of [85, 45, 5]) {
+    const plan = await recoveryPreview(id, 1, env);
+    expect(plan.pending_count).toBe(count);
+    expect(plan.items).toHaveLength(Math.min(40, count));
+    const batch = await decideRecovery(
+      id,
+      {
+        version: 1,
+        recover_ids: [],
+        exclude_ids: plan.items.map((item) => item.delivery_id),
+        date: null,
+        time: null,
+        warning_accepted: true,
+      },
+      env,
+      due,
+    );
+    expect(batch.excluded).toBe(Math.min(40, count));
+  }
+  const candidateQueries = queries.filter((sql) => sql.startsWith('SELECT p.*'));
+  expect(candidateQueries.length).toBeGreaterThan(0);
+  expect(
+    candidateQueries.every((sql) => sql.includes('p.decision IS NULL') && sql.endsWith('LIMIT ?')),
+  ).toBe(true);
+  expect(candidateQueries.some((sql) => sql.includes('json_each(?)'))).toBe(true);
+  const first = await recoveryPreview(id, 1, h.env);
+  expect(first.pending_count).toBe(0);
+  expect(first.items).toHaveLength(40);
+  expect(first.history_next).toBeTruthy();
+  const seen = first.items.map((item) => item.delivery_id);
+  let cursor = first.history_next ?? null;
+  for (const size of [40, 5]) {
+    const page = await recoveryHistory(id, 1, h.env, cursor);
+    expect(page.items).toHaveLength(size);
+    expect(page.items.every((item) => item.decision === 'exclude')).toBe(true);
+    seen.push(...page.items.map((item) => item.delivery_id));
+    cursor = page.next;
+  }
+  expect(cursor).toBeNull();
+  expect(new Set(seen).size).toBe(85);
+  await expect(recoveryHistory(id, 1, h.env, 'bad cursor')).rejects.toMatchObject({
+    code: 'PAGE_CURSOR',
+  });
+  await expect(recoveryHistory(id, 2, h.env, null)).rejects.toMatchObject({
+    code: 'SCHEDULE_CHANGED',
+  });
 });
 
 it('누적 이력의 복구·제외 혼합 묶음은 고정 내용을 보존하고 발송 예산을 소비하지 않는다', async () => {
