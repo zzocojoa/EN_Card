@@ -725,3 +725,24 @@ A2는 모의 400 진단 이후 실제 격리 Worker의 RECOVERY_TIME 400을 Chro
 커밋 전 검증 manifest와 src/tests/migrations/scripts가 일치하여 전체 299개·Chromium 19개·타입/빌드·두 dry-run 결과를 같은 제품 소스에 연결했다. Git 단계에서 전체 테스트를 다시 실행했다고 집계하지 않는다. 게시 상태를 명확히 하기 위한 후속 문서 커밋에는 제품 소스를 변경하지 않는다. PR 설명은 승인된 6건·실제 로컬 검증·현재 운영 버전·미측정 CPU를 구분해 갱신한다.
 
 이번 승인은 Git 반영 단계에 적용했다. 현재 운영 6ec4579·0011, 키·토큰·예약과 이전 실제 수신/CPU 기록은 유지하며 0012 원격 적용·두 Worker 배포·새 실제 카카오 발송·CPU 시험·PR 병합은 수행하지 않았다. 다음 운영 단계는 백업·쓰기 중단·0012·두 Worker 적용 후 승인된 실제 CPU 검증이다.
+
+## 0012 운영 적용·최신 자연 만료 갱신·CPU 실측 — 2026-10-01
+
+사용자가 0012 운영 적용·두 Worker 배포·최신 CPU 실측을 승인했다. 검증한 제품 소스는 **b24c2df9699d6428aad3b3c1549cfbee919bcfb5**, 배포 기준 HEAD는 **bf1726d8e9ff0e229836a006039ecb4a3452b8de**다. 후속 기록 커밋은 문서만 변경한다.
+
+- **무료 계정·사전 검증:** 18:51~18:52 KST Dashboard에서 Workers **Free·현재 요금제 US$0**를 다시 확인했다. 기존 D1 1개·KV 1개·Worker 3개(이 앱 2개)를 재사용했다. 실제 live 설정 무료 검사·타입/Vite 빌드·두 기본 dry-run·두 실제 배포 설정 dry-run을 새로 실행해 통과했다. src/tests/migrations/scripts manifest는 앞선 전체 **299개·Chromium 19개** 검증본과 일치한다. 전체 테스트를 배포 단계에서 새로 실행했다고 집계하지 않는다.
+- **백업·마이그레이션:** 18:53 KST Cron을 제거하고 API·OAuth 콜백 쓰기 503을 확인했다. 활성 예약·claimed/sending/unknown 0에서 전체 SQL **57,030바이트**를 개인 접근 제한 경로에 내보내 Windows DPAPI CurrentUser로 암호화했다. 복호화 SHA-256 일치를 확인하고 평문 파일을 제거했다. 18:54~18:55 KST 미적용 0012와 이력 INSERT만 file import하여 **12개 이력·FK 오류 0**을 확인했다. 기존 14개 데이터 테이블은 정확히 같고 d1_migrations만 변경됐다. 오류 재현 데이터를 운영 DB에 만들지 않았다.
+- **배포:** 비공개 en-card-delivery **d6e4c28b-a570-48c8-bf8a-8f3f7d09126f**를 **18:55:21.466 KST**, 주 en-card **1bcc6eb4-9640-485b-9e26-3943c644b2f3**를 **18:55:29.264 KST**에 각각 100% 배포했다. **18:55:30.788**에 매분 Cron 하나를 복원했다. 기존 D1/KV·Secret 이름·서비스 바인딩·live 설정을 유지하고 자식 공개/preview URL·Cron은 비활성 상태다. 임시 로컬 유지보수 설정은 원래 dry_run으로 복원했다. startup **19/17ms**는 호출 CPU 수치가 아니다.
+- **원격 확인:** boot 200·local false·live·kakao_configured true, 화면/JS/CSS 200·로컬 dist 해시 일치, 로그인 없는 state 401, 로컬 인증 POST 405·쿠키 없음, 자식 공개 URL 404를 확인했다. 기존 원본 PNG는 200·87,785바이트·1080×1080이다. 인증 없는 OAuth 시작은 **403/SETUP_TOKEN·쿠키 없음·auth_state 해시 불변**이다. Chrome의 API 직접 접근은 ERR_BLOCKED_BY_CLIENT로 차단되어 최신 운영자 화면 상호작용은 검증하지 못했다. 시험 예약은 승인된 Cloudflare D1 관리 API로 생성했으며 앱 HTTP 예약 저장을 검증한 것으로 집계하지 않는다.
+- **실제 한 장 시험:** 기존 검토 완료 이미지의 새 일회 예약 **9e58d837-867b-4002-9543-df8208de4df8**, **19:03 KST / UTC 10:03 / 1790848980000**을 준비했다. 저장 액세스 만료 **18:30:56.391 KST**가 이미 지났으며 만료값·키·토큰 원문을 직접 조작하지 않았다. 실제 갱신으로 **version 8→9**, connected·잠금/오류 없음·refresh 만료 유지가 확인됐다. 갱신 직후 retry_wait·claim NULL·시도 0·예산 4회를 유지하고 다음 실행에서 **19:04:36.344 KST API 접수 1회**, delivery sent·live 시도 1·claim/retry NULL·오늘 sends **5/20**을 확인했다. 사용자가 **수신·이미지·원본 모두 정상**을 확인했다. 이번 측정은 PC를 켠 상태이며 이전 PC 종료 09:11 확인과 구분한다.
+
+| 최신 배포 실제 호출 | Cron CPU | 준비 CPU | 정리/발송 CPU | 해당 호출 wall 시간 |
+| ------------------- | -------- | -------- | ------------- | ------------------- |
+| 자연 만료 갱신      | 6ms      | 3ms      | 정리 2ms      | 3753/868/651ms      |
+| 다음 실행 발송      | 2ms      | 1ms      | 발송 8ms      | 4131/417/3048ms     |
+
+위 호출은 모두 최신 배포 version ID·outcome ok·예외 0이며 **각 호출 CPU 10ms 이내**다. 정제 수집기는 요청/헤더/토큰/로그 원문을 저장하지 않고 호출 종류·시각·CPU·wall·결과·버전만 기록했다. 수집기와 자식 프로세스는 **19:05:51.732 KST 종료**했고 Codex 예약 자동화는 새로 만들지 않았다. 두 Worker의 Cron은 클라우드에서 유지된다. [공식 Workers 제한](https://developers.cloudflare.com/workers/platform/limits/)에서 네트워크·KV·DB 대기는 CPU와 구분하며, [D1](https://developers.cloudflare.com/d1/platform/pricing/)·[KV](https://developers.cloudflare.com/kv/platform/pricing/)의 현재 Free 정책도 재확인했다.
+
+최종 DB는 카드 14·이미지 2·예약 9(활성 0)·회차/발송/시도 각 8·sent 7/과거 blocked 1·저장량 172,077바이트·업로드 0·FK 오류 0이다. 새 시험 행과 sends 증가 1을 제외한 **기존 14개 테이블 행 내용의 해시 일치**를 다시 확인했다. credentials는 승인된 정상 갱신으로 변경됐고 연결 version 9·오류/잠금 없음이다. 기존 실패·수신·원본·예산 이력은 삭제하거나 덮어쓰지 않았다.
+
+완료 범위는 0012·최신 두 Worker 배포·자연 만료 갱신·본인 한 장 CPU/API 접수/휴대전화 확인이다. **실제 다량 발송 CPU, D1/KV 전체 계정 일일 사용량, Chrome의 최신 인증 화면 상호작용은 미검증**이다. 이 한 장 수치를 모든 부하의 보장으로 확대하지 않는다. PR #1은 설명만 갱신하며 병합하지 않는다. 비밀값·암호화 백업·수집기·운영 설정은 Git 제외를 유지한다.
