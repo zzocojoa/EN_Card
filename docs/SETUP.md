@@ -17,7 +17,7 @@ npm run dev
 
 ## 무료 조건의 근거
 
-2026-09-30 공식 문서 재확인 기준입니다. 배포 직전에 다시 확인합니다.
+2026-09-30 확인 기준이며 Workers·D1·KV 요금과 Workers 제한은 2026-10-01 R11 배포 직전에 다시 확인했습니다. 다음 배포에서도 다시 확인합니다.
 
 | 항목          | 확인한 Free 한도                                            | 공식 문서                                                                                                                               |
 | ------------- | ----------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -59,12 +59,12 @@ npm run dev
 
 ## 운영 입력값과 확인 위치
 
-2026-09-30 계정·리소스·Secret 설정과 본인 카카오 OAuth 연결을 완료했습니다. 이후 PC 종료 수신·원본 링크와 정상 갱신을 확인했고, 2026-10-01 15:38 KST에 검증본 `9965568`과 0010을 운영에 적용했습니다. 현재 두 Worker는 live·활성 예약 0입니다. 최신 배포본의 실제 발송 CPU는 미측정이며 이전 한 장의 수신·CPU와 구분합니다. 상세 기록은 [VERIFICATION.md](VERIFICATION.md)를 따릅니다. 비밀값 자체를 채팅·Git·로그에 남기지 마세요. 기본 `wrangler.jsonc`는 placeholder와 `SEND_MODE=dry_run`을 유지합니다. 실제 값은 Git 제외 파일 `wrangler.deploy.jsonc`에 넣고 live는 `wrangler.live.jsonc`로 분리합니다. 비공개 자식 설정은 `wrangler.delivery.deploy.jsonc`입니다. 세 파일은 프로젝트 루트에 둡니다.
+2026-09-30 계정·리소스·Secret 설정과 본인 카카오 OAuth 연결을 완료했습니다. 이후 PC 종료 수신·원본 링크와 정상 갱신을 확인했고, 2026-10-01 17:04 KST에 검증본 `6ec4579`와 0011을 운영에 적용했습니다. 현재 두 Worker는 live·활성 예약 0입니다. 최신 배포본의 실제 발송 CPU는 미측정이며 이전 한 장의 수신·CPU와 구분합니다. 상세 기록은 [VERIFICATION.md](VERIFICATION.md)를 따릅니다. 비밀값 자체를 채팅·Git·로그에 남기지 마세요. 기본 `wrangler.jsonc`는 placeholder와 `SEND_MODE=dry_run`을 유지합니다. 실제 값은 Git 제외 파일 `wrangler.deploy.jsonc`에 넣고 live는 `wrangler.live.jsonc`로 분리합니다. 비공개 자식 설정은 `wrangler.delivery.deploy.jsonc`입니다. 세 파일은 프로젝트 루트에 둡니다.
 
 | 입력·확인            | 입력 위치·확인 방법                                                                                          | 현재 상태                                                    |
 | -------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
 | Cloudflare 계정      | Dashboard의 Workers Free 플랜·공유 사용량·유료 부가 상품 유무 확인. Wrangler 로그인 계정과 일치              | Free·계정 일치·Workers 사용량 확인; D1/KV 일일 사용량 미측정 |
-| D1 식별자            | `d1_databases[0].database_name/database_id`, 바인딩 `DB`. 기존 DB가 있으면 재사용                            | 운영 0001~0010 적용·FK 오류 0; R11 배포 전 0011 필요         |
+| D1 식별자            | `d1_databases[0].database_name/database_id`, 바인딩 `DB`. 기존 DB가 있으면 재사용                            | 운영 0001~0011 적용·FK 오류 0                                |
 | KV 식별자            | `kv_namespaces[0].id`, 바인딩 `CARD_IMAGES`. 기존 이미지 namespace 보존                                      | 전용 CARD_IMAGES 생성                                        |
 | workers.dev 주소     | Dashboard의 계정 하위 도메인과 Worker 이름으로 실제 HTTPS 주소 확인. `vars.APP_ORIGIN`에 끝 슬래시 없이 입력 | 실제 배포·APP_ORIGIN 일치                                    |
 | 실행 모드            | 두 설정 모두 `COST_MODE=free_only`; deploy 파일은 `dry_run`, live 파일만 명시적으로 `live`                   | 기본 dry_run                                                 |

@@ -67,7 +67,7 @@ WHERE p.decision IS NOT NULL
   AND d.cancellation_reason IN ('cancelled','schedule_changed','disconnected');
 ```
 
-운영은 아직 0010까지 적용된 이전 서버입니다. R11 코드 배포 전에 [SETUP.md](SETUP.md)의 백업·쓰기 중단·0011·FK/이력 확인·두 Worker 순서를 완료해야 합니다. 알려진 잘못 편입 관계가 없다는 조회 결과가 업그레이드 검증을 대신하지는 않습니다.
+2026-10-01 17:04 KST에 승인 후 백업·쓰기 중단·0011·FK/이력 확인·두 Worker 배포를 완료했습니다. 운영 소스는 6ec4579이며 이력 11개·FK 오류 0, 기존 인증·예약·발송·예산 보존을 확인했습니다. 적용 증거는 [VERIFICATION.md](VERIFICATION.md)의 R11 운영 기록을 따릅니다. 다른 DB를 업그레이드할 때도 [SETUP.md](SETUP.md)의 같은 순서를 지킵니다. 이미 적용된 0011을 다시 실행하거나 취소 원인 쓰기를 지원하지 않는 이전 서버로 돌아가지 않습니다.
 
 ## 저장량 정리
 
