@@ -51,6 +51,28 @@ export async function harnessThrough(lastMigration: string): Promise<Harness> {
     const sql: string = await readFile(new URL(name, directory), 'utf8');
     await env.DB.exec(sql.replaceAll('\n', ' '));
   }
+  if (lastMigration < '0011_delivery_cancellation_reason.sql') {
+    // Upgrade fixtures execute historical SQL before the new column exists.
+    // Only remove the newly added assignment; SQL parameters and old behavior stay identical.
+    let legacy = true;
+    env.DB = new Proxy(env.DB, {
+      get(target, key) {
+        if (key === 'prepare')
+          return (sql: string) =>
+            target.prepare(
+              legacy ? sql.replace(/,cancellation_reason=[\s\S]+?(?=,error=)/g, '') : sql,
+            );
+        if (key === 'exec')
+          return async (sql: string) => {
+            const result = await target.exec(sql);
+            if (sql.includes('ADD COLUMN cancellation_reason')) legacy = false;
+            return result;
+          };
+        const value: unknown = Reflect.get(target, key);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+  }
   return { mf, env };
 }
 export function png(): Uint8Array<ArrayBuffer> {

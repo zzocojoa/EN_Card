@@ -525,7 +525,7 @@ export async function disconnect(env: Env, now: number): Promise<void> {
       "UPDATE schedules SET enabled=0,reason='disconnected' WHERE reason IS NOT 'cancelled' AND reason IS NOT 'paused' AND (enabled=1 OR EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND d.schedule_version=schedules.version AND d.state IN ('pending','claimed','sending','retry_wait','blocked')))",
     ),
     env.DB.prepare(
-      "UPDATE deliveries SET state='cancelled',error='자동 발송 연결 해제',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE state IN ('pending','claimed','retry_wait','blocked')",
+      "UPDATE deliveries SET state='cancelled',cancellation_reason='disconnected',error='자동 발송 연결 해제',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE state IN ('pending','claimed','retry_wait','blocked')",
     ).bind(now),
   ]);
 }

@@ -112,7 +112,7 @@ export async function saveSchedule(
           mutation,
         ),
     env.DB.prepare(
-      "UPDATE deliveries SET state='cancelled',error='예약 수정',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE schedule_id=? AND schedule_version<? AND state IN ('pending','claimed','retry_wait','blocked') AND EXISTS(SELECT 1 FROM schedules WHERE id=? AND mutation_id=?)",
+      "UPDATE deliveries SET state='cancelled',cancellation_reason='schedule_changed',error='예약 수정',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE schedule_id=? AND schedule_version<? AND state IN ('pending','claimed','retry_wait','blocked') AND EXISTS(SELECT 1 FROM schedules WHERE id=? AND mutation_id=?)",
     ).bind(now, scheduleId, version, scheduleId, mutation),
     ...data.asset_ids.map((assetId, position) => {
       const asset = assets.results.find((item) => item.id === assetId);
@@ -147,7 +147,7 @@ export async function stopSchedule(
       "UPDATE schedules SET enabled=0,reason=?,mutation_id=? WHERE id=? AND version=? AND (reason IS NOT 'cancelled' OR ?='cancelled')",
     ).bind(reason, mutation, id, version, reason),
     env.DB.prepare(
-      "UPDATE deliveries SET state='cancelled',error=?,claim_owner=NULL,claim_until=NULL,updated_at=? WHERE schedule_id=? AND state IN ('pending','claimed','retry_wait','blocked') AND EXISTS(SELECT 1 FROM schedules WHERE id=? AND mutation_id=?)",
+      `UPDATE deliveries SET state='cancelled',cancellation_reason='${reason}',error=?,claim_owner=NULL,claim_until=NULL,updated_at=? WHERE schedule_id=? AND state IN ('pending','claimed','retry_wait','blocked') AND EXISTS(SELECT 1 FROM schedules WHERE id=? AND mutation_id=?)`,
     ).bind(reason, now, id, id, mutation),
   ]);
   if (!results[0]?.meta.changes)

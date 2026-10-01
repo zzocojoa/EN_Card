@@ -64,7 +64,7 @@ npm run dev
 | 입력·확인            | 입력 위치·확인 방법                                                                                          | 현재 상태                                                    |
 | -------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------ |
 | Cloudflare 계정      | Dashboard의 Workers Free 플랜·공유 사용량·유료 부가 상품 유무 확인. Wrangler 로그인 계정과 일치              | Free·계정 일치·Workers 사용량 확인; D1/KV 일일 사용량 미측정 |
-| D1 식별자            | `d1_databases[0].database_name/database_id`, 바인딩 `DB`. 기존 DB가 있으면 재사용                            | 운영 0001~0010 적용·FK 오류 0                                |
+| D1 식별자            | `d1_databases[0].database_name/database_id`, 바인딩 `DB`. 기존 DB가 있으면 재사용                            | 운영 0001~0010 적용·FK 오류 0; R11 배포 전 0011 필요         |
 | KV 식별자            | `kv_namespaces[0].id`, 바인딩 `CARD_IMAGES`. 기존 이미지 namespace 보존                                      | 전용 CARD_IMAGES 생성                                        |
 | workers.dev 주소     | Dashboard의 계정 하위 도메인과 Worker 이름으로 실제 HTTPS 주소 확인. `vars.APP_ORIGIN`에 끝 슬래시 없이 입력 | 실제 배포·APP_ORIGIN 일치                                    |
 | 실행 모드            | 두 설정 모두 `COST_MODE=free_only`; deploy 파일은 `dry_run`, live 파일만 명시적으로 `live`                   | 기본 dry_run                                                 |
@@ -133,7 +133,7 @@ npx wrangler d1 migrations apply DB --remote --config "$DEPLOY_CONFIG"
 npx wrangler d1 execute DB --remote --config "$DEPLOY_CONFIG" --command "PRAGMA foreign_key_check; SELECT name FROM d1_migrations ORDER BY id;" --json
 ```
 
-신규 DB에서 `d1_migrations`가 아직 없으면 이력 내보내기만 생략하고 빈 DB임을 기록합니다. 나머지 오류는 중단하여 조사합니다. 새 DB에는 0001~0010, 기존 DB에는 미적용 파일만 순서대로 적용합니다. 적용된 0001~0009 파일은 변경하지 않았습니다. 0009는 일시정지 미발송의 복구 관계·선택 보호를 추가합니다. 0010은 현재 예약의 일시정지 상태 때문에 잘못 편입된 `error='예약 수정'`의 미결정 복구 관계만 제거합니다. 완료된 복구·제외 결정, 원래 delivery·호출 이력·예산은 보존합니다. FK 검사 결과가 비어 있고 적용 이력에 0010이 있어야 수정 서버를 배포합니다. 전체 백업은 암호화 토큰·개인 정보를 포함하므로 접근 제한된 개인 저장소에 보관합니다. [D1 내보내기·가져오기](https://developers.cloudflare.com/d1/best-practices/import-export-data/)를 참고하세요.
+신규 DB에서 `d1_migrations`가 아직 없으면 이력 내보내기만 생략하고 빈 DB임을 기록합니다. 나머지 오류는 중단하여 조사합니다. 새 DB에는 0001~0011, 기존 DB에는 미적용 파일만 순서대로 적용합니다. 적용된 0001~0010 파일은 변경하지 않았습니다. 0009는 일시정지 미발송의 복구 관계·선택 보호를 추가했고 0010은 잘못 편입된 `예약 수정`의 미결정 관계를 정리합니다. 0011은 `deliveries.cancellation_reason`을 추가하여 알려진 과거 취소 원인을 분류하고, 연결 해제 등 일시정지가 아닌 미결정 관계만 정리합니다. 완료된 복구·제외 결정, 원래 delivery·호출 이력·예산은 보존하며 모르는 과거 원인은 NULL로 남깁니다. 새 서버의 취소 원인 쓰기와 복구 트리거는 이 열을 사용하므로 **0011 적용·FK 빈 결과·11개 이력 확인이 배포 전 필수**입니다. Cron뿐 아니라 새 편집·예약 변경·일시정지·연결 해제 요청도 중단하고 진행 중 호출이 없는 상태에서 마이그레이션과 두 Worker 배포를 완료합니다. 0011 적용 후에는 취소 원인 쓰기를 지원하는 호환 코드로만 복귀합니다. 전체 백업은 암호화 토큰·개인 정보를 포함하므로 접근 제한된 개인 저장소에 보관합니다. [D1 내보내기·가져오기](https://developers.cloudflare.com/d1/best-practices/import-export-data/)를 참고하세요.
 
 ### Windows 마이그레이션 오류 복구 기록
 

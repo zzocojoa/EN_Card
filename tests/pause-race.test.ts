@@ -69,6 +69,11 @@ it.each(['retry', 'unauthorized', 'reconnect', 'failed'] as const)(
     expect(plan.items).toHaveLength(1);
     expect(plan.items[0]).toMatchObject({ state: 'cancelled', available: true, decision: null });
     expect(
+      await h.env.DB.prepare('SELECT cancellation_reason FROM deliveries').first(
+        'cancellation_reason',
+      ),
+    ).toBe('paused');
+    expect(
       await h.env.DB.prepare('SELECT claim_owner,claim_until,retry_at FROM deliveries').first(),
     ).toEqual({ claim_owner: null, claim_until: null, retry_at: null });
     expect(await h.env.DB.prepare('SELECT outcome FROM delivery_attempts').first('outcome')).toBe(
@@ -142,6 +147,11 @@ it.each(['retry', 'unauthorized', 'reconnect', 'failed'] as const)(
   'R10 취소 뒤 %s 거절은 호출 이력을 보존하고 이미지를 정리할 수 있다',
   async (outcome) => {
     const id = await finishPaused(outcome, 'cancelled');
+    expect(
+      await h.env.DB.prepare('SELECT cancellation_reason FROM deliveries').first(
+        'cancellation_reason',
+      ),
+    ).toBe('cancelled');
     expect((await recoveryPreview(id, 1, h.env)).items).toHaveLength(0);
     expect(
       await h.env.DB.prepare('SELECT reason FROM schedules WHERE id=?').bind(id).first('reason'),
@@ -181,6 +191,11 @@ it.each(['mock_sent', 'unknown'] as const)(
       .bind(id)
       .first<{ state: string; asset_id: string }>();
     expect(item?.state).toBe(outcome);
+    expect(
+      await h.env.DB.prepare('SELECT cancellation_reason FROM deliveries').first(
+        'cancellation_reason',
+      ),
+    ).toBeNull();
     expect((await recoveryPreview(id, 1, h.env)).items).toHaveLength(0);
     if (outcome === 'unknown')
       await expect(deleteImage(item!.asset_id, h.env, NOW)).rejects.toThrow('asset_in_use');

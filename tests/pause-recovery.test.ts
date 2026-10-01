@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { recoverySchema, type RecoveryInput } from '../src/shared/model';
 import { runEngine } from '../src/worker/engine';
+import { disconnect } from '../src/worker/auth';
 import {
   decideRecovery,
   pausePreview,
@@ -307,7 +308,19 @@ async function applyProvenanceMigration(): Promise<void> {
     ).replaceAll('\n', ' '),
   );
 }
-async function legacyEditedDelivery(): Promise<{ id: string; editedDeliveryId: string }> {
+async function applyCancellationReasonMigration(): Promise<void> {
+  await h.env.DB.exec(
+    (
+      await readFile(
+        new URL('../migrations/0011_delivery_cancellation_reason.sql', import.meta.url),
+        'utf8',
+      )
+    ).replaceAll('\n', ' '),
+  );
+}
+async function legacyEditedDelivery(
+  cancellation: 'edit' | 'disconnect' = 'edit',
+): Promise<{ id: string; editedDeliveryId: string }> {
   await h.mf.dispose();
   h = await harnessThrough('0008_token_refresh_recovery.sql');
   const assets = await Promise.all(
@@ -329,6 +342,7 @@ async function legacyEditedDelivery(): Promise<{ id: string; editedDeliveryId: s
     "SELECT id FROM deliveries WHERE state='pending'",
   ).first<string>('id');
   expect(editedDeliveryId).toBeTruthy();
+  if (cancellation === 'disconnect') await disconnect(h.env, NOW + 1);
   await saveSchedule(
     {
       ...input,
@@ -396,6 +410,44 @@ it('R9 0008 업그레이드에서 이미 다른 버전으로 보낸 옛 예약 �
   expect(
     (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results,
   ).toEqual(usage);
+  expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+});
+it('R11 연결 해제 후 대체 버전으로 보낸 옛 카드는 업그레이드 뒤 복구 후보에서 제거한다', async () => {
+  const { id, editedDeliveryId } = await legacyEditedDelivery('disconnect');
+  await applyProvenanceMigration();
+  const original = (await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results;
+  const attempts = (await h.env.DB.prepare('SELECT * FROM delivery_attempts ORDER BY id').all())
+    .results;
+  const usage = (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results;
+  await applyCancellationReasonMigration();
+  expect(await recoveryPreview(id, 2, h.env)).toMatchObject({ items: [], pending_count: 0 });
+  await expect(
+    decideRecovery(
+      id,
+      {
+        version: 2,
+        recover_ids: [editedDeliveryId],
+        exclude_ids: [],
+        date: '2026-09-28',
+        time: '12:20',
+        warning_accepted: true,
+      },
+      h.env,
+      NOW + 600_000,
+    ),
+  ).rejects.toMatchObject({ code: 'RECOVERY_CHANGED' });
+  const migrated = (await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results;
+  expect(migrated.map(({ cancellation_reason: _reason, ...row }) => row)).toEqual(original);
+  expect(migrated.find((row) => row.id === editedDeliveryId)?.cancellation_reason).toBe(
+    'disconnected',
+  );
+  expect(
+    (await h.env.DB.prepare('SELECT * FROM delivery_attempts ORDER BY id').all()).results,
+  ).toEqual(attempts);
+  expect(
+    (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results,
+  ).toEqual(usage);
+  await expect(resumeSchedule(id, 2, h.env, NOW + 600_000)).resolves.toBeUndefined();
   expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
 });
 it.each(['reschedule', 'exclude'] as const)(
@@ -536,6 +588,7 @@ async function accumulatedPause(count: number = 45): Promise<string> {
     ).replaceAll('\n', ' '),
   );
   await applyProvenanceMigration();
+  await applyCancellationReasonMigration();
   return id;
 }
 

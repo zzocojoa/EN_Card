@@ -196,6 +196,7 @@ export type Delivery = {
   retry_at: number | null;
   manual_retry_until: number | null;
   error: string | null;
+  cancellation_reason: 'paused' | 'cancelled' | 'schedule_changed' | 'disconnected' | null;
   updated_at: number;
   confirmed_by_user: number;
   resolution: 'abandoned' | null;
