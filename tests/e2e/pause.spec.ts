@@ -121,8 +121,37 @@ for (const [scenarioIndex, scenario] of (
           await expect(recovery).toContainText('제외 목록: 복구 카드');
         }
         await recovery.getByLabel('복구·제외 수와 목록, 새 시각을 확인했습니다.').check();
+        if (scenarioIndex === 0 && choice === '복구') {
+          const date = recovery.getByLabel('새 예약 날짜 (KST)');
+          const time = recovery.getByLabel('새 예약 시각 (KST)');
+          const originalDate = await date.inputValue();
+          const originalTime = await time.inputValue();
+          await date.fill('1999-01-01');
+          await time.fill('00:00');
+          const rejected = page.waitForResponse(
+            (response) =>
+              response.request().method() === 'POST' &&
+              response.url().endsWith(`/api/schedules/${schedule.id}/recovery`),
+          );
+          await recovery.getByRole('button', { name: '복구·제외 선택 저장' }).click();
+          const response = await rejected;
+          expect(response.status()).toBe(400);
+          expect(await response.json()).toMatchObject({ error: 'RECOVERY_TIME' });
+          await expect(recovery.getByRole('alert')).toBeVisible();
+          await expect(recovery.getByRole('alert')).toContainText('최소 2분 이후');
+          await expect(recovery.getByLabel('복구 카드 4', { exact: true })).toBeChecked();
+          await expect(recovery.getByLabel('복구 카드 5', { exact: true })).toBeChecked();
+          await expect(
+            recovery.getByLabel('복구·제외 수와 목록, 새 시각을 확인했습니다.'),
+          ).toBeChecked();
+          await expect(date).toHaveValue('1999-01-01');
+          await expect(time).toHaveValue('00:00');
+          await date.fill(originalDate);
+          await time.fill(originalTime);
+        }
         await recovery.getByRole('button', { name: '복구·제외 선택 저장' }).click();
         await expect(recovery).toContainText(choice === '복구' ? '새 예약 생성' : '제외 완료');
+        await expect(recovery.getByRole('alert')).toHaveCount(0);
         const resume = recovery.getByRole('button', { name: `남은 ${remaining}장 예약 재개` });
         if (remaining) await resume.click();
         else {

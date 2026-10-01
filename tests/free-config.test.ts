@@ -75,6 +75,19 @@ it('M5 기본 dry_run 검사는 배포·발송 없이 설정 경로와 해시를
   });
   expect(result.configSha256).toMatch(/^[0-9a-f]{64}$/);
 });
+it('M1 서비스 속성 순서를 허용하면서 다른 서비스·추가 필드는 거부한다', async () => {
+  const path = join(directory, 'wrangler.jsonc');
+  config.services = [{ service: 'en-card-delivery', binding: 'DELIVERY_SERVICE' }];
+  await writeFile(path, JSON.stringify(config));
+  expect(JSON.parse(await check([]))).toMatchObject({ result: 'passed' });
+  for (const services of [
+    [{ service: 'other-worker', binding: 'DELIVERY_SERVICE' }],
+    [{ service: 'en-card-delivery', binding: 'DELIVERY_SERVICE', extra: 'not-allowed' }],
+  ]) {
+    await writeFile(path, JSON.stringify({ ...config, services }));
+    await expect(check([])).rejects.toThrow('허용되지 않은 발송 서비스');
+  }
+});
 it('M5 명시적 live 파일과 일치하는 모드에 같은 검사를 적용한다', async () => {
   await liveConfig();
   expect(

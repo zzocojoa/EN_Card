@@ -321,7 +321,12 @@ export function App(): ReactElement {
     });
   }
   async function oauth(): Promise<void> {
-    const result = (await api('/auth/start', 'POST', { setup_token: setupToken }, '')) as {
+    const result = (await api(
+      '/auth/start',
+      'POST',
+      { setup_token: setupToken },
+      state?.csrf ?? '',
+    )) as {
       url: string;
     };
     setSetupToken('');
@@ -518,7 +523,7 @@ export function App(): ReactElement {
                 ) : (
                   <>
                     <label className="field">
-                      <span>최초 운영자 등록 토큰 (최초 연결만)</span>
+                      <span>운영자 등록·접속 토큰</span>
                       <input
                         type="password"
                         autoComplete="off"
@@ -526,6 +531,7 @@ export function App(): ReactElement {
                         onChange={(event) => setSetupToken(event.target.value)}
                       />
                     </label>
+                    <p>최초 등록과 로그아웃 후 로그인에는 보관한 등록 토큰이 필요합니다.</p>
                     <button
                       className="primary"
                       disabled={busy || !boot?.kakao_configured}
@@ -1310,6 +1316,7 @@ export function App(): ReactElement {
                           .join(',')}
                         preview={recovery}
                         busy={busy}
+                        error={notice?.kind === 'error' ? notice.text : null}
                         returnFocus={modalOpener.current}
                         onClose={() => setRecovery(null)}
                         onHistoryMore={() =>

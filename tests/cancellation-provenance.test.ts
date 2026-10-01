@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { disconnect } from '../src/worker/auth';
-import { recoveryPreview } from '../src/worker/pause-recovery';
+import { decideRecovery, recoveryHistory, recoveryPreview } from '../src/worker/pause-recovery';
 import { saveSchedule, stopSchedule } from '../src/worker/schedules';
 import { harness, harnessThrough, NOW, readyCard, type Harness } from './helpers';
 
@@ -167,5 +167,159 @@ it('R11 0011은 잘못 편입된 미결정 관계만 정리하며 완료 결정�
       "SELECT cancellation_reason FROM deliveries WHERE id='unclassified'",
     ).first('cancellation_reason'),
   ).toBeNull();
+  expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+});
+it('R12 0012는 미결정 원인만 제한하고 정상 일시정지·완료 선택·대상·호출·예산·FK를 보존한다', async () => {
+  await h.mf.dispose();
+  h = await harnessThrough('0011_delivery_cancellation_reason.sql');
+  const { id } = await seed();
+  await stopSchedule(id, 1, 'paused', h.env, NOW);
+  const cases = [
+    ['unknown-pending', null],
+    ['cancelled-pending', 'cancelled'],
+    ['changed-pending', 'schedule_changed'],
+    ['disconnected-pending', 'disconnected'],
+    ['unknown-exclude', null],
+    ['unknown-reschedule', null],
+    ['changed-reschedule', 'schedule_changed'],
+  ] as const;
+  for (const [position, [deliveryId, cause]] of cases.entries()) {
+    await h.env.DB.prepare(
+      "INSERT INTO deliveries(id,occurrence_id,schedule_id,schedule_version,position,asset_id,payload,state,mode,due_at_utc,error,cancellation_reason,updated_at) SELECT ?,occurrence_id,schedule_id,schedule_version,?,asset_id,payload,'cancelled',mode,due_at_utc,'과거 취소 문구',?,updated_at FROM deliveries WHERE id='cause-delivery'",
+    )
+      .bind(deliveryId, position + 1, cause)
+      .run();
+    await h.env.DB.prepare('INSERT INTO pause_recoveries(delivery_id) VALUES(?)')
+      .bind(deliveryId)
+      .run();
+  }
+  await h.env.DB.prepare(
+    "INSERT INTO delivery_attempts VALUES('historical-cancelled-attempt','unknown-pending','historical',?,'2026-09-28','cancelled','호출 전에 취소','mock')",
+  )
+    .bind(NOW)
+    .run();
+  await h.env.DB.prepare("UPDATE deliveries SET attempts=1 WHERE id='unknown-pending'").run();
+  const previousSelection = await decideRecovery(
+    id,
+    {
+      version: 1,
+      recover_ids: ['unknown-reschedule', 'changed-reschedule'],
+      exclude_ids: ['unknown-exclude'],
+      date: '2026-09-28',
+      time: '12:10',
+      warning_accepted: true,
+    },
+    h.env,
+    NOW,
+  );
+  expect(previousSelection).toMatchObject({ recovered: 2, excluded: 1 });
+  const tables = [
+    'cards',
+    'assets',
+    'occurrences',
+    'deliveries',
+    'delivery_attempts',
+    'usage_counters',
+    'tick_limits',
+    'schedules',
+    'schedule_items',
+    'pause_recoveries',
+  ];
+  const preserved = await Promise.all(
+    tables.map(
+      async (table) =>
+        (await h.env.DB.prepare('SELECT * FROM ' + table + ' ORDER BY rowid').all()).results,
+    ),
+  );
+  const history = await recoveryHistory(id, 1, h.env, null);
+  const triggers = (
+    await h.env.DB.prepare(
+      "SELECT name,sql FROM sqlite_schema WHERE type='trigger' ORDER BY name",
+    ).all()
+  ).results;
+  await h.env.DB.exec(
+    (
+      await readFile(
+        new URL('../migrations/0012_pause_recovery_cause_guard.sql', import.meta.url),
+        'utf8',
+      )
+    ).replaceAll('\n', ' '),
+  );
+  expect(
+    await Promise.all(
+      tables.map(
+        async (table) =>
+          (await h.env.DB.prepare('SELECT * FROM ' + table + ' ORDER BY rowid').all()).results,
+      ),
+    ),
+  ).toEqual(preserved);
+  expect(
+    (
+      await h.env.DB.prepare(
+        'SELECT delivery_id,safe FROM pause_recovery_candidates ORDER BY delivery_id',
+      ).all()
+    ).results,
+  ).toEqual([
+    { delivery_id: 'cancelled-pending', safe: 0 },
+    { delivery_id: 'cause-delivery', safe: 1 },
+    { delivery_id: 'changed-pending', safe: 0 },
+    { delivery_id: 'changed-reschedule', safe: 1 },
+    { delivery_id: 'disconnected-pending', safe: 0 },
+    { delivery_id: 'unknown-exclude', safe: 1 },
+    { delivery_id: 'unknown-pending', safe: 0 },
+    { delivery_id: 'unknown-reschedule', safe: 1 },
+  ]);
+  expect(await recoveryHistory(id, 1, h.env, null)).toEqual(history);
+  expect(
+    (
+      await h.env.DB.prepare(
+        "SELECT name,sql FROM sqlite_schema WHERE type='trigger' ORDER BY name",
+      ).all()
+    ).results,
+  ).toEqual(triggers);
+  const plan = await recoveryPreview(id, 1, h.env);
+  expect(plan.pending_count).toBe(5);
+  expect(plan.items.find((item) => item.delivery_id === 'cause-delivery')).toMatchObject({
+    available: true,
+    decision: null,
+  });
+  expect(
+    plan.items
+      .filter((item) => item.delivery_id !== 'cause-delivery')
+      .every((item) => !item.available),
+  ).toBe(true);
+  await expect(
+    h.env.DB.prepare(
+      "UPDATE pause_recoveries SET decision='reschedule',target_schedule_id=?,target_position=0,decided_at=? WHERE delivery_id='unknown-pending'",
+    )
+      .bind(previousSelection.schedule_ids[0], NOW)
+      .run(),
+  ).rejects.toThrow('pause_recovery_unsafe');
+  await expect(
+    h.env.DB.prepare(
+      "UPDATE pause_recoveries SET decision='exclude',target_schedule_id=NULL,target_position=NULL WHERE delivery_id='unknown-reschedule'",
+    ).run(),
+  ).rejects.toThrow('pause_recovery_already_decided');
+  await expect(
+    decideRecovery(
+      id,
+      {
+        version: 1,
+        recover_ids: ['cause-delivery'],
+        exclude_ids: [
+          'unknown-pending',
+          'cancelled-pending',
+          'changed-pending',
+          'disconnected-pending',
+        ],
+        date: '2026-09-28',
+        time: '12:20',
+        warning_accepted: true,
+      },
+      h.env,
+      NOW,
+    ),
+  ).resolves.toMatchObject({ recovered: 1, excluded: 4 });
+  expect((await recoveryPreview(id, 1, h.env)).pending_count).toBe(0);
   expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
 });

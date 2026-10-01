@@ -49,6 +49,7 @@ export function PauseDialog({
 type RecoveryProps = {
   preview: PausePreview;
   busy: boolean;
+  error: string | null;
   returnFocus: HTMLElement | null;
   onClose: () => void;
   onDecide: (input: RecoveryInput) => void;
@@ -58,6 +59,7 @@ type RecoveryProps = {
 export function RecoveryDialog({
   preview,
   busy,
+  error,
   returnFocus,
   onClose,
   onDecide,
@@ -80,6 +82,11 @@ export function RecoveryDialog({
   return (
     <Modal label="미발송 카드 다시 예약" busy={busy} returnFocus={returnFocus} onClose={onClose}>
       <h2 tabIndex={-1}>미발송 카드 다시 예약</h2>
+      {error ? (
+        <p className="notice error" role="alert">
+          {error}
+        </p>
+      ) : null}
       {preview.can_resume ? (
         <p>
           회차에 아직 들어가지 않은 {preview.remaining}장은 기존 예약에 남아 있습니다. 아래 선택을

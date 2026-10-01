@@ -64,15 +64,20 @@ export async function beginOAuth(request: Request, env: Env, now: number): Promi
   const owner = await env.DB.prepare('SELECT owner_id FROM credentials WHERE singleton=1').first<{
     owner_id: string;
   }>();
-  if (!owner && (!env.SETUP_TOKEN || env.SETUP_TOKEN.length < 32))
-    throw appError(503, 'SETUP_CONFIG', 'SETUP_TOKEN에 32자 이상의 난수를 설정하세요.');
-  if (
-    !owner &&
-    (!env.SETUP_TOKEN ||
-      (await digest(body.setup_token, env.SESSION_SECRET)) !==
-        (await digest(env.SETUP_TOKEN, env.SESSION_SECRET)))
-  )
-    throw appError(403, 'SETUP_TOKEN', '최초 운영자 등록용 SETUP_TOKEN을 확인하세요.');
+  const setupConfigured: boolean = Boolean(env.SETUP_TOKEN && env.SETUP_TOKEN.length >= 32);
+  const validSetupToken: boolean =
+    setupConfigured &&
+    body.setup_token.length > 0 &&
+    (await digest(body.setup_token, env.SESSION_SECRET)) ===
+      (await digest(env.SETUP_TOKEN!, env.SESSION_SECRET));
+  if (!validSetupToken) {
+    if (owner && getCookie(request, 'en_session')) await requireSession(request, env, now);
+    else {
+      if (!setupConfigured)
+        throw appError(503, 'SETUP_CONFIG', 'SETUP_TOKEN에 32자 이상의 난수를 설정하세요.');
+      throw appError(403, 'SETUP_TOKEN', '로그인용 SETUP_TOKEN을 확인하세요.');
+    }
+  }
   if (!env.KAKAO_REST_API_KEY)
     throw appError(503, 'KAKAO_CONFIG', '카카오 REST API 키를 설정하세요.');
   const state: string = randomToken();

@@ -318,6 +318,16 @@ async function applyCancellationReasonMigration(): Promise<void> {
     ).replaceAll('\n', ' '),
   );
 }
+async function applyRecoveryCauseGuardMigration(): Promise<void> {
+  await h.env.DB.exec(
+    (
+      await readFile(
+        new URL('../migrations/0012_pause_recovery_cause_guard.sql', import.meta.url),
+        'utf8',
+      )
+    ).replaceAll('\n', ' '),
+  );
+}
 async function legacyEditedDelivery(
   cancellation: 'edit' | 'disconnect' = 'edit',
 ): Promise<{ id: string; editedDeliveryId: string }> {
@@ -448,6 +458,187 @@ it('R11 연결 해제 후 대체 버전으로 보낸 옛 카드는 업그레이�
     (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results,
   ).toEqual(usage);
   await expect(resumeSchedule(id, 2, h.env, NOW + 600_000)).resolves.toBeUndefined();
+  expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+});
+it('R12 호출 직전 연결 해제의 과거 미분류 취소는 이미 보낸 대체 이미지를 다시 복구하지 않는다', async () => {
+  await h.mf.dispose();
+  h = await harnessThrough('0008_token_refresh_recovery.sql');
+  const assets = await Promise.all([
+    readyCard(h.env, NOW - 300_000),
+    readyCard(h.env, NOW - 300_000),
+  ]);
+  const input = {
+    name: 'R12 과거 호출 직전 연결 해제',
+    kind: 'once',
+    date: '2026-09-28',
+    time: '12:00',
+    end_date: null,
+    weekdays: [],
+    cards_per_occurrence: 1,
+    asset_ids: [assets[0]!.assetId],
+  };
+  const { id } = await saveSchedule(input, null, null, h.env, NOW - 300_000);
+  let disconnected = false;
+  let calls = 0;
+  const db: D1Database = new Proxy(h.env.DB, {
+    get(target, key) {
+      if (key === 'prepare')
+        return (sql: string) => {
+          const statement = target.prepare(sql);
+          if (!sql.startsWith('INSERT INTO delivery_attempts')) return statement;
+          return new Proxy(statement, {
+            get(prepared, operation) {
+              if (operation === 'bind')
+                return (...values: Parameters<D1PreparedStatement['bind']>) => {
+                  const bound = prepared.bind(...values);
+                  return new Proxy(bound, {
+                    get(query, method) {
+                      if (method === 'first')
+                        return async (...args: Parameters<D1PreparedStatement['first']>) => {
+                          const result: unknown = await Reflect.apply(query.first, query, args);
+                          if (!disconnected) {
+                            disconnected = true;
+                            await disconnect(h.env, NOW);
+                          }
+                          return result;
+                        };
+                      const value: unknown = Reflect.get(query, method);
+                      return typeof value === 'function' ? value.bind(query) : value;
+                    },
+                  });
+                };
+              const value: unknown = Reflect.get(prepared, operation);
+              return typeof value === 'function' ? value.bind(prepared) : value;
+            },
+          });
+        };
+      const value: unknown = Reflect.get(target, key);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  await runEngine(
+    { ...h.env, DB: db },
+    {
+      mode: 'mock',
+      clock: () => NOW,
+      token: async () => 'mock',
+      sender: async () => {
+        calls += 1;
+        return { outcome: 'mock_sent', detail: '호출되어서는 안 되는 모의 응답' };
+      },
+    },
+  );
+  expect(calls).toBe(0);
+  const old = (await h.env.DB.prepare('SELECT id,state,error,attempts FROM deliveries').first<{
+    id: string;
+    state: string;
+    error: string;
+    attempts: number;
+  }>())!;
+  expect(old).toMatchObject({
+    state: 'cancelled',
+    error: expect.stringContaining('호출 전에 예약 중지·수정을 확인했습니다.'),
+    attempts: 1,
+  });
+  expect(await h.env.DB.prepare('SELECT outcome FROM delivery_attempts').first('outcome')).toBe(
+    'cancelled',
+  );
+  await saveSchedule(
+    { ...input, kind: 'daily', time: '12:10', asset_ids: assets.map((asset) => asset.assetId) },
+    id,
+    { version: 1, cursor: 1 },
+    h.env,
+    NOW + 1,
+  );
+  await tick(NOW + 600_000);
+  expect(
+    await h.env.DB.prepare(
+      "SELECT count(*) AS n FROM deliveries WHERE asset_id=? AND state='mock_sent'",
+    )
+      .bind(assets[0]!.assetId)
+      .first('n'),
+  ).toBe(1);
+  await stopSchedule(id, 2, 'paused', h.env, NOW + 600_000);
+  await h.env.DB.exec(
+    (
+      await readFile(new URL('../migrations/0009_pause_recovery.sql', import.meta.url), 'utf8')
+    ).replaceAll('\n', ' '),
+  );
+  await applyProvenanceMigration();
+  await applyCancellationReasonMigration();
+  const previouslyAvailable = (await recoveryPreview(id, 2, h.env)).items;
+  expect(previouslyAvailable).toEqual([
+    expect.objectContaining({ delivery_id: old.id, available: true, decision: null }),
+  ]);
+  const tables = [
+    'deliveries',
+    'delivery_attempts',
+    'usage_counters',
+    'schedules',
+    'schedule_items',
+    'pause_recoveries',
+  ];
+  const preserved = await Promise.all(
+    tables.map(
+      async (table) =>
+        (await h.env.DB.prepare('SELECT * FROM ' + table + ' ORDER BY rowid').all()).results,
+    ),
+  );
+  await applyRecoveryCauseGuardMigration();
+  expect(await recoveryPreview(id, 2, h.env)).toMatchObject({
+    pending_count: 1,
+    items: [expect.objectContaining({ delivery_id: old.id, available: false, decision: null })],
+  });
+  const rejected = {
+    version: 2,
+    recover_ids: [old.id],
+    exclude_ids: [],
+    date: '2026-09-28',
+    time: '12:20',
+    warning_accepted: true,
+  };
+  await expect(decideRecovery(id, rejected, h.env, NOW + 600_000)).rejects.toMatchObject({
+    code: 'RECOVERY_UNAVAILABLE',
+  });
+  expect(
+    await Promise.all(
+      tables.map(
+        async (table) =>
+          (await h.env.DB.prepare('SELECT * FROM ' + table + ' ORDER BY rowid').all()).results,
+      ),
+    ),
+  ).toEqual(preserved);
+  await expect(resumeSchedule(id, 2, h.env, NOW + 600_000)).rejects.toMatchObject({
+    code: 'RECOVERY_DECISION_REQUIRED',
+  });
+  await expect(
+    decideRecovery(
+      id,
+      {
+        ...rejected,
+        recover_ids: [],
+        exclude_ids: [old.id],
+        date: null,
+        time: null,
+      },
+      h.env,
+      NOW + 600_000,
+    ),
+  ).resolves.toEqual({ schedule_ids: [], recovered: 0, excluded: 1 });
+  await resumeSchedule(id, 2, h.env, NOW + 600_000);
+  const resumed = await h.env.DB.prepare('SELECT version,enabled FROM schedules WHERE id=?')
+    .bind(id)
+    .first();
+  expect(resumed).toEqual({ version: 3, enabled: 1 });
+  expect(
+    (
+      await h.env.DB.prepare(
+        'SELECT asset_id FROM schedule_items WHERE schedule_id=? AND version=3',
+      )
+        .bind(id)
+        .all()
+    ).results,
+  ).toEqual([{ asset_id: assets[1]!.assetId }]);
   expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
 });
 it.each(['reschedule', 'exclude'] as const)(
@@ -589,6 +780,7 @@ async function accumulatedPause(count: number = 45): Promise<string> {
   );
   await applyProvenanceMigration();
   await applyCancellationReasonMigration();
+  await applyRecoveryCauseGuardMigration();
   return id;
 }
 

@@ -69,9 +69,9 @@ assert.equal(config.d1_databases.length, 1);
 assert.equal(config.kv_namespaces.length, 1);
 assert.equal(config.d1_databases[0].binding, 'DB');
 assert.equal(config.kv_namespaces[0].binding, 'CARD_IMAGES');
-assert(
-  JSON.stringify(config.services) ===
-    JSON.stringify([{ binding: 'DELIVERY_SERVICE', service: 'en-card-delivery' }]),
+assert.deepEqual(
+  config.services,
+  [{ binding: 'DELIVERY_SERVICE', service: 'en-card-delivery' }],
   '허용되지 않은 발송 서비스 설정입니다.',
 );
 const deliveryConfigPath = values['delivery-config']

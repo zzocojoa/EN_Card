@@ -32,12 +32,15 @@ async function storeCredentials(): Promise<void> {
     )
     .run();
 }
-async function start(): Promise<{ state: string; browser: string }> {
+async function start(
+  setupToken: string = h.env.SETUP_TOKEN!,
+  headers: Record<string, string> = {},
+): Promise<{ state: string; browser: string }> {
   const response = await beginOAuth(
     new Request(`${h.env.APP_ORIGIN}/auth/start`, {
       method: 'POST',
-      headers: { Origin: h.env.APP_ORIGIN, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ setup_token: h.env.SETUP_TOKEN }),
+      headers: { Origin: h.env.APP_ORIGIN, 'Content-Type': 'application/json', ...headers },
+      body: JSON.stringify({ setup_token: setupToken }),
     }),
     h.env,
     NOW,
@@ -102,6 +105,99 @@ describe('OAuth·접근 제어', () => {
         NOW,
       ),
     ).rejects.toThrow('SETUP_TOKEN');
+  });
+  it.each(['', 'wrong'])(
+    '등록된 운영자도 세션 없이 잘못된 등록 토큰(%s)으로 OAuth 상태를 쓰거나 지우지 못한다',
+    async (setupToken) => {
+      await storeCredentials();
+      await createSession(h.env, NOW - 2 * 86400_000);
+      const original = await h.env.DB.prepare('SELECT * FROM auth_state ORDER BY id').all();
+      await expect(start(setupToken)).rejects.toMatchObject({ status: 403, code: 'SETUP_TOKEN' });
+      expect(
+        (await h.env.DB.prepare('SELECT * FROM auth_state ORDER BY id').all()).results,
+      ).toEqual(original.results);
+    },
+  );
+  it('등록된 운영자는 로그아웃 상태에서도 올바른 등록 토큰으로 OAuth를 시작한다', async () => {
+    await storeCredentials();
+    const original = await h.env.DB.prepare('SELECT * FROM credentials').first();
+    const auth = await start();
+    expect(auth.state).toBeTruthy();
+    expect(auth.browser).toMatch(/^en_oauth=/);
+    expect(
+      await h.env.DB.prepare("SELECT count(*) AS n FROM auth_state WHERE kind='oauth'").first('n'),
+    ).toBe(1);
+    expect(await h.env.DB.prepare('SELECT * FROM credentials').first()).toEqual(original);
+  });
+  it.each(['valid', 'expired'] as const)(
+    '올바른 등록 토큰은 %s 세션 쿠키가 남아 있어도 독립적인 로그인 인증으로 사용할 수 있다',
+    async (status) => {
+      await storeCredentials();
+      const original = await h.env.DB.prepare('SELECT * FROM credentials').first();
+      const session = await createSession(h.env, status === 'expired' ? NOW - 2 * 86400_000 : NOW);
+      await start(h.env.SETUP_TOKEN!, { Cookie: `en_session=${session.token}` });
+      expect(
+        await h.env.DB.prepare("SELECT count(*) AS n FROM auth_state WHERE kind='oauth'").first(
+          'n',
+        ),
+      ).toBe(1);
+      expect(await h.env.DB.prepare('SELECT * FROM credentials').first()).toEqual(original);
+    },
+  );
+  it('등록된 운영자는 유효한 세션과 CSRF로 등록 토큰 없이 OAuth를 시작한다', async () => {
+    await storeCredentials();
+    const session = await createSession(h.env, NOW);
+    await start('', {
+      Cookie: `en_session=${session.token}`,
+      'X-CSRF-Token': session.csrf,
+    });
+    expect(
+      await h.env.DB.prepare("SELECT count(*) AS n FROM auth_state WHERE kind='oauth'").first('n'),
+    ).toBe(1);
+    expect(
+      await h.env.DB.prepare("SELECT count(*) AS n FROM auth_state WHERE kind='session'").first(
+        'n',
+      ),
+    ).toBe(1);
+  });
+  it.each([undefined, 'wrong'])(
+    '등록 토큰 없이 운영자 세션을 사용할 때 잘못된 CSRF(%s)로 OAuth 상태를 쓰거나 지우지 못한다',
+    async (csrf) => {
+      await storeCredentials();
+      await createSession(h.env, NOW - 2 * 86400_000);
+      const session = await createSession(h.env, NOW);
+      const original = await h.env.DB.prepare('SELECT * FROM auth_state ORDER BY id').all();
+      await expect(
+        start('', {
+          Cookie: `en_session=${session.token}`,
+          ...(csrf ? { 'X-CSRF-Token': csrf } : {}),
+        }),
+      ).rejects.toMatchObject({ status: 403, code: 'CSRF' });
+      expect(
+        (await h.env.DB.prepare('SELECT * FROM auth_state ORDER BY id').all()).results,
+      ).toEqual(original.results);
+    },
+  );
+  it('만료된 운영자 세션으로 OAuth 상태를 쓰거나 지우지 못한다', async () => {
+    await storeCredentials();
+    const session = await createSession(h.env, NOW - 2 * 86400_000);
+    const original = await h.env.DB.prepare('SELECT * FROM auth_state ORDER BY id').all();
+    await expect(
+      start('', { Cookie: `en_session=${session.token}`, 'X-CSRF-Token': session.csrf }),
+    ).rejects.toMatchObject({ status: 401, code: 'SESSION_EXPIRED' });
+    expect((await h.env.DB.prepare('SELECT * FROM auth_state ORDER BY id').all()).results).toEqual(
+      original.results,
+    );
+  });
+  it('기존 세션이 있어도 최초 운영자 등록에는 등록 토큰이 필요하다', async () => {
+    const session = await createSession(h.env, NOW);
+    const original = await h.env.DB.prepare('SELECT * FROM auth_state ORDER BY id').all();
+    await expect(
+      start('', { Cookie: `en_session=${session.token}`, 'X-CSRF-Token': session.csrf }),
+    ).rejects.toMatchObject({ status: 403, code: 'SETUP_TOKEN' });
+    expect((await h.env.DB.prepare('SELECT * FROM auth_state ORDER BY id').all()).results).toEqual(
+      original.results,
+    );
   });
   it('state를 브라우저와 연결하고 원자적으로 한 번만 소비한다', async () => {
     const auth = await start();

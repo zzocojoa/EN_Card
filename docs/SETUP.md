@@ -75,7 +75,7 @@ npm run dev
 | KAKAO_CLIENT_SECRET  | Kakao 앱의 Client Secret과 같은 Worker Secret                                                                | 재발급한 새 값 등록                                          |
 | TOKEN_ENCRYPTION_KEY | 별도 무작위 32바이트 base64 Worker Secret. 암호화 자료 복구에 필요하므로 개인 비밀 저장소에도 보관           | 등록·DPAPI 백업                                              |
 | SESSION_SECRET       | 별도 무작위 최소 32자 Worker Secret                                                                          | 등록·DPAPI 백업                                              |
-| SETUP_TOKEN          | 별도 무작위 최소 32자 Worker Secret. 최초 운영자 등록 화면에서만 입력                                        | 등록·DPAPI 백업                                              |
+| SETUP_TOKEN          | 별도 무작위 최소 32자 Worker Secret. 최초 등록과 로그아웃 후 로그인에 입력                                   | 등록·접속·DPAPI 백업                                         |
 
 `.dev.vars.example`은 형식 예시입니다. `.dev.vars`의 로컬 테스트 값을 운영에 복사하지 않습니다. 비밀값은 개인 비밀 관리 도구에서 생성하여 Secret 입력창에 직접 넣습니다. [카카오 로그인](https://developers.kakao.com/docs/ko/kakaologin/rest-api), [메시지](https://developers.kakao.com/docs/ko/kakaotalk-message/rest-api), [피드 규격](https://developers.kakao.com/docs/ko/message-template/default)을 배포 직전 확인하세요.
 
@@ -133,7 +133,7 @@ npx wrangler d1 migrations apply DB --remote --config "$DEPLOY_CONFIG"
 npx wrangler d1 execute DB --remote --config "$DEPLOY_CONFIG" --command "PRAGMA foreign_key_check; SELECT name FROM d1_migrations ORDER BY id;" --json
 ```
 
-신규 DB에서 `d1_migrations`가 아직 없으면 이력 내보내기만 생략하고 빈 DB임을 기록합니다. 나머지 오류는 중단하여 조사합니다. 새 DB에는 0001~0011, 기존 DB에는 미적용 파일만 순서대로 적용합니다. 적용된 0001~0010 파일은 변경하지 않았습니다. 0009는 일시정지 미발송의 복구 관계·선택 보호를 추가했고 0010은 잘못 편입된 `예약 수정`의 미결정 관계를 정리합니다. 0011은 `deliveries.cancellation_reason`을 추가하여 알려진 과거 취소 원인을 분류하고, 연결 해제 등 일시정지가 아닌 미결정 관계만 정리합니다. 완료된 복구·제외 결정, 원래 delivery·호출 이력·예산은 보존하며 모르는 과거 원인은 NULL로 남깁니다. 새 서버의 취소 원인 쓰기와 복구 트리거는 이 열을 사용하므로 **0011 적용·FK 빈 결과·11개 이력 확인이 배포 전 필수**입니다. Cron뿐 아니라 새 편집·예약 변경·일시정지·연결 해제 요청도 중단하고 진행 중 호출이 없는 상태에서 마이그레이션과 두 Worker 배포를 완료합니다. 0011 적용 후에는 취소 원인 쓰기를 지원하는 호환 코드로만 복귀합니다. 전체 백업은 암호화 토큰·개인 정보를 포함하므로 접근 제한된 개인 저장소에 보관합니다. [D1 내보내기·가져오기](https://developers.cloudflare.com/d1/best-practices/import-export-data/)를 참고하세요.
+신규 DB에서 `d1_migrations`가 아직 없으면 이력 내보내기만 생략하고 빈 DB임을 기록합니다. 나머지 오류는 중단하여 조사합니다. 새 DB에는 0001~0012, 기존 DB에는 미적용 파일만 순서대로 적용합니다. 적용된 0001~0011 파일은 변경하지 않았습니다. 0009는 일시정지 미발송의 복구 관계·선택 보호를 추가했고 0010은 잘못 편입된 `예약 수정`의 미결정 관계를 정리합니다. 0011은 `deliveries.cancellation_reason`을 추가하여 알려진 과거 취소 원인을 분류하고, 연결 해제 등 일시정지가 아닌 미결정 관계만 정리합니다. 완료된 복구·제외 결정, 원래 delivery·호출 이력·예산은 보존하며 모르는 과거 원인은 NULL로 남깁니다. 0012는 후보 view를 보완하여 일시정지 원인이 확인되지 않은 미결정 건의 재복구를 막고, 제외와 완료 이력을 보존합니다. 최신 로컬 보완본의 운영 반영에는 **0012 적용·FK 빈 결과·12개 이력 확인이 배포 전 필수**입니다. 현재 운영에는 0011까지 적용됐으며 0012는 아직 배포하지 않았습니다. Cron뿐 아니라 새 편집·예약 변경·일시정지·연결 해제 요청도 중단하고 진행 중 호출이 없는 상태에서 마이그레이션과 두 Worker 배포를 완료합니다. 취소 원인 쓰기와 0012 복구 보호를 유지하는 호환 코드로만 복귀합니다. 전체 백업은 암호화 토큰·개인 정보를 포함하므로 접근 제한된 개인 저장소에 보관합니다. [D1 내보내기·가져오기](https://developers.cloudflare.com/d1/best-practices/import-export-data/)를 참고하세요.
 
 ### Windows 마이그레이션 오류 복구 기록
 
@@ -150,7 +150,7 @@ $env:CLOUDFLARE_ACCOUNT_ID='<사용할 계정 식별자>'
 
 ### 3. Secret 입력과 dry_run 배포
 
-이미 올바르게 설정된 Secret은 재입력하지 않습니다. 평문 입력값을 명령 인수나 파일에 쓰지 않습니다. 이번 연결에서는 표준 입력으로 Secret을 전달했고, 복구용 암호화본만 `backups/en-card-server-secrets.dpapi.json`과 `backups/en-card-kakao-secrets-current.dpapi.json`에 저장했습니다. 두 파일은 Git 제외이며 Windows 현재 사용자 DPAPI로 보호됩니다. 다른 PC·Windows 계정에서 자동 복호화되는 백업이 아닙니다. 계정·기기를 바꾸기 전에 운영자가 별도 암호화 비밀 저장소로 복구 자료를 이관해야 합니다. 최초 연결 이후에는 SETUP_TOKEN을 다시 입력할 필요가 없습니다.
+이미 올바르게 설정된 Secret은 재입력하지 않습니다. 평문 입력값을 명령 인수나 파일에 쓰지 않습니다. 이번 연결에서는 표준 입력으로 Secret을 전달했고, 복구용 암호화본만 `backups/en-card-server-secrets.dpapi.json`과 `backups/en-card-kakao-secrets-current.dpapi.json`에 저장했습니다. 두 파일은 Git 제외이며 Windows 현재 사용자 DPAPI로 보호됩니다. 다른 PC·Windows 계정에서 자동 복호화되는 백업이 아닙니다. 계정·기기를 바꾸기 전에 운영자가 별도 암호화 비밀 저장소로 복구 자료를 이관해야 합니다. 로그인 중 재연결에는 유효한 운영자 세션과 CSRF를 사용합니다. 로그아웃 후 로그인에는 보관한 SETUP_TOKEN을 입력합니다. 기존 Secret의 변경·재발급은 필요하지 않습니다.
 
 ```sh
 npx wrangler secret put KAKAO_REST_API_KEY --config "$DEPLOY_CONFIG"

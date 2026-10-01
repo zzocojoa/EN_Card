@@ -195,6 +195,31 @@ async function finish(
     );
   await env.DB.batch(statements);
 }
+async function finishBeforeCall(
+  env: Env,
+  item: Pick<Delivery, 'id'>,
+  owner: string,
+  state: string,
+  detail: string,
+  retryAt: number | null,
+  now: number,
+  attempt: string | null,
+): Promise<void> {
+  const stopped: string =
+    "EXISTS(SELECT 1 FROM schedules s WHERE s.id=deliveries.schedule_id AND (s.version!=deliveries.schedule_version OR s.reason IN ('paused','cancelled','disconnected')))";
+  const statements: D1PreparedStatement[] = [
+    env.DB.prepare(
+      `UPDATE deliveries SET state=CASE WHEN ${stopped} THEN 'cancelled' ELSE ? END,cancellation_reason=CASE WHEN ${stopped} THEN (SELECT CASE WHEN s.version!=deliveries.schedule_version THEN 'schedule_changed' WHEN s.reason IN ('paused','cancelled','disconnected') THEN s.reason END FROM schedules s WHERE s.id=deliveries.schedule_id) ELSE NULL END,error=CASE WHEN ${stopped} THEN '호출 전에 예약 중지·수정을 확인했습니다. 외부 API 호출 없음.' ELSE ? END,retry_at=CASE WHEN ${stopped} THEN NULL ELSE ? END,claim_owner=NULL,claim_until=NULL,updated_at=? WHERE id=? AND claim_owner=? AND state IN ('claimed','sending')`,
+    ).bind(state, detail, retryAt, now, item.id, owner),
+  ];
+  if (attempt)
+    statements.push(
+      env.DB.prepare(
+        "UPDATE delivery_attempts SET outcome=(SELECT state FROM deliveries WHERE id=?),detail=(SELECT error FROM deliveries WHERE id=?) WHERE id=? AND delivery_id=? AND claim_owner=? AND outcome='sending'",
+      ).bind(item.id, item.id, attempt, item.id, owner),
+    );
+  await env.DB.batch(statements);
+}
 async function releaseBeforeCall(
   env: Env,
   item: Pick<Delivery, 'id' | 'due_at_utc' | 'manual_retry_until'>,
@@ -205,25 +230,34 @@ async function releaseBeforeCall(
   retryAt: number = now + 60_000,
 ): Promise<void> {
   const row = await env.DB.prepare(
-    `SELECT ${eligibleSchedule} AS eligible FROM deliveries WHERE id=?`,
+    `SELECT ${eligibleSchedule} AS eligible,EXISTS(SELECT 1 FROM schedules s WHERE s.id=deliveries.schedule_id AND s.version=deliveries.schedule_version AND s.reason='needs_reconnect') AS needs_reconnect FROM deliveries WHERE id=?`,
   )
     .bind(item.id)
-    .first<{ eligible: number }>();
+    .first<{ eligible: number; needs_reconnect: number }>();
   const late: boolean =
     item.due_at_utc < now - LIMITS.graceMs &&
     (item.manual_retry_until === null || item.manual_retry_until < now);
-  const state: string = !row?.eligible ? 'cancelled' : late ? 'missed' : 'retry_wait';
-  await finish(
+  const state: string =
+    !row?.eligible && !row?.needs_reconnect
+      ? 'cancelled'
+      : late
+        ? 'missed'
+        : row?.needs_reconnect
+          ? 'blocked'
+          : 'retry_wait';
+  await finishBeforeCall(
     env,
     item,
     owner,
     state,
     state === 'missed'
-      ? '호출 전에 15분의 허용 시간이 지났습니다.'
+      ? '호출 전에 15분의 허용 시간이 지났습니다. 외부 API 호출 없음.'
       : state === 'cancelled'
-        ? '호출 전에 예약 중지·수정을 확인했습니다.'
-        : (waitingDetail ??
-          '호출 전에 인증·claim·순서가 변경되어 다음 실행에서 확인합니다. 외부 API 호출 없음.'),
+        ? '호출 전에 예약 중지·수정을 확인했습니다. 외부 API 호출 없음.'
+        : state === 'blocked'
+          ? '호출 전에 인증 재연결이 필요함을 확인했습니다. 외부 API 호출 없음.'
+          : (waitingDetail ??
+            '호출 전에 인증·claim·순서가 변경되어 다음 실행에서 확인합니다. 외부 API 호출 없음.'),
     state === 'retry_wait' ? retryAt : null,
     now,
     attempt,
