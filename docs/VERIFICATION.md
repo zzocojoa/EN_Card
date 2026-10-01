@@ -717,3 +717,11 @@ A2는 모의 400 진단 이후 실제 격리 Worker의 RECOVERY_TIME 400을 Chro
 최종 소스의 독립 재검토에서 미해결 결함은 0건이다. GPT-5.5 CLI의 추가 계약 후보는 승인된 대체 인증·갱신 소진 정책과 대조해 제외했다. read-only sandbox 파일 읽기 오류는 권한 확장 없이 소스를 stdin으로 제공해 source-only 재검토를 완료했다. 최종 src/tests/migrations/scripts manifest SHA-256은 **BD1D7FA34EB13560210387E7159168636396EE1CE2DB781C1D66CFBAD58A91A2**이며 검증 중 소스가 바뀌지 않았다. 이는 미커밋 로컬 기준으로 새 GitHub SHA가 아니다.
 
 18:18 KST GitHub 재조회에서도 PR #1은 OPEN·원격 HEAD 0c34fff였다. 이번 작업에서 커밋·푸시·PR 수정·0012 원격 적용·배포·실제 카카오 발송·병합·운영 키/토큰/예약 변경은 수행하지 않았다. 무료 구성·기존 리소스는 유지했고 계정 플랜은 이번 로컬 검사에서 새로 조회하지 않았다. 17:04 R11 배포 당시 Workers Free·US$0 확인과 이전 실제 수신·PC 종료·CPU 기록은 보존한다. 최신 운영과 보완본의 실제 발송·갱신·다량 CPU는 별도 운영 검증이 필요하다. 로컬 실행은 `npm run dev`, 미래 운영 반영은 [SETUP.md](SETUP.md)의 0012 선행·백업·쓰기 중단·두 Worker 순서를 따른다.
+
+## 후속 Git 반영 승인 — 2026-10-01
+
+검증한 제품 수정본을 **b24c2df9699d6428aad3b3c1549cfbee919bcfb5** (`fix: guard recovery provenance and OAuth admission`)로 커밋하고 기존 `codex/development`에 일반 푸시했다. 코드·회귀·신규 0012·문서 **19개**만 포함했으며 비밀값·백업·로컬 DB·생성 산출물은 제외했다. 강제 푸시는 하지 않았다. 18:37 KST 재조회에서 PR #1은 OPEN·HEAD b24c2df였고 제목 `feat: 영어 카드 제작·카카오 예약 발송 MVP 구현`은 그대로였다.
+
+커밋 전 검증 manifest와 src/tests/migrations/scripts가 일치하여 전체 299개·Chromium 19개·타입/빌드·두 dry-run 결과를 같은 제품 소스에 연결했다. Git 단계에서 전체 테스트를 다시 실행했다고 집계하지 않는다. 게시 상태를 명확히 하기 위한 후속 문서 커밋에는 제품 소스를 변경하지 않는다. PR 설명은 승인된 6건·실제 로컬 검증·현재 운영 버전·미측정 CPU를 구분해 갱신한다.
+
+이번 승인은 Git 반영 단계에 적용했다. 현재 운영 6ec4579·0011, 키·토큰·예약과 이전 실제 수신/CPU 기록은 유지하며 0012 원격 적용·두 Worker 배포·새 실제 카카오 발송·CPU 시험·PR 병합은 수행하지 않았다. 다음 운영 단계는 백업·쓰기 중단·0012·두 Worker 적용 후 승인된 실제 CPU 검증이다.
