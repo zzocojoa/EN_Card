@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { AppState, AttemptHistory } from '../../src/web/api';
 import { seed } from './db';
+import { expectModalFocus } from './modal';
 
 test('R7 저장 인증정보 오류를 표시하고 잘못된 설정의 복구 확인을 거부한다', async ({
   page,
@@ -70,12 +71,38 @@ test('이전 버전·취소 예약의 결과 불명을 수신 확인 없이 종�
     await article.getByRole('button', { name: '결과 확인', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: '결과 불명 확인' });
     await expect(dialog).toContainText('이는 수신 확인이 아니며');
+    await expectModalFocus(page, dialog);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(article.getByRole('button', { name: '결과 확인', exact: true })).toBeFocused();
+    await article.getByRole('button', { name: '결과 확인', exact: true }).click();
     await expect(dialog.getByRole('button', { name: '재전송하지 않고 종료' })).toBeDisabled();
     await dialog.getByRole('checkbox').check();
     const response = page.waitForResponse((result) =>
       result.url().endsWith(`/api/deliveries/${deliveryId}/resolve`),
     );
+    let release = () => {};
+    let entered = () => {};
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const requested = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    await page.route(`**/api/deliveries/${deliveryId}/resolve`, async (route) => {
+      entered();
+      await held;
+      await route.continue();
+    });
     await dialog.getByRole('button', { name: '재전송하지 않고 종료' }).click();
+    try {
+      await requested;
+      await expect(dialog.getByRole('button', { name: '닫기', exact: true })).toBeDisabled();
+      await page.keyboard.press('Escape');
+      await expect(dialog).toBeVisible();
+    } finally {
+      release();
+    }
     expect((await response).status()).toBe(200);
     await expect(article).toContainText('재전송 없이 종료 (수신 미확인)');
     await expect(article.getByRole('button', { name: '결과 확인' })).toHaveCount(0);

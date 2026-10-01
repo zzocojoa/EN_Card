@@ -261,12 +261,18 @@ test('100개를 넘는 보관함과 여러 JSON 백업 파일에 접근한다', 
     },
   });
   expect(response.status()).toBe(201);
+  const extra = await page.request.post('/api/cards', {
+    headers: { 'X-CSRF-Token': session.csrf, Origin: 'http://127.0.0.1:8787' },
+    data: { ...sample, expression: 'Pagination extra' },
+  });
+  expect(extra.status()).toBe(201);
   await page.getByRole('button', { name: '새로고침', exact: true }).click();
   await page.getByRole('button', { name: '카드 보관함', exact: false }).click();
   await expect(page.locator('.library-card')).toHaveCount(100);
   const state = (await (await page.request.get('/api/state')).json()) as {
     totals: { cards: number };
   };
+  expect(state.totals.cards).toBeGreaterThan(100);
   await page.getByRole('button', { name: '더 불러오기' }).click();
   await expect(page.locator('.library-card')).toHaveCount(state.totals.cards);
   const firstPromise = page.waitForEvent('download');

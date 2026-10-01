@@ -15,26 +15,26 @@
 
 ## 직접 실행한 검증
 
-| 항목 | 이번 검토 결과 | 해석 |
-| --- | --- | --- |
-| `npm ci --ignore-scripts --no-audit --no-fund` | 성공 | 잠금 파일 기준 의존성 설치 |
-| 기존 `npm test` | 6개 파일, 95개 통과 | 현재 테스트가 다루는 로직·Miniflare D1/KV 통합 경로 통과 |
-| `WRANGLER_SEND_METRICS=false npm run build` | 통과 | 타입 검사, 웹 빌드, Worker 배포 dry-run. 실제 배포 아님 |
-| `npm run check:free` | 통과 | 허용 구성·기본 모드 검사. 계정 요금제나 청구 보장은 아님 |
-| 별도 진단 테스트 | 5개 통과 | 아래 4개 동작 재현 및 완료 상태 의미 1개 확인. 결함 수정 완료를 뜻하지 않음 |
-| `npm run test:e2e` 재실행 | 서버 시작 단계에서 중단 | 이 검토 환경의 Wrangler가 `uv_interface_addresses returned Unknown system error 1`로 종료. UI 테스트 본문 미실행 |
-| 실제 Cloudflare·카카오 | 미검증 | 실제 토큰 갱신, 폰 수신, PC 종료 후 발송, 원격 CPU는 별도 운영 검증 필요 |
+| 항목                                           | 이번 검토 결과          | 해석                                                                                                             |
+| ---------------------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `npm ci --ignore-scripts --no-audit --no-fund` | 성공                    | 잠금 파일 기준 의존성 설치                                                                                       |
+| 기존 `npm test`                                | 6개 파일, 95개 통과     | 현재 테스트가 다루는 로직·Miniflare D1/KV 통합 경로 통과                                                         |
+| `WRANGLER_SEND_METRICS=false npm run build`    | 통과                    | 타입 검사, 웹 빌드, Worker 배포 dry-run. 실제 배포 아님                                                          |
+| `npm run check:free`                           | 통과                    | 허용 구성·기본 모드 검사. 계정 요금제나 청구 보장은 아님                                                         |
+| 별도 진단 테스트                               | 5개 통과                | 아래 4개 동작 재현 및 완료 상태 의미 1개 확인. 결함 수정 완료를 뜻하지 않음                                      |
+| `npm run test:e2e` 재실행                      | 서버 시작 단계에서 중단 | 이 검토 환경의 Wrangler가 `uv_interface_addresses returned Unknown system error 1`로 종료. UI 테스트 본문 미실행 |
+| 실제 Cloudflare·카카오                         | 미검증                  | 실제 토큰 갱신, 폰 수신, PC 종료 후 발송, 원격 CPU는 별도 운영 검증 필요                                         |
 
 저장소 `docs/VERIFICATION.md`에는 작성자 환경에서 Chromium E2E 6개 통과 기록이 있다. 이번 환경의 E2E 실행 실패를 제품 결함으로 판정하지 않았다.
 
 ## 우선순위
 
-| ID | 우선순위 | 분류 | 현상 |
-| --- | --- | --- | --- |
-| R1 | P1: 운영 전 수정 | 복구 경로 결함 | 결과 불명이 남은 예약을 일시정지·재개하면 활성 예약의 다음 발송과 기존 건의 재시도가 함께 막힘 |
-| R2 | P1: 운영 전 수정 | 오류 분류 결함 | 토큰 API의 명시적인 HTTP 503도 인증 거절로 변환되어 재연결 전까지 예약이 중단됨 |
-| R3 | P2: 정책·화면 보완 | 미발송 카드 처리 | 5장 중 3장 발송 후 일시정지·재개하면 나머지 2장이 다음 발송 목록에서 제외됨 |
-| R4 | P3: 추가 강화 | 이미지 입력 검증 | 서버가 PNG 헤더만 검사하여 이미지 데이터가 없는 33바이트 파일도 허용함 |
+| ID  | 우선순위           | 분류             | 현상                                                                                           |
+| --- | ------------------ | ---------------- | ---------------------------------------------------------------------------------------------- |
+| R1  | P1: 운영 전 수정   | 복구 경로 결함   | 결과 불명이 남은 예약을 일시정지·재개하면 활성 예약의 다음 발송과 기존 건의 재시도가 함께 막힘 |
+| R2  | P1: 운영 전 수정   | 오류 분류 결함   | 토큰 API의 명시적인 HTTP 503도 인증 거절로 변환되어 재연결 전까지 예약이 중단됨                |
+| R3  | P2: 정책·화면 보완 | 미발송 카드 처리 | 5장 중 3장 발송 후 일시정지·재개하면 나머지 2장이 다음 발송 목록에서 제외됨                    |
+| R4  | P3: 추가 강화      | 이미지 입력 검증 | 서버가 PNG 헤더만 검사하여 이미지 데이터가 없는 33바이트 파일도 허용함                         |
 
 P1은 이번 검토에서 정한 구현 우선순위이며, 보안 취약점 점수나 상시 장애 판정을 의미하지 않는다.
 
@@ -51,7 +51,7 @@ P1은 이번 검토에서 정한 구현 우선순위이며, 보안 취약점 점
 관측값:
 
 ```json
-{"enabled":1,"version":2,"nextDayCalls":0,"retryError":"SCHEDULE_INACTIVE"}
+{ "enabled": 1, "version": 2, "nextDayCalls": 0, "retryError": "SCHEDULE_INACTIVE" }
 ```
 
 ### 원인과 영향
@@ -93,7 +93,7 @@ P1은 이번 검토에서 정한 구현 우선순위이며, 보안 취약점 점
 관측값:
 
 ```json
-{"status":"needs_reconnect","enabled":0,"subsequentTransportCalls":0}
+{ "status": "needs_reconnect", "enabled": 0, "subsequentTransportCalls": 0 }
 ```
 
 실제 카카오 서버 장애를 관측한 것은 아니다. 명시적인 일시 장애 응답을 주입하여 현재 코드의 분류·상태 전이를 확인했다.
@@ -104,12 +104,12 @@ P1은 이번 검토에서 정한 구현 우선순위이며, 보안 취약점 점
 
 원래 HTTP 상태와 오류 코드를 보존하고 다음을 구분한다.
 
-| 상황 | 권장 처리 |
-| --- | --- |
-| 확정된 만료·권한 철회·유효하지 않은 refresh token | 재연결 필요로 전환 |
-| 재시도가 안전하다고 분류한 명시적 일시 오류 | 연결을 유지하고 제한된 횟수·간격으로 다음 실행에서 재시도 |
-| 토큰 회전 응답 유실·성공 여부 불명 | 기존의 보수적 처리 유지. 무조건 재시도하지 않음 |
-| 다른 실행이 토큰 갱신 중 / 새 인증으로 교체됨 | 현재 잠금·버전 보호 유지 |
+| 상황                                              | 권장 처리                                                 |
+| ------------------------------------------------- | --------------------------------------------------------- |
+| 확정된 만료·권한 철회·유효하지 않은 refresh token | 재연결 필요로 전환                                        |
+| 재시도가 안전하다고 분류한 명시적 일시 오류       | 연결을 유지하고 제한된 횟수·간격으로 다음 실행에서 재시도 |
+| 토큰 회전 응답 유실·성공 여부 불명                | 기존의 보수적 처리 유지. 무조건 재시도하지 않음           |
+| 다른 실행이 토큰 갱신 중 / 새 인증으로 교체됨     | 현재 잠금·버전 보호 유지                                  |
 
 오류 분류를 인증 계층과 엔진이 함께 사용하게 하고, 재시도 간격·상한·15분 발송 허용 시간을 명시한다. 지연된 옛 오류 응답이 새 연결을 덮어쓰지 않도록 기존 버전 조건을 유지한다.
 
@@ -129,7 +129,10 @@ P1은 이번 검토에서 정한 구현 우선순위이며, 보안 취약점 점
 카드 10장, 회차당 5장인 반복 예약을 만든다. 한 번의 실행은 최대 3장이므로 첫 실행 후 3장은 모의 발송, 2장은 대기 상태가 된다. 이때 일시정지 후 재개한다.
 
 ```json
-{"states":["mock_sent","mock_sent","mock_sent","cancelled","cancelled"],"remainingAfterResume":5}
+{
+  "states": ["mock_sent", "mock_sent", "mock_sent", "cancelled", "cancelled"],
+  "remainingAfterResume": 5
+}
 ```
 
 미발송은 총 7장이지만 재개 목록에는 마지막 5장만 남는다. 앞 회차의 미발송 2장은 자동 발송 대상에서 제외된다. 원본 카드나 이미지 자체가 삭제되는 것은 아니다.
@@ -151,7 +154,7 @@ P1은 이번 검토에서 정한 구현 우선순위이며, 보안 취약점 점
 `validatePng()`는 시그니처, IHDR, 1080×1080 크기, 파일 크기만 검사한다. IDAT·IEND와 실제 이미지 데이터가 없는 33바이트 fixture가 통과했다.
 
 ```json
-{"acceptedBytes":33,"containsIdat":false,"containsIend":false}
+{ "acceptedBytes": 33, "containsIdat": false, "containsIend": false }
 ```
 
 일반 화면의 PNG 생성은 Canvas가 담당하며, 백업 복원도 브라우저에서 `createImageBitmap()`으로 검사한다. 따라서 정상 UI 사용자가 모두 손상 이미지를 저장하게 되는 결함은 아니다. 인증된 직접 API 요청까지 보장하려면 서버 쪽 구조 검사가 부족하다는 의미다.
@@ -164,14 +167,14 @@ PNG 청크 경계, 필수 청크, 종료, 필요하면 CRC를 가볍게 검사�
 
 다음 항목은 코드 결함으로 판정한 것이 아니라, 사용자의 핵심 요구인 ‘컴퓨터가 꺼져 있어도 무료로 예약 발송’을 입증하기 위해 남아 있는 작업이다. README와 M5 문서에도 미실시로 표시되어 있다.
 
-| 남은 작업 | 완료 증거 |
-| --- | --- |
-| 실제 Free 계정·리소스 구성 | Workers/D1/KV 요금제 및 계정 전체 공유 사용량 확인. 설정의 DB·KV·도메인 placeholder 교체 |
-| 실카카오 연결과 이미지 표시 | 본인 계정 로그인, 나에게 보내기, 휴대전화에서 이미지와 원본 링크 확인 |
-| 클라우드 예약 동작 | PC·브라우저·Codex 종료 후 미리 등록한 미래 시각에 수신한 기록 |
-| 실제 토큰 갱신 | 갱신 성공 및 갱신 뒤 예약 발송, 재연결이 필요한 경우의 복구 확인 |
-| 무료 실행 한도 | 실제 요청·Cron CPU와 D1/KV 사용량 측정, 최대 입력과 발송 배치 경로 확인 |
-| 대상 모바일 브라우저 | 실제 사용할 iOS Safari/Android Chrome에서 카드 생성·복원·시간 입력 확인 |
+| 남은 작업                   | 완료 증거                                                                                |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| 실제 Free 계정·리소스 구성  | Workers/D1/KV 요금제 및 계정 전체 공유 사용량 확인. 설정의 DB·KV·도메인 placeholder 교체 |
+| 실카카오 연결과 이미지 표시 | 본인 계정 로그인, 나에게 보내기, 휴대전화에서 이미지와 원본 링크 확인                    |
+| 클라우드 예약 동작          | PC·브라우저·Codex 종료 후 미리 등록한 미래 시각에 수신한 기록                            |
+| 실제 토큰 갱신              | 갱신 성공 및 갱신 뒤 예약 발송, 재연결이 필요한 경우의 복구 확인                         |
+| 무료 실행 한도              | 실제 요청·Cron CPU와 D1/KV 사용량 측정, 최대 입력과 발송 배치 경로 확인                  |
+| 대상 모바일 브라우저        | 실제 사용할 iOS Safari/Android Chrome에서 카드 생성·복원·시간 입력 확인                  |
 
 Cloudflare 공식 문서의 Workers Free CPU 제한은 HTTP 요청과 Cron 각각 10ms다. 외부 API·DB 응답을 기다리는 시간과 CPU 실행 시간은 다르다. 이 코드는 로컬 빌드와 테스트를 통과했지만 실제 CPU 충족 여부는 원격 측정이 필요하다. 초과한다면 배치 크기·파싱·암호화 경로를 경량화하여 무료 구성 안에서 다시 측정한다.
 
@@ -213,67 +216,151 @@ import { harness, NOW, readyCard, png, type Harness } from './helpers';
 
 // Review-only probes: isolated local D1/KV; no real Kakao calls.
 let h: Harness;
-beforeEach(async () => { h = await harness(); });
-afterEach(async () => { await h.mf.dispose(); });
+beforeEach(async () => {
+  h = await harness();
+});
+afterEach(async () => {
+  await h.mf.dispose();
+});
 
 async function repeat(count: number, perOccurrence = 1) {
-  const assets = await Promise.all(Array.from({ length: count }, () => readyCard(h.env, NOW - 300_000)));
+  const assets = await Promise.all(
+    Array.from({ length: count }, () => readyCard(h.env, NOW - 300_000)),
+  );
   const data: ScheduleInput = {
-    name: 'Review probe', kind: 'daily', date: '2026-09-28', time: '12:05',
-    end_date: null, weekdays: [], cards_per_occurrence: perOccurrence,
-    asset_ids: assets.map(a => a.assetId),
+    name: 'Review probe',
+    kind: 'daily',
+    date: '2026-09-28',
+    time: '12:05',
+    end_date: null,
+    weekdays: [],
+    cards_per_occurrence: perOccurrence,
+    asset_ids: assets.map((a) => a.assetId),
   };
   return { ...(await saveSchedule(data, null, null, h.env, NOW)), data };
 }
 
 it('probe: refresh HTTP 503 permanently pauses even the future schedule', async () => {
   const { id } = await repeat(2);
-  await h.env.DB.prepare("INSERT INTO credentials(singleton,owner_id,access_token,refresh_token,expires_at,refresh_expires_at,version,status) VALUES(1,'42',?,?,?, ?,1,'connected')")
-    .bind(await encrypt('access', h.env.TOKEN_ENCRYPTION_KEY), await encrypt('refresh', h.env.TOKEN_ENCRYPTION_KEY), NOW-1, NOW+86400_000).run();
-  await expect(accessToken(h.env, NOW, async () => Response.json({ error: 'temporarily_unavailable' }, { status: 503 }))).rejects.toMatchObject({ code: 'TOKEN_REJECTED', status: 401 });
-  expect(await h.env.DB.prepare('SELECT status FROM credentials').first('status')).toBe('needs_reconnect');
-  const schedule = (await listSchedules(h.env)).find(s => s.id === id)!;
+  await h.env.DB.prepare(
+    "INSERT INTO credentials(singleton,owner_id,access_token,refresh_token,expires_at,refresh_expires_at,version,status) VALUES(1,'42',?,?,?, ?,1,'connected')",
+  )
+    .bind(
+      await encrypt('access', h.env.TOKEN_ENCRYPTION_KEY),
+      await encrypt('refresh', h.env.TOKEN_ENCRYPTION_KEY),
+      NOW - 1,
+      NOW + 86400_000,
+    )
+    .run();
+  await expect(
+    accessToken(h.env, NOW, async () =>
+      Response.json({ error: 'temporarily_unavailable' }, { status: 503 }),
+    ),
+  ).rejects.toMatchObject({ code: 'TOKEN_REJECTED', status: 401 });
+  expect(await h.env.DB.prepare('SELECT status FROM credentials').first('status')).toBe(
+    'needs_reconnect',
+  );
+  const schedule = (await listSchedules(h.env)).find((s) => s.id === id)!;
   expect([schedule.enabled, schedule.reason]).toEqual([0, 'needs_reconnect']);
   let retries = 0;
-  await expect(accessToken(h.env, NOW+60_000, async () => { retries++; return Response.json({ access_token: 'new', expires_in: 3600 }); })).rejects.toMatchObject({ code: 'NEEDS_RECONNECT' });
+  await expect(
+    accessToken(h.env, NOW + 60_000, async () => {
+      retries++;
+      return Response.json({ access_token: 'new', expires_in: 3600 });
+    }),
+  ).rejects.toMatchObject({ code: 'NEEDS_RECONNECT' });
   expect(retries).toBe(0);
-  console.log('PROBE_AUTH_503', JSON.stringify({status:'needs_reconnect', enabled:schedule.enabled, subsequentTransportCalls:retries}));
+  console.log(
+    'PROBE_AUTH_503',
+    JSON.stringify({
+      status: 'needs_reconnect',
+      enabled: schedule.enabled,
+      subsequentTransportCalls: retries,
+    }),
+  );
 });
 
 it('probe: unknown + pause/resume leaves an active future schedule with no usable retry', async () => {
   const { id } = await repeat(2);
   const due = NOW + 300_000;
-  await runEngine(h.env, { mode:'mock', clock:()=>due, token:async ()=>'mock', sender:async ()=>({outcome:'unknown',detail:'response lost'}) });
-  const delivery = await h.env.DB.prepare("SELECT id FROM deliveries WHERE state='unknown'").first<{id:string}>();
-  await stopSchedule(id, 1, 'paused', h.env, due+10_000);
-  await resumeSchedule(id, 1, h.env, due+20_000);
+  await runEngine(h.env, {
+    mode: 'mock',
+    clock: () => due,
+    token: async () => 'mock',
+    sender: async () => ({ outcome: 'unknown', detail: 'response lost' }),
+  });
+  const delivery = await h.env.DB.prepare("SELECT id FROM deliveries WHERE state='unknown'").first<{
+    id: string;
+  }>();
+  await stopSchedule(id, 1, 'paused', h.env, due + 10_000);
+  await resumeSchedule(id, 1, h.env, due + 20_000);
   const resumed = (await listSchedules(h.env))[0]!;
-  expect([resumed.enabled, resumed.version]).toEqual([1,2]);
+  expect([resumed.enabled, resumed.version]).toEqual([1, 2]);
   let calls = 0;
-  await runEngine(h.env, { mode:'mock', clock:()=>due+86400_000, token:async ()=>'mock', sender:async ()=>{calls++;return {outcome:'mock_sent',detail:'mock'};} });
+  await runEngine(h.env, {
+    mode: 'mock',
+    clock: () => due + 86400_000,
+    token: async () => 'mock',
+    sender: async () => {
+      calls++;
+      return { outcome: 'mock_sent', detail: 'mock' };
+    },
+  });
   expect(calls).toBe(0);
   expect(await h.env.DB.prepare('SELECT count(*) AS n FROM occurrences').first('n')).toBe(1);
-  await expect(resolveUnknown(delivery!.id,'retry',h.env,due+86400_000)).rejects.toMatchObject({code:'SCHEDULE_INACTIVE'});
-  console.log('PROBE_UNKNOWN_TRAP',JSON.stringify({enabled:resumed.enabled,version:resumed.version,nextDayCalls:calls,retryError:'SCHEDULE_INACTIVE'}));
+  await expect(resolveUnknown(delivery!.id, 'retry', h.env, due + 86400_000)).rejects.toMatchObject(
+    { code: 'SCHEDULE_INACTIVE' },
+  );
+  console.log(
+    'PROBE_UNKNOWN_TRAP',
+    JSON.stringify({
+      enabled: resumed.enabled,
+      version: resumed.version,
+      nextDayCalls: calls,
+      retryError: 'SCHEDULE_INACTIVE',
+    }),
+  );
 });
 
 it('probe: pausing a partially sent five-card occurrence discards its two pending cards', async () => {
-  const { id } = await repeat(10,5);
+  const { id } = await repeat(10, 5);
   const due = NOW + 300_000;
-  await runEngine(h.env, {mode:'mock',clock:()=>due,token:async ()=>'mock',sender:sendMock});
-  await stopSchedule(id,1,'paused',h.env,due+10_000);
-  await resumeSchedule(id,1,h.env,due+20_000);
+  await runEngine(h.env, {
+    mode: 'mock',
+    clock: () => due,
+    token: async () => 'mock',
+    sender: sendMock,
+  });
+  await stopSchedule(id, 1, 'paused', h.env, due + 10_000);
+  await resumeSchedule(id, 1, h.env, due + 20_000);
   const schedule = (await listSchedules(h.env))[0]!;
-  const rows = await h.env.DB.prepare('SELECT position,state FROM deliveries ORDER BY position').all<{position:number;state:string}>();
-  expect(rows.results.map(r=>r.state)).toEqual(['mock_sent','mock_sent','mock_sent','cancelled','cancelled']);
+  const rows = await h.env.DB.prepare(
+    'SELECT position,state FROM deliveries ORDER BY position',
+  ).all<{ position: number; state: string }>();
+  expect(rows.results.map((r) => r.state)).toEqual([
+    'mock_sent',
+    'mock_sent',
+    'mock_sent',
+    'cancelled',
+    'cancelled',
+  ]);
   expect(schedule.asset_ids.length).toBe(5);
-  console.log('PROBE_PAUSE_PENDING',JSON.stringify({states:rows.results.map(r=>r.state),remainingAfterResume:schedule.asset_ids.length}));
+  console.log(
+    'PROBE_PAUSE_PENDING',
+    JSON.stringify({
+      states: rows.results.map((r) => r.state),
+      remainingAfterResume: schedule.asset_ids.length,
+    }),
+  );
 });
 
 it('probe: a signature-only PNG is accepted by the server validator', () => {
-  const bytes=png();
+  const bytes = png();
   expect(bytes.byteLength).toBe(33);
-  expect(()=>validatePng(bytes)).not.toThrow();
-  console.log('PROBE_PNG',JSON.stringify({acceptedBytes:bytes.byteLength,containsIdat:false,containsIend:false}));
+  expect(() => validatePng(bytes)).not.toThrow();
+  console.log(
+    'PROBE_PNG',
+    JSON.stringify({ acceptedBytes: bytes.byteLength, containsIdat: false, containsIend: false }),
+  );
 });
 ```

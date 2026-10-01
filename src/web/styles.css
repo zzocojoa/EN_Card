@@ -923,20 +923,16 @@ footer > span:last-child {
 .welcome-word span {
   color: var(--blue);
 }
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
+.modal::backdrop {
   background: #17203270;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  z-index: 10;
 }
 .modal {
+  border: 0;
+  color: inherit;
   background: white;
   border-radius: 12px;
   padding: 30px;
-  width: min(520px, 100%);
+  width: min(520px, calc(100% - 40px));
   max-height: calc(100dvh - 40px);
   overflow-y: auto;
 }

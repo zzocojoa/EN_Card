@@ -61,21 +61,21 @@ npm run dev
 
 2026-09-30 아래 계정·리소스·Secret 설정과 본인 카카오 OAuth 연결을 완료했습니다. 20:06 한 장의 실제 API 접수·CPU 5/5/10ms와 사용자 휴대전화의 이미지·원본 링크를 확인했습니다. 현재 원격은 23:45 일회 종료 시험을 위해 live이며 PC 종료 수신·정상 토큰 갱신은 아직 미검증입니다. 값 자체를 채팅·Git·로그에 남기지 마세요. 기본 `wrangler.jsonc`는 placeholder와 `SEND_MODE=dry_run`을 유지합니다. 실제 값은 Git 제외 파일 `wrangler.deploy.jsonc`에 넣고 live는 `wrangler.live.jsonc`로 분리합니다. 비공개 자식 설정은 `wrangler.delivery.deploy.jsonc`입니다. 세 파일은 프로젝트 루트에 둡니다.
 
-| 입력·확인            | 입력 위치·확인 방법                                                                                          | 현재 상태                               |
-| -------------------- | ------------------------------------------------------------------------------------------------------------ | --------------------------------------- |
-| Cloudflare 계정      | Dashboard의 Workers Free 플랜·공유 사용량·유료 부가 상품 유무 확인. Wrangler 로그인 계정과 일치              | Free·계정 일치 확인; 공유 사용량 미측정 |
-| D1 식별자            | `d1_databases[0].database_name/database_id`, 바인딩 `DB`. 기존 DB가 있으면 재사용                            | 전용 en-card·9개 마이그레이션 적용      |
-| KV 식별자            | `kv_namespaces[0].id`, 바인딩 `CARD_IMAGES`. 기존 이미지 namespace 보존                                      | 전용 CARD_IMAGES 생성                   |
-| workers.dev 주소     | Dashboard의 계정 하위 도메인과 Worker 이름으로 실제 HTTPS 주소 확인. `vars.APP_ORIGIN`에 끝 슬래시 없이 입력 | 실제 배포·APP_ORIGIN 일치               |
-| 실행 모드            | 두 설정 모두 `COST_MODE=free_only`; deploy 파일은 `dry_run`, live 파일만 명시적으로 `live`                   | 기본 dry_run                            |
-| 카카오 앱            | Kakao Developers에서 개인용 앱, 카카오 로그인, 본인 계정 접근 설정 확인                                      | EN_Card 생성·로그인 ON·OAuth 완료       |
-| Redirect URI         | `APP_ORIGIN/auth/callback`을 완전히 일치하게 등록                                                            | 등록·일치 확인                          |
-| 웹 도메인·동의       | 메시지 링크 웹 도메인에 APP_ORIGIN 등록, `talk_message` 동의 항목 설정·실제 동의 확인                        | 도메인·선택 동의·실제 동의 완료         |
-| KAKAO_REST_API_KEY   | 해당 Worker Secret 입력창 또는 아래 `secret put`의 숨김 입력                                                 | 등록 완료                               |
-| KAKAO_CLIENT_SECRET  | Kakao 앱의 Client Secret과 같은 Worker Secret                                                                | 재발급한 새 값 등록                     |
-| TOKEN_ENCRYPTION_KEY | 별도 무작위 32바이트 base64 Worker Secret. 암호화 자료 복구에 필요하므로 개인 비밀 저장소에도 보관           | 등록·DPAPI 백업                         |
-| SESSION_SECRET       | 별도 무작위 최소 32자 Worker Secret                                                                          | 등록·DPAPI 백업                         |
-| SETUP_TOKEN          | 별도 무작위 최소 32자 Worker Secret. 최초 운영자 등록 화면에서만 입력                                        | 등록·DPAPI 백업                         |
+| 입력·확인            | 입력 위치·확인 방법                                                                                          | 현재 상태                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| Cloudflare 계정      | Dashboard의 Workers Free 플랜·공유 사용량·유료 부가 상품 유무 확인. Wrangler 로그인 계정과 일치              | Free·계정 일치 확인; 공유 사용량 미측정     |
+| D1 식별자            | `d1_databases[0].database_name/database_id`, 바인딩 `DB`. 기존 DB가 있으면 재사용                            | 운영 9개 적용, 0010은 로컬 검증·운영 미적용 |
+| KV 식별자            | `kv_namespaces[0].id`, 바인딩 `CARD_IMAGES`. 기존 이미지 namespace 보존                                      | 전용 CARD_IMAGES 생성                       |
+| workers.dev 주소     | Dashboard의 계정 하위 도메인과 Worker 이름으로 실제 HTTPS 주소 확인. `vars.APP_ORIGIN`에 끝 슬래시 없이 입력 | 실제 배포·APP_ORIGIN 일치                   |
+| 실행 모드            | 두 설정 모두 `COST_MODE=free_only`; deploy 파일은 `dry_run`, live 파일만 명시적으로 `live`                   | 기본 dry_run                                |
+| 카카오 앱            | Kakao Developers에서 개인용 앱, 카카오 로그인, 본인 계정 접근 설정 확인                                      | EN_Card 생성·로그인 ON·OAuth 완료           |
+| Redirect URI         | `APP_ORIGIN/auth/callback`을 완전히 일치하게 등록                                                            | 등록·일치 확인                              |
+| 웹 도메인·동의       | 메시지 링크 웹 도메인에 APP_ORIGIN 등록, `talk_message` 동의 항목 설정·실제 동의 확인                        | 도메인·선택 동의·실제 동의 완료             |
+| KAKAO_REST_API_KEY   | 해당 Worker Secret 입력창 또는 아래 `secret put`의 숨김 입력                                                 | 등록 완료                                   |
+| KAKAO_CLIENT_SECRET  | Kakao 앱의 Client Secret과 같은 Worker Secret                                                                | 재발급한 새 값 등록                         |
+| TOKEN_ENCRYPTION_KEY | 별도 무작위 32바이트 base64 Worker Secret. 암호화 자료 복구에 필요하므로 개인 비밀 저장소에도 보관           | 등록·DPAPI 백업                             |
+| SESSION_SECRET       | 별도 무작위 최소 32자 Worker Secret                                                                          | 등록·DPAPI 백업                             |
+| SETUP_TOKEN          | 별도 무작위 최소 32자 Worker Secret. 최초 운영자 등록 화면에서만 입력                                        | 등록·DPAPI 백업                             |
 
 `.dev.vars.example`은 형식 예시입니다. `.dev.vars`의 로컬 테스트 값을 운영에 복사하지 않습니다. 비밀값은 개인 비밀 관리 도구에서 생성하여 Secret 입력창에 직접 넣습니다. [카카오 로그인](https://developers.kakao.com/docs/ko/kakaologin/rest-api), [메시지](https://developers.kakao.com/docs/ko/kakaotalk-message/rest-api), [피드 규격](https://developers.kakao.com/docs/ko/message-template/default)을 배포 직전 확인하세요.
 
@@ -133,7 +133,7 @@ npx wrangler d1 migrations apply DB --remote --config "$DEPLOY_CONFIG"
 npx wrangler d1 execute DB --remote --config "$DEPLOY_CONFIG" --command "PRAGMA foreign_key_check; SELECT name FROM d1_migrations ORDER BY id;" --json
 ```
 
-신규 DB에서 `d1_migrations`가 아직 없으면 이력 내보내기만 생략하고 빈 DB임을 기록합니다. 나머지 오류는 중단하여 조사합니다. 새 DB에는 0001~0009, 기존 DB에는 미적용 파일만 순서대로 적용합니다. 0001~0008 파일은 변경하지 않았습니다. 0009는 취소 이력을 보존하면서 일시정지 미발송의 복구 관계·선택 보호를 추가합니다. FK 검사 결과가 비어 있고 적용 이력에 0009가 있어야 새 서버를 배포합니다. 전체 백업은 암호화 토큰·개인 정보를 포함하므로 접근 제한된 개인 저장소에 보관합니다. [D1 내보내기·가져오기](https://developers.cloudflare.com/d1/best-practices/import-export-data/)를 참고하세요.
+신규 DB에서 `d1_migrations`가 아직 없으면 이력 내보내기만 생략하고 빈 DB임을 기록합니다. 나머지 오류는 중단하여 조사합니다. 새 DB에는 0001~0010, 기존 DB에는 미적용 파일만 순서대로 적용합니다. 적용된 0001~0009 파일은 변경하지 않았습니다. 0009는 일시정지 미발송의 복구 관계·선택 보호를 추가합니다. 0010은 현재 예약의 일시정지 상태 때문에 잘못 편입된 `error='예약 수정'`의 미결정 복구 관계만 제거합니다. 완료된 복구·제외 결정, 원래 delivery·호출 이력·예산은 보존합니다. FK 검사 결과가 비어 있고 적용 이력에 0010이 있어야 수정 서버를 배포합니다. 전체 백업은 암호화 토큰·개인 정보를 포함하므로 접근 제한된 개인 저장소에 보관합니다. [D1 내보내기·가져오기](https://developers.cloudflare.com/d1/best-practices/import-export-data/)를 참고하세요.
 
 ### Windows 마이그레이션 오류 복구 기록
 

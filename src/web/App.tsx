@@ -12,6 +12,7 @@ import seeds from '../../seed/cards.json';
 import { api, upload, type AppState, type AttemptHistory, type Boot, type Collection } from './api';
 import type { Page as ResultPage } from '../worker/pagination';
 import { PauseDialog, RecoveryDialog } from './PauseDialogs';
+import { Modal } from './Modal';
 import { downloadBlob, pngBlob, renderCard, validateBackup } from './canvas';
 
 type Page = 'editor' | 'library' | 'schedules' | 'history' | 'settings';
@@ -175,7 +176,17 @@ export function App(): ReactElement {
   const [unknownId, setUnknownId] = useState<string | null>(null);
   const [acceptDuplicate, setAcceptDuplicate] = useState<boolean>(false);
   const preview = useRef<HTMLDivElement>(null);
+  const modalOpener = useRef<HTMLElement | null>(null);
+  const hadModal = useRef(false);
   const authenticated: boolean = state !== null;
+  useEffect(() => {
+    if (authenticated && (pauseConfirm || recovery || unknownId)) {
+      hadModal.current = true;
+    } else if (hadModal.current && !busy) {
+      hadModal.current = false;
+      if (modalOpener.current?.isConnected) modalOpener.current.focus();
+    }
+  }, [authenticated, pauseConfirm, recovery, unknownId, busy]);
   async function refresh(): Promise<void> {
     setState((await api('/api/state', 'GET', null, '')) as AppState);
   }
@@ -1203,7 +1214,8 @@ export function App(): ReactElement {
                             <button
                               className="text-button"
                               disabled={busy}
-                              onClick={() =>
+                              onClick={(event) => {
+                                modalOpener.current = event.currentTarget;
                                 void perform(async () => {
                                   if (canPauseSchedule(item)) {
                                     setPauseConfirm(
@@ -1235,8 +1247,8 @@ export function App(): ReactElement {
                                     );
                                   }
                                   await refresh();
-                                })
-                              }
+                                });
+                              }}
                             >
                               {canPauseSchedule(item)
                                 ? '일시정지'
@@ -1269,6 +1281,7 @@ export function App(): ReactElement {
                       <PauseDialog
                         preview={pauseConfirm}
                         busy={busy}
+                        returnFocus={modalOpener.current}
                         onClose={() => setPauseConfirm(null)}
                         onPause={() =>
                           void perform(async () => {
@@ -1297,6 +1310,7 @@ export function App(): ReactElement {
                           .join(',')}
                         preview={recovery}
                         busy={busy}
+                        returnFocus={modalOpener.current}
                         onClose={() => setRecovery(null)}
                         onHistoryMore={() =>
                           void perform(async () => {
@@ -1472,7 +1486,8 @@ export function App(): ReactElement {
                           {item.state === 'unknown' && item.resolution !== 'abandoned' ? (
                             <button
                               className="secondary"
-                              onClick={() => {
+                              onClick={(event) => {
+                                modalOpener.current = event.currentTarget;
                                 setUnknownId(item.id);
                                 setAcceptDuplicate(false);
                               }}
@@ -1505,60 +1520,62 @@ export function App(): ReactElement {
                     집계는 불러온 기록 기준입니다.
                   </p>
                   {unknownId ? (
-                    <div className="modal-backdrop">
-                      <section
-                        className="modal"
-                        role="dialog"
-                        aria-modal="true"
-                        aria-label="결과 불명 확인"
-                      >
-                        <h2>먼저 나와의 채팅을 확인하세요.</h2>
-                        <p>
-                          이미 도착한 메시지를 재시도하면 중복으로 받을 수 있습니다. 사용자 확인
-                          사실과 새 시도는 별도로 기록됩니다. 수신 여부를 알 수 없다면 재전송하지
-                          않고 종료할 수 있습니다. 이는 수신 확인이 아니며 이후 이 건을 다시 보내지
-                          않습니다.
-                        </p>
-                        <label className="check-row">
-                          <input
-                            type="checkbox"
-                            checked={acceptDuplicate}
-                            onChange={(event) => setAcceptDuplicate(event.target.checked)}
-                          />
-                          재시도의 중복 위험과 재전송 없이 종료의 의미를 이해했습니다.
-                        </label>
-                        <div className="toolbar">
-                          {(['confirm_sent', 'retry', 'abandon'] as const).map((action) => (
-                            <button
-                              className="secondary"
-                              key={action}
-                              disabled={busy || !acceptDuplicate}
-                              onClick={() =>
-                                void perform(async () => {
-                                  await api(
-                                    `/api/deliveries/${unknownId}/resolve`,
-                                    'POST',
-                                    { action, warning_accepted: true },
-                                    state.csrf,
-                                  );
-                                  setUnknownId(null);
-                                  await refresh();
-                                })
-                              }
-                            >
-                              {action === 'confirm_sent'
-                                ? '이미 수신함'
-                                : action === 'retry'
-                                  ? '다시 보내기'
-                                  : '재전송하지 않고 종료'}
-                            </button>
-                          ))}
-                          <button className="text-button" onClick={() => setUnknownId(null)}>
-                            닫기
+                    <Modal
+                      label="결과 불명 확인"
+                      busy={busy}
+                      returnFocus={modalOpener.current}
+                      onClose={() => setUnknownId(null)}
+                    >
+                      <h2 tabIndex={-1}>먼저 나와의 채팅을 확인하세요.</h2>
+                      <p>
+                        이미 도착한 메시지를 재시도하면 중복으로 받을 수 있습니다. 사용자 확인
+                        사실과 새 시도는 별도로 기록됩니다. 수신 여부를 알 수 없다면 재전송하지 않고
+                        종료할 수 있습니다. 이는 수신 확인이 아니며 이후 이 건을 다시 보내지
+                        않습니다.
+                      </p>
+                      <label className="check-row">
+                        <input
+                          type="checkbox"
+                          checked={acceptDuplicate}
+                          onChange={(event) => setAcceptDuplicate(event.target.checked)}
+                        />
+                        재시도의 중복 위험과 재전송 없이 종료의 의미를 이해했습니다.
+                      </label>
+                      <div className="toolbar">
+                        {(['confirm_sent', 'retry', 'abandon'] as const).map((action) => (
+                          <button
+                            className="secondary"
+                            key={action}
+                            disabled={busy || !acceptDuplicate}
+                            onClick={() =>
+                              void perform(async () => {
+                                await api(
+                                  `/api/deliveries/${unknownId}/resolve`,
+                                  'POST',
+                                  { action, warning_accepted: true },
+                                  state.csrf,
+                                );
+                                setUnknownId(null);
+                                await refresh();
+                              })
+                            }
+                          >
+                            {action === 'confirm_sent'
+                              ? '이미 수신함'
+                              : action === 'retry'
+                                ? '다시 보내기'
+                                : '재전송하지 않고 종료'}
                           </button>
-                        </div>
-                      </section>
-                    </div>
+                        ))}
+                        <button
+                          className="text-button"
+                          disabled={busy}
+                          onClick={() => setUnknownId(null)}
+                        >
+                          닫기
+                        </button>
+                      </div>
+                    </Modal>
                   ) : null}
                 </>
               ) : null}

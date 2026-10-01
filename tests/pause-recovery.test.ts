@@ -297,7 +297,187 @@ it('R3 원문 카드가 수정되어도 이전 고정 payload와 PNG 버전으�
       .first(),
   ).toEqual({ asset_id: old.asset_id, payload: old.payload });
 });
-it('R3 기존 0008 DB의 취소 이력을 보존하며 0009가 복구 후보를 구성한다', async () => {
+async function applyProvenanceMigration(): Promise<void> {
+  await h.env.DB.exec(
+    (
+      await readFile(
+        new URL('../migrations/0010_recovery_cancellation_provenance.sql', import.meta.url),
+        'utf8',
+      )
+    ).replaceAll('\n', ' '),
+  );
+}
+async function legacyEditedDelivery(): Promise<{ id: string; editedDeliveryId: string }> {
+  await h.mf.dispose();
+  h = await harnessThrough('0008_token_refresh_recovery.sql');
+  const assets = await Promise.all(
+    Array.from({ length: 7 }, () => readyCard(h.env, NOW - 300_000)),
+  );
+  const input = {
+    name: 'R9 예약 수정 이력',
+    kind: 'daily',
+    date: '2026-09-28',
+    time: '12:00',
+    end_date: null,
+    weekdays: [],
+    cards_per_occurrence: 4,
+    asset_ids: assets.slice(0, 4).map((item) => item.assetId),
+  };
+  const { id } = await saveSchedule(input, null, null, h.env, NOW - 300_000);
+  await tick(NOW);
+  const editedDeliveryId = await h.env.DB.prepare(
+    "SELECT id FROM deliveries WHERE state='pending'",
+  ).first<string>('id');
+  expect(editedDeliveryId).toBeTruthy();
+  await saveSchedule(
+    {
+      ...input,
+      time: '12:10',
+      cards_per_occurrence: 2,
+      asset_ids: assets.slice(3).map((item) => item.assetId),
+    },
+    id,
+    { version: 1, cursor: 4 },
+    h.env,
+    NOW + 1,
+  );
+  await tick(NOW + 600_000);
+  expect(
+    await h.env.DB.prepare(
+      "SELECT count(*) AS n FROM deliveries WHERE asset_id=? AND state='mock_sent'",
+    )
+      .bind(assets[3]!.assetId)
+      .first('n'),
+  ).toBe(1);
+  await stopSchedule(id, 2, 'paused', h.env, NOW + 600_000);
+  await h.env.DB.exec(
+    (
+      await readFile(new URL('../migrations/0009_pause_recovery.sql', import.meta.url), 'utf8')
+    ).replaceAll('\n', ' '),
+  );
+  expect((await recoveryPreview(id, 2, h.env)).items).toEqual([
+    expect.objectContaining({ delivery_id: editedDeliveryId, available: true }),
+  ]);
+  return { id, editedDeliveryId: editedDeliveryId! };
+}
+it('R9 0008 업그레이드에서 이미 다른 버전으로 보낸 옛 예약 수정 이력을 복구에서 제거한다', async () => {
+  const { id, editedDeliveryId } = await legacyEditedDelivery();
+  const original = (await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results;
+  const usage = (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results;
+  await expect(resumeSchedule(id, 2, h.env, NOW + 600_000)).rejects.toMatchObject({
+    code: 'RECOVERY_DECISION_REQUIRED',
+  });
+  await applyProvenanceMigration();
+  expect(await recoveryPreview(id, 2, h.env)).toMatchObject({ items: [], pending_count: 0 });
+  await expect(
+    decideRecovery(
+      id,
+      {
+        version: 2,
+        recover_ids: [editedDeliveryId],
+        exclude_ids: [],
+        date: '2026-09-28',
+        time: '12:20',
+        warning_accepted: true,
+      },
+      h.env,
+      NOW + 600_000,
+    ),
+  ).rejects.toMatchObject({ code: 'RECOVERY_CHANGED' });
+  await expect(resumeSchedule(id, 2, h.env, NOW + 600_000)).resolves.toBeUndefined();
+  expect(
+    await h.env.DB.prepare('SELECT version,enabled,cursor FROM schedules WHERE id=?')
+      .bind(id)
+      .first(),
+  ).toEqual({ version: 3, enabled: 1, cursor: 0 });
+  expect((await h.env.DB.prepare('SELECT * FROM deliveries ORDER BY id').all()).results).toEqual(
+    original,
+  );
+  expect(
+    (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results,
+  ).toEqual(usage);
+  expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+});
+it.each(['reschedule', 'exclude'] as const)(
+  'R9 보정은 이미 완료된 옛 수정 이력의 %s 결정을 되돌리지 않는다',
+  async (decision) => {
+    const { id, editedDeliveryId } = await legacyEditedDelivery();
+    await decideRecovery(
+      id,
+      {
+        version: 2,
+        recover_ids: decision === 'reschedule' ? [editedDeliveryId] : [],
+        exclude_ids: decision === 'exclude' ? [editedDeliveryId] : [],
+        date: decision === 'reschedule' ? '2026-09-28' : null,
+        time: decision === 'reschedule' ? '12:20' : null,
+        warning_accepted: true,
+      },
+      h.env,
+      NOW + 600_000,
+    );
+    const relations = (
+      await h.env.DB.prepare('SELECT * FROM pause_recoveries ORDER BY delivery_id').all()
+    ).results;
+    const items = (
+      await h.env.DB.prepare(
+        'SELECT * FROM schedule_items ORDER BY schedule_id,version,position',
+      ).all()
+    ).results;
+    await applyProvenanceMigration();
+    expect(
+      (await h.env.DB.prepare('SELECT * FROM pause_recoveries ORDER BY delivery_id').all()).results,
+    ).toEqual(relations);
+    expect(
+      (
+        await h.env.DB.prepare(
+          'SELECT * FROM schedule_items ORDER BY schedule_id,version,position',
+        ).all()
+      ).results,
+    ).toEqual(items);
+    expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+  },
+);
+it.each(['pending', 'reschedule', 'exclude'] as const)(
+  'R9 보정은 진짜 일시정지의 %s 관계와 미결정 후보를 보존한다',
+  async (decision) => {
+    await h.mf.dispose();
+    h = await harnessThrough('0008_token_refresh_recovery.sql');
+    const id = await prepared();
+    await tick(due);
+    await stopSchedule(id, 1, 'paused', h.env, due);
+    await h.env.DB.exec(
+      (
+        await readFile(new URL('../migrations/0009_pause_recovery.sql', import.meta.url), 'utf8')
+      ).replaceAll('\n', ' '),
+    );
+    const deliveryId = (await recoveryPreview(id, 1, h.env)).items[0]!.delivery_id;
+    if (decision !== 'pending')
+      await decideRecovery(
+        id,
+        {
+          version: 1,
+          recover_ids: decision === 'reschedule' ? [deliveryId] : [],
+          exclude_ids: decision === 'exclude' ? [deliveryId] : [],
+          date: decision === 'reschedule' ? '2026-09-28' : null,
+          time: decision === 'reschedule' ? '12:10' : null,
+          warning_accepted: true,
+        },
+        h.env,
+        due,
+      );
+    const original = (
+      await h.env.DB.prepare('SELECT * FROM pause_recoveries ORDER BY delivery_id').all()
+    ).results;
+    const plan = await recoveryPreview(id, 1, h.env);
+    await applyProvenanceMigration();
+    expect(
+      (await h.env.DB.prepare('SELECT * FROM pause_recoveries ORDER BY delivery_id').all()).results,
+    ).toEqual(original);
+    expect(await recoveryPreview(id, 1, h.env)).toEqual(plan);
+    expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+  },
+);
+it('R3 기존 0008 DB의 취소 이력을 보존하며 0009·0010이 복구 후보를 구성한다', async () => {
   await h.mf.dispose();
   h = await harnessThrough('0008_token_refresh_recovery.sql');
   const id: string = await prepared();
@@ -317,6 +497,8 @@ it('R3 기존 0008 DB의 취소 이력을 보존하며 0009가 복구 후보를 
     (await h.env.DB.prepare('SELECT * FROM usage_counters ORDER BY day').all()).results,
   ).toEqual(usage);
   expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+  expect((await recoveryPreview(id, 1, h.env)).items).toHaveLength(2);
+  await applyProvenanceMigration();
   expect((await recoveryPreview(id, 1, h.env)).items).toHaveLength(2);
   await decideRecovery(id, await selection(id), h.env, due);
 });
@@ -353,6 +535,7 @@ async function accumulatedPause(count: number = 45): Promise<string> {
       await readFile(new URL('../migrations/0009_pause_recovery.sql', import.meta.url), 'utf8')
     ).replaceAll('\n', ' '),
   );
+  await applyProvenanceMigration();
   return id;
 }
 

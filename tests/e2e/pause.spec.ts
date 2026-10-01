@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { AppState } from '../../src/web/api';
 import { seed } from './db';
+import { expectModalFocus } from './modal';
 
 for (const [scenarioIndex, scenario] of (
   [
@@ -90,17 +91,29 @@ for (const [scenarioIndex, scenario] of (
         );
         await page.reload();
         await page.getByRole('button', { name: '발송 예약', exact: true }).click();
-        const article = page.locator('.schedule-card').filter({ hasText: name }).first();
+        const article = page
+          .locator('.schedule-card')
+          .filter({ has: page.getByRole('heading', { name, exact: true }) });
         await expect(article.getByRole('button', { name: '일시정지', exact: true })).toHaveCount(1);
         await article.getByRole('button', { name: '일시정지', exact: true }).click();
         const pause = page.getByRole('dialog', { name: '일시정지 확인' });
         await expect(pause).toContainText('미발송 2장');
         await expect(pause).toContainText('복구 카드 4');
         await expect(pause).toContainText('복구 카드 5');
+        await expectModalFocus(page, pause);
+        await page.keyboard.press('Escape');
+        await expect(pause).toHaveCount(0);
+        await expect(article.getByRole('button', { name: '일시정지', exact: true })).toBeFocused();
+        await article.getByRole('button', { name: '일시정지', exact: true }).click();
         await pause.getByRole('button', { name: '일시정지 실행' }).click();
         const recovery = page.getByRole('dialog', { name: '미발송 카드 다시 예약' });
         const remaining: number = scenario.count - 5;
         await expect(recovery).toContainText(`${remaining}장은 기존 예약에 남아`);
+        await expectModalFocus(page, recovery);
+        await page.keyboard.press('Escape');
+        await expect(recovery).toHaveCount(0);
+        await article.getByRole('button', { name: '재개', exact: true }).click();
+        await expectModalFocus(page, recovery);
         if (choice === '제외') {
           await recovery.getByLabel('복구 카드 4', { exact: true }).uncheck();
           await recovery.getByLabel('복구 카드 5', { exact: true }).uncheck();
@@ -119,6 +132,10 @@ for (const [scenarioIndex, scenario] of (
         }
         await expect(recovery).toHaveCount(0);
         const after = (await (await page.request.get('/api/state')).json()) as AppState;
+        if (remaining)
+          await expect(
+            article.getByRole('button', { name: '일시정지', exact: true }),
+          ).toBeFocused();
         const parent = after.schedules.find((item) => item.id === schedule.id)!;
         expect(parent).toMatchObject(
           remaining

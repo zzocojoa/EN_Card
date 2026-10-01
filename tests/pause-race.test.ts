@@ -3,6 +3,7 @@ import { runEngine } from '../src/worker/engine';
 import production from '../src/worker/index';
 import delivery from '../src/worker/delivery-service';
 import { encrypt } from '../src/worker/crypto';
+import { deleteImage } from '../src/worker/storage';
 import { decideRecovery, recoveryPreview } from '../src/worker/pause-recovery';
 import { resumeSchedule, saveSchedule, stopSchedule } from '../src/worker/schedules';
 import type { SendResult } from '../src/shared/model';
@@ -137,13 +138,55 @@ it.each(['mock_sent', 'unknown'] as const)(
     else await resumeSchedule(id, 1, h.env, NOW);
   },
 );
-it('R8 취소 뒤 거절은 일시정지 복구 후보를 만들지 않는다', async () => {
-  const id = await finishPaused('retry', 'cancelled');
-  expect((await recoveryPreview(id, 1, h.env)).items).toHaveLength(0);
-  expect(
-    await h.env.DB.prepare('SELECT reason FROM schedules WHERE id=?').bind(id).first('reason'),
-  ).toBe('cancelled');
-});
+it.each(['retry', 'unauthorized', 'reconnect', 'failed'] as const)(
+  'R10 취소 뒤 %s 거절은 호출 이력을 보존하고 이미지를 정리할 수 있다',
+  async (outcome) => {
+    const id = await finishPaused(outcome, 'cancelled');
+    expect((await recoveryPreview(id, 1, h.env)).items).toHaveLength(0);
+    expect(
+      await h.env.DB.prepare('SELECT reason FROM schedules WHERE id=?').bind(id).first('reason'),
+    ).toBe('cancelled');
+    const item = await h.env.DB.prepare(
+      'SELECT state,asset_id,claim_owner,claim_until,retry_at FROM deliveries WHERE schedule_id=?',
+    )
+      .bind(id)
+      .first<{
+        state: string;
+        asset_id: string;
+        claim_owner: string | null;
+        claim_until: number | null;
+        retry_at: number | null;
+      }>();
+    expect(item).toMatchObject({
+      state: 'cancelled',
+      claim_owner: null,
+      claim_until: null,
+      retry_at: null,
+    });
+    expect(await h.env.DB.prepare('SELECT outcome FROM delivery_attempts').first('outcome')).toBe(
+      outcome === 'retry' || outcome === 'unauthorized'
+        ? 'retry_wait'
+        : outcome === 'reconnect'
+          ? 'blocked'
+          : 'failed',
+    );
+    await expect(deleteImage(item!.asset_id, h.env, NOW)).resolves.toBeUndefined();
+  },
+);
+it.each(['mock_sent', 'unknown'] as const)(
+  'R10 취소 뒤 %s 결과는 원래 결과와 이미지 보호 정책을 보존한다',
+  async (outcome) => {
+    const id = await finishPaused(outcome, 'cancelled');
+    const item = await h.env.DB.prepare('SELECT state,asset_id FROM deliveries WHERE schedule_id=?')
+      .bind(id)
+      .first<{ state: string; asset_id: string }>();
+    expect(item?.state).toBe(outcome);
+    expect((await recoveryPreview(id, 1, h.env)).items).toHaveLength(0);
+    if (outcome === 'unknown')
+      await expect(deleteImage(item!.asset_id, h.env, NOW)).rejects.toThrow('asset_in_use');
+    else await expect(deleteImage(item!.asset_id, h.env, NOW)).resolves.toBeUndefined();
+  },
+);
 it.each(['retry', 'unauthorized'] as const)(
   'R8 %s 재시도 소진 중 일시정지도 원래 모든 호출 이력으로 복구 여부를 판단한다',
   async (outcome) => {
@@ -175,14 +218,16 @@ it.each(['retry', 'unauthorized'] as const)(
     );
   },
 );
-it.each([
-  { status: 429, code: -10, newConnection: false },
-  { status: 401, code: -401, newConnection: false },
-  { status: 403, code: -402, newConnection: false },
-  { status: 403, code: -402, newConnection: true },
-])(
-  'R8 운영 Cron→HTTP 발송 Worker의 $status/$code 응답 경합·새 연결 $newConnection도 복구 후보로 남긴다',
-  async ({ status, code, newConnection }) => {
+it.each(
+  [
+    { status: 429, code: -10, newConnection: false },
+    { status: 401, code: -401, newConnection: false },
+    { status: 403, code: -402, newConnection: false },
+    { status: 403, code: -402, newConnection: true },
+  ].flatMap((item) => (['paused', 'cancelled'] as const).map((reason) => ({ ...item, reason }))),
+)(
+  'R8·R10 운영 Cron→HTTP 발송 Worker의 $status/$code 응답·새 연결 $newConnection·중지 $reason을 보존한다',
+  async ({ status, code, newConnection, reason }) => {
     const id = await prepared();
     const token = await encrypt('synthetic-r8-token', h.env.TOKEN_ENCRYPTION_KEY);
     await h.env.DB.prepare(
@@ -197,7 +242,7 @@ it.each([
     vi.stubGlobal('fetch', async (input: RequestInfo | URL, init?: RequestInit) => {
       if (String(input) === 'https://kapi.kakao.com/v2/api/talk/memo/default/send') {
         calls++;
-        await stopSchedule(id, 1, 'paused', env, NOW);
+        await stopSchedule(id, 1, reason, env, NOW);
         if (newConnection)
           await env.DB.prepare("UPDATE credentials SET version=2,status='connected'").run();
         return Response.json({ code }, { status });
@@ -210,13 +255,24 @@ it.each([
     } as unknown as Fetcher;
     await production.scheduled({} as ScheduledController, env);
     expect(calls).toBe(1);
-    expect((await recoveryPreview(id, 1, env)).items[0]).toMatchObject({
-      state: 'cancelled',
-      available: true,
-    });
-    await expect(
-      resumeSchedule(id, 1, { ...env, SEND_MODE: 'dry_run' }, NOW),
-    ).rejects.toMatchObject({ code: 'RECOVERY_DECISION_REQUIRED' });
+    if (reason === 'paused') {
+      expect((await recoveryPreview(id, 1, env)).items[0]).toMatchObject({
+        state: 'cancelled',
+        available: true,
+      });
+      await expect(
+        resumeSchedule(id, 1, { ...env, SEND_MODE: 'dry_run' }, NOW),
+      ).rejects.toMatchObject({ code: 'RECOVERY_DECISION_REQUIRED' });
+    } else {
+      expect((await recoveryPreview(id, 1, env)).items).toHaveLength(0);
+      const item = await env.DB.prepare(
+        'SELECT state,asset_id,claim_owner,retry_at FROM deliveries WHERE schedule_id=?',
+      )
+        .bind(id)
+        .first<{ state: string; asset_id: string }>();
+      expect(item).toMatchObject({ state: 'cancelled', claim_owner: null, retry_at: null });
+      await expect(deleteImage(item!.asset_id, env, NOW)).resolves.toBeUndefined();
+    }
     await production.scheduled({} as ScheduledController, env);
     expect(calls).toBe(1);
     expect(await env.DB.prepare('SELECT count(*) FROM delivery_attempts').first('count(*)')).toBe(
