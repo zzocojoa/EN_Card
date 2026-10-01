@@ -54,7 +54,7 @@ it('운영 live는 비공개 발송 바인딩 없이 직접 발송하지 않는�
   await expect(production.scheduled({} as ScheduledController, env)).rejects.toThrow('비공개 발송');
   expect(await env.DB.prepare('SELECT count(*) FROM occurrences').first('count(*)')).toBe(0);
 });
-it('발송 Worker는 허용한 POST 두 경로와 무료 live 설정만 받는다', async () => {
+it('발송 Worker는 허용한 POST 내부 경로와 무료 live 설정만 받는다', async () => {
   const env = await live();
   expect(
     (await delivery.fetch(new Request(env.APP_ORIGIN + '/_internal/deliver'), env)).status,

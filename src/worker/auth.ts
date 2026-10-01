@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { LIMITS } from '../shared/model';
 import { isTokenError, tokenError, type TokenError, type TokenFailure } from './token-errors';
-import { decrypt, digest, encrypt, randomToken } from './crypto';
+import { decrypt, digest, encrypt, randomToken, tokenCipher, type TokenCipher } from './crypto';
 import { kakaoOwner, nativeTransport, requestTokens } from './kakao';
 import { readJson } from './storage';
 import {
@@ -240,9 +240,14 @@ function storageConfigError(): TokenError {
     null,
   );
 }
-async function readStoredToken(value: string, row: Credentials, env: Env): Promise<string> {
+async function readStoredToken(
+  value: string,
+  row: Credentials,
+  env: Env,
+  cipher: TokenCipher,
+): Promise<string> {
   try {
-    const token = await decrypt(value, env.TOKEN_ENCRYPTION_KEY);
+    const token = await cipher.decrypt(value);
     if (!token) throw storageConfigError();
     return token;
   } catch {
@@ -329,9 +334,10 @@ export async function accessToken(
       null,
     );
   if (row.status !== 'connected') throw storedRefreshError(row);
+  const cipher: TokenCipher = tokenCipher(env.TOKEN_ENCRYPTION_KEY);
   if (row.expires_at > now + 60_000)
     return {
-      token: await readStoredToken(row.access_token, row, env),
+      token: await readStoredToken(row.access_token, row, env, cipher),
       version: row.version,
       expiresAt: row.expires_at,
     };
@@ -383,7 +389,7 @@ export async function accessToken(
       null,
       now + 60_000,
     );
-  const refreshToken: string = await readStoredToken(row.refresh_token, row, env);
+  const refreshToken: string = await readStoredToken(row.refresh_token, row, env, cipher);
   const owner: string = randomToken();
   const locked = await env.DB.prepare(
     "UPDATE credentials SET lock_owner=?,lock_until=?,refresh_attempts=refresh_attempts+1 WHERE singleton=1 AND version=? AND status='connected' AND lock_owner IS NULL AND refresh_attempts=? AND refresh_attempts<? AND (refresh_retry_at IS NULL OR refresh_retry_at<=?) AND (refresh_failure IS NULL OR refresh_failure='transient') RETURNING *",
@@ -411,7 +417,7 @@ export async function accessToken(
       transport,
     );
     const refresh: string = tokens.refresh_token
-      ? await encrypt(tokens.refresh_token, env.TOKEN_ENCRYPTION_KEY)
+      ? await cipher.encrypt(tokens.refresh_token)
       : row.refresh_token;
     if (tokens.refresh_token && !tokens.refresh_token_expires_in)
       throw tokenError(
@@ -428,7 +434,7 @@ export async function accessToken(
       "UPDATE credentials SET access_token=?,refresh_token=?,expires_at=?,refresh_expires_at=?,version=version+1,lock_owner=NULL,lock_until=NULL,refresh_attempts=0,refresh_retry_at=NULL,refresh_failure=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL WHERE singleton=1 AND version=? AND lock_owner=? AND status='connected' RETURNING owner_id",
     )
       .bind(
-        await encrypt(tokens.access_token, env.TOKEN_ENCRYPTION_KEY),
+        await cipher.encrypt(tokens.access_token),
         refresh,
         now + tokens.expires_in * 1000,
         tokens.refresh_token
@@ -443,6 +449,7 @@ export async function accessToken(
       token: tokens.access_token,
       version: row.version + 1,
       expiresAt: now + tokens.expires_in * 1000,
+      refreshed: true,
     };
   } catch (error: unknown) {
     if (isTokenError(error) && error.tokenFailure === 'conflict') throw error;

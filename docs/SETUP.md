@@ -112,6 +112,8 @@ npm run check:free -- --config "$DEPLOY_CONFIG" --delivery-config "$DELIVERY_CON
 
 CPU를 나누기 위해 `en-card`의 Cron은 claim·인증을 담당하고 HTTP Service Binding으로 `en-card-delivery`를 호출합니다. 준비와 카드별 발송은 각각 별도 요청입니다. 매분 Cron 하나·최대 3건·하루 시도 20회는 그대로입니다. [Service Binding](https://developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/)은 공개 URL 없이 Worker를 연결합니다.
 
+정상 토큰 갱신을 완료한 Cron은 기존 비공개 Worker의 `/_internal/defer`에 발송 ID·claim 소유자만 전달해 claim을 정리하고 실제 메시지 호출을 다음 분의 실행으로 넘깁니다. 토큰은 이 정리 요청에 포함하지 않습니다. 갱신과 발송 CPU가 같은 호출에 쌓이는 것을 줄이기 위한 분리이며 메시지 시도·예산을 쓰지 않습니다. 이미 유효한 토큰은 같은 실행에서 발송합니다. 갱신 대기에도 기존 15분 발송 유예·일시정지·취소·버전 검사를 적용하며 유예를 연장하지 않습니다. 이 변경의 실제 CPU 10ms 충족 여부는 배포 후 자연 만료 갱신 경로에서 재측정해야 합니다.
+
 `wrangler.delivery.deploy.jsonc`에는 주 Worker와 **동일한 D1 식별자·APP_ORIGIN**을 입력합니다. `COST_MODE=free_only`, `SEND_MODE=live`, `workers_dev=false`, `preview_urls=false`를 유지합니다. 별도 Cron·KV·정적 자산·Secret은 넣지 않습니다. 주 Worker의 `services`에는 `DELIVERY_SERVICE → en-card-delivery` 하나만 둡니다. 실제 카카오 토큰은 비공개 요청 메모리로만 전달되며 기존 암호화 저장 위치는 바뀌지 않습니다. 자식이 항상 live여도 dry_run 주 Worker는 이를 호출하지 않습니다.
 
 새 검사 옵션은 두 설정의 D1 일치·비공개 접근·허용 바인딩을 검사합니다. 실제 식별자를 쓰는 검사에는 `--delivery-config`도 반드시 전달합니다. 두 Worker 모두 Free 계정에서 실측하며 설정 검사만으로 CPU 충족을 보장하지 않습니다.

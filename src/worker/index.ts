@@ -389,6 +389,18 @@ export default {
       mode: 'live',
       clock: Date.now,
       token: () => liveToken(env, Date.now()),
+      deferAfterRefresh: true,
+      defer: async (id, owner) => {
+        const response = await env.DELIVERY_SERVICE!.fetch(
+          new Request(`${env.APP_ORIGIN}/_internal/defer`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id, owner }),
+          }),
+        );
+        if (response.status !== 204)
+          throw appError(503, 'DELIVERY_DEFER_UNAVAILABLE', '다음 발송 실행에서 다시 확인합니다.');
+      },
       sender: async () => {
         throw appError(503, 'DELIVERY_CONFIG', '비공개 발송 Worker 연결을 확인하세요.');
       },

@@ -36,16 +36,16 @@ async function encryptionKey(secret: string): Promise<CryptoKey> {
     );
   return crypto.subtle.importKey('raw', bytes, 'AES-GCM', false, ['encrypt', 'decrypt']);
 }
-export async function encrypt(value: string, secret: string): Promise<string> {
+async function encryptWithKey(value: string, key: Promise<CryptoKey>): Promise<string> {
   const iv: Uint8Array<ArrayBuffer> = crypto.getRandomValues(new Uint8Array(12));
   const cipher: ArrayBuffer = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv, additionalData: new TextEncoder().encode('en-card:credentials:v1') },
-    await encryptionKey(secret),
+    await key,
     new TextEncoder().encode(value),
   );
   return `${bytesToBase64(iv)}.${bytesToBase64(new Uint8Array(cipher))}`;
 }
-export async function decrypt(value: string, secret: string): Promise<string> {
+async function decryptWithKey(value: string, key: () => Promise<CryptoKey>): Promise<string> {
   const parts: string[] = value.split('.');
   if (parts.length !== 2 || !parts[0] || !parts[1])
     throw appError(
@@ -59,8 +59,27 @@ export async function decrypt(value: string, secret: string): Promise<string> {
       iv: base64ToBytes(parts[0]),
       additionalData: new TextEncoder().encode('en-card:credentials:v1'),
     },
-    await encryptionKey(secret),
+    await key(),
     base64ToBytes(parts[1]),
   );
   return new TextDecoder().decode(plain);
+}
+// Keep this context inside one authentication operation, never across requests or keys.
+export function tokenCipher(secret: string): TokenCipher {
+  let key: Promise<CryptoKey> | undefined;
+  const getKey = (): Promise<CryptoKey> => (key ??= encryptionKey(secret));
+  return {
+    encrypt: (value) => encryptWithKey(value, getKey()),
+    decrypt: (value) => decryptWithKey(value, getKey),
+  };
+}
+export type TokenCipher = {
+  encrypt: (value: string) => Promise<string>;
+  decrypt: (value: string) => Promise<string>;
+};
+export async function encrypt(value: string, secret: string): Promise<string> {
+  return tokenCipher(secret).encrypt(value);
+}
+export async function decrypt(value: string, secret: string): Promise<string> {
+  return tokenCipher(secret).decrypt(value);
 }

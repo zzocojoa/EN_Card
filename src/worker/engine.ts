@@ -27,6 +27,8 @@ type Runtime = (
   clock: () => number;
   dispatch?: (job: DeliveryJob) => Promise<DeliveryReport>;
   prepare?: () => Promise<void>;
+  deferAfterRefresh?: boolean;
+  defer?: (id: string, owner: string) => Promise<void>;
 };
 type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items' | 'pending_delivery_count'> & {
   weekdays: string;
@@ -164,7 +166,7 @@ async function claim(env: Env, now: number, owner: string): Promise<Delivery | n
 }
 async function finish(
   env: Env,
-  item: Delivery,
+  item: Pick<Delivery, 'id'>,
   owner: string,
   state: string,
   detail: string,
@@ -189,10 +191,12 @@ async function finish(
 }
 async function releaseBeforeCall(
   env: Env,
-  item: Delivery,
+  item: Pick<Delivery, 'id' | 'due_at_utc' | 'manual_retry_until'>,
   owner: string,
   now: number,
   attempt: string | null,
+  waitingDetail?: string,
+  retryAt: number = now + 60_000,
 ): Promise<void> {
   const row = await env.DB.prepare(
     `SELECT ${eligibleSchedule} AS eligible FROM deliveries WHERE id=?`,
@@ -212,10 +216,33 @@ async function releaseBeforeCall(
       ? '호출 전에 15분의 허용 시간이 지났습니다.'
       : state === 'cancelled'
         ? '호출 전에 예약 중지·수정을 확인했습니다.'
-        : '호출 전에 인증·claim·순서가 변경되어 다음 실행에서 확인합니다. 외부 API 호출 없음.',
-    state === 'retry_wait' ? now + 60_000 : null,
+        : (waitingDetail ??
+          '호출 전에 인증·claim·순서가 변경되어 다음 실행에서 확인합니다. 외부 API 호출 없음.'),
+    state === 'retry_wait' ? retryAt : null,
     now,
     attempt,
+  );
+}
+export async function deferAfterTokenRefresh(
+  env: Env,
+  id: string,
+  owner: string,
+  now: number,
+): Promise<void> {
+  const item = await env.DB.prepare(
+    "SELECT id,due_at_utc,manual_retry_until FROM deliveries WHERE id=? AND claim_owner=? AND state='claimed'",
+  )
+    .bind(id, owner)
+    .first<Pick<Delivery, 'id' | 'due_at_utc' | 'manual_retry_until'>>();
+  if (!item) return;
+  await releaseBeforeCall(
+    env,
+    item,
+    owner,
+    now,
+    null,
+    '카카오 인증을 갱신했습니다. 다음 실행에서 발송합니다. 발송 시도 횟수는 사용하지 않았습니다.',
+    (Math.floor(now / 60_000) + 1) * 60_000,
   );
 }
 export async function deliverClaimed(
@@ -467,6 +494,20 @@ export async function runEngine(env: Env, runtime: Runtime): Promise<EngineRepor
           .bind(item.schedule_id, item.schedule_version)
           .run();
       continue;
+    }
+    if (runtime.deferAfterRefresh && grant.refreshed) {
+      try {
+        if (runtime.defer) await runtime.defer(item.id, owner);
+        else await deferAfterTokenRefresh(env, item.id, owner, runtime.clock());
+      } catch (error: unknown) {
+        // No message was called. An unfinished claimed lease can be reclaimed next tick.
+        console.warn({
+          event: 'delivery_defer_interrupted',
+          delivery_id: item.id,
+          error_type: error instanceof Error ? error.name : 'unknown',
+        });
+      }
+      break;
     }
     let report: DeliveryReport;
     if (runtime.dispatch) {

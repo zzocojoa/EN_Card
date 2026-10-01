@@ -34,7 +34,12 @@ export type Credentials = {
 };
 export type Session = { id: string; csrf: string; expires_at: number };
 export type Sender = (payload: FeedPayload, token: string) => Promise<SendResult>;
-export type TokenGrant = { token: string; version: number; expiresAt?: number };
+export type TokenGrant = {
+  token: string;
+  version: number;
+  expiresAt?: number;
+  refreshed?: boolean;
+};
 export type DeliveryJob = {
   item: Delivery;
   owner: string;
