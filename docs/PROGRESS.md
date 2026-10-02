@@ -334,4 +334,4 @@ PR #1의 `9b0b43f`를 `master` 대비 전체 검토해 R9(업그레이드 시 �
 - 하루단어 [PR #13](https://github.com/zzocojoa/haru-word/pull/13)은 Node22/24 검사4개 통과 후 `06fbd83`으로 병합됐다. 정확성 PR #12는 병합하지 않았다. EN_Card 변경은 검증된 통합 브랜치에서 별도 PR로 병합한다.
 - 사용자에게 본인 1장 시험 발송 승인을 받았다. `That makes sense`를 하루단어 정상 화면에서 17:16 KST/08:16 UTC, 1회·1장으로 저장했다. 승인 이전 발송 없음, 저장 전 인증 connected·활성0·미해결0·발송8/20 확인. 실제 결과는 다음 검증 기록에 추가한다.
 - 세부 근거·WebKit 시계 동기화 관찰·보조 CLI 검토 불가·재현 명령은 [HARU_INTEGRATION.md](HARU_INTEGRATION.md)를 따른다. 현재 남은 실제 기기 검증을 완료로 표시하지 않는다.
-- 승인된 17:16 예약의 `That makes sense` 1장이 17:17:00.898 KST에 live/sent·호출1회로 API 접수됐다. 예약종료·활성0·미해결0·발송9/20, Cron CPU5ms·실제 발송4ms 확인. 사용자 수신·이미지/원본 보기 및 실제 iPhone PNG 저장은 응답 대기다. 발송을 다시 실행하지 않는다.
+- 승인된 17:16 예약의 `That makes sense` 1장이 17:17:00.898 KST에 live/sent·호출1회로 API 접수됐다. 예약종료·활성0·미해결0·발송9/20, Cron CPU5ms·실제 발송4ms 확인. 사용자가 1장 수신·이미지·원본 보기 정상을 직접 확인했다. 별도 실제 iPhone Safari 로그인·PNG 파일 앱 저장만 응답 대기다. 발송을 다시 실행하지 않는다.

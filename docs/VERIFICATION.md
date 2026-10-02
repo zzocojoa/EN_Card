@@ -969,5 +969,5 @@ E2E 실행 시 개발 서버를 종료해 8787 포트를 비운다. 배포 dry-r
 - WebKit 첫 포인터 재개가 기존 시계 준비 잠금과 겹치는 관찰은 [통합 문서](HARU_INTEGRATION.md)에 남겼다. 재열기 보조 단계만 Enter를 사용하며 실제 iPhone·첫 마우스 재개 자체를 통과로 주장하지 않는다.
 - 전문/Red Team/독립 적대적 검토를 완료했고 계정 전환·접근성 이름·초안 회귀 보완을 반영했다. 보조 Codex CLI 검토는 버전/모델 호환 오류로 미실행이다.
 - v104 소스 `c2457b7`, 배포 `appgdep_6abf653ed81481919afaccb27116f9b6` succeeded(17:03:29 KST). 원본/생성129개 해시 일치, 원격 익명·위조401/다른 서버사용자403, 승인 전 쓰기0/발송0 재확인. 원격 접근 확인 로그와 CPU 기록에는 토큰·헤더·원문을 저장하지 않는다.
-- 별도 승인 후 17:16 KST/08:16 UTC 1회 예약을 하루단어 UI로 저장했다. `That makes sense` 정확히1장, 17:17:00.898 KST live/sent·attempts1, 예약completed·활성0·미해결0·일일8→9/20 확인. 실제 원격 API 연동이며 모의 발송이 아니다. 사용자 휴대폰 수신/이미지/원본 보기와 iPhone PNG 저장 결과는 아직 없다.
+- 별도 승인 후 17:16 KST/08:16 UTC 1회 예약을 하루단어 UI로 저장했다. `That makes sense` 정확히1장, 17:17:00.898 KST live/sent·attempts1, 예약completed·활성0·미해결0·일일8→9/20 확인. 실제 원격 API 연동이며 모의 발송이 아니다. 사용자가 “1장 수신했고 이미지·원본 보기 정상”이라고 직접 확인했다. 별도 실제 iPhone Safari 로그인·PNG 파일 앱 저장은 미확인이다. 이번 실행 중 PC는 켜져 있었다.
 - 해당 회차 안전 tail: 메인 Cron CPU5ms/wall3783ms, delivery prepare3ms/wall712ms, send4ms/wall2487ms, 모두 ok/예외0/기대 버전 일치. 인증connected/version11·카드14·이미지5·402286바이트 유지. 기록은 `final-send-cpu-en-card.jsonl`, `final-send-cpu-en-card-delivery.jsonl`, `test-send-latest.json`이다.
