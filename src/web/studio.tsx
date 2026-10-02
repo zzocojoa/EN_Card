@@ -22,6 +22,7 @@ import type { Page as ResultPage } from '../worker/pagination';
 import { downloadBlob, pngBlob, renderCard } from './canvas';
 import { EMPTY, initialSchedule, errorMessage } from './ui';
 import { usePage } from './navigation';
+import { endpoint, integratedStudio } from './environment';
 type Notice = { kind: 'error' | 'success'; text: string } | null;
 function useStudioModel() {
   const [revision, setRevision] = useState(0);
@@ -119,7 +120,7 @@ function useStudioModel() {
   }, [dirty, scheduleDirty]);
   useEffect(() => {
     let active: boolean = true;
-    void Promise.all([api('/api/boot', 'GET', null, ''), fetch('/api/state')])
+    void Promise.all([api('/api/boot', 'GET', null, ''), fetch(endpoint('/api/state'))])
       .then(async ([config, response]) => {
         const data: unknown = await response.json();
         if (!active) return;
@@ -145,7 +146,7 @@ function useStudioModel() {
     preview.current?.replaceChildren();
     if (restored) {
       const image: HTMLImageElement = document.createElement('img');
-      image.src = `/images/${restored.public_id}.png`;
+      image.src = endpoint(`/images/${restored.public_id}.png`);
       image.alt = '복원한 PNG';
       image.onload = () => {
         if (active) {
@@ -268,7 +269,7 @@ function useStudioModel() {
   }
   async function oauth(): Promise<void> {
     const result = (await api(
-      '/auth/start',
+      integratedStudio ? '/api/studio/kakao' : '/auth/start',
       'POST',
       { setup_token: setupToken },
       state?.csrf ?? '',
@@ -276,7 +277,7 @@ function useStudioModel() {
       url: string;
     };
     setSetupToken('');
-    window.location.assign(result.url);
+    (integratedStudio ? (window.top ?? window) : window).location.assign(result.url);
   }
   async function loadMore<K extends Collection>(kind: K): Promise<void> {
     const cursor: string | null | undefined = state?.cursors[kind];

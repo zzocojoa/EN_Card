@@ -1,6 +1,7 @@
 .worktrees/
 node_modules/
 dist/
+dist-haru/
 .wrangler/
 .worker-build/
 .worker-delivery-build/

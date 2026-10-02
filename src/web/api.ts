@@ -1,5 +1,6 @@
 import type { Asset, Card, DeliverySummary, Schedule, SendMode } from '../shared/model';
 import type { HomeSummary } from '../shared/catalog';
+import { endpoint } from './environment';
 
 export type Collection = 'cards' | 'assets' | 'schedules' | 'deliveries';
 export type AttemptHistory = {
@@ -56,7 +57,7 @@ export async function api(
   csrf: string,
   signal?: AbortSignal,
 ): Promise<unknown> {
-  const response: Response = await fetch(path, {
+  const response: Response = await fetch(endpoint(path), {
     method,
     ...(signal ? { signal } : {}),
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
@@ -84,7 +85,7 @@ export async function upload(
   blob: Blob,
   csrf: string,
 ): Promise<{ id: string; public_id: string }> {
-  const response: Response = await fetch(`/api/cards/${cardId}/image`, {
+  const response: Response = await fetch(endpoint(`/api/cards/${cardId}/image`), {
     method: 'POST',
     headers: {
       'Content-Type': 'image/png',

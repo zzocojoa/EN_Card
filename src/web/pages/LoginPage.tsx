@@ -2,8 +2,22 @@ import type { ReactElement } from 'react';
 import { api } from '../api';
 import { Icon } from '../ui';
 import { useStudio } from '../studio';
+import { integratedStudio } from '../environment';
 export function LoginPage(): ReactElement {
   const { boot, busy, setupToken, setSetupToken, refresh, perform, oauth } = useStudio();
+  if (integratedStudio)
+    return (
+      <section className="login-panel">
+        <h1>나의 영어 카드</h1>
+        <p>하루단어에 연결한 본인 계정으로 로그인해 주세요.</p>
+        <a className="primary" href="/signin-with-chatgpt?return_to=%2Fcards" target="_top">
+          하루단어 로그인
+        </a>
+        <button className="secondary" onClick={() => window.location.reload()}>
+          다시 확인
+        </button>
+      </section>
+    );
   return (
     <section className="welcome">
       <div className="eyebrow">A LITTLE ENGLISH, EVERY DAY</div>

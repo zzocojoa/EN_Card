@@ -937,3 +937,37 @@ E2E 실행 시 개발 서버를 종료해 8787 포트를 비운다. 배포 dry-r
 3. 준비된 표현형·비교형 PNG를 파일 앱에 내려받아 한글·줄바꿈·1080×1080을 확인한다.
 
 비밀값·인증 코드는 채팅에 입력하지 않는다. 실제 기기 확인 결과가 없으므로 WebKit 자동화나 Chrome 결과를 아이폰 검증 완료로 대체하지 않는다.
+
+## 하루단어 통합 로컬 검증 — 2026-10-02
+
+검증 범위와 실제 운영 반영 체크리스트는 [HARU_INTEGRATION.md](HARU_INTEGRATION.md)를 따른다.
+
+- `npx vitest run tests/studio-bridge.test.ts tests/auth.test.ts`: 37개 통과.
+- `npx vitest run tests/catalog.test.ts tests/reaudit.test.ts`: 29개 통과.
+- 하루단어 `npm test`: 714개 통과. 새 체크아웃의 work 폴더 누락을 준비한 뒤 전체 재실행했다.
+- `npx playwright test --config playwright.haru.config.ts`: Chromium·WebKit 각 1개 통과. 실제 두 로컬 서버·로컬 D1/KV, 모의 ChatGPT 계정, dry_run이다. 표현형/비교형 PNG 1080×1080 다운로드·검토 저장·예약 생성·학습 기록 불변·모바일 메뉴/가로 넘침을 확인했다.
+- 기존 workflow의 로그인 모드/PNG·예약/100개 이상 조회 Chromium 3개는 별도 E2E DB에서 통과했다. 통합 미리보기 DB와 혼용한 첫 실행의 선택자 중복 실패는 제품 성공으로 집계하지 않는다.
+- 양쪽 타입·빌드, 하루단어 lint 오류 0·기존 경고 13, EN_Card 무료 구성 검사 통과. 전체 EN_Card 337개·기존 E2E 52개를 이번에 모두 재실행한 것은 아니다.
+- 기존 운영 서비스·Secret·DB·카카오 동의·발송은 변경하지 않았다. 새 통합 경로의 운영 CPU와 실제 iPhone Safari는 미검증이다.
+
+## 하루단어 통합 운영 검증 — 2026-10-02
+
+- 로컬 단계 이후 사용자 승인으로 두 앱 배포·본인 매핑을 완료했다. 하루단어 v101/환경48, 제품 `abd915346cbe3dce8d982c2d0a8b0da8ec6b197a`, 최종 배포 `appgdep_6abf589d577081918af7fee44d8f3435` succeeded. EN_Card 제품 `cd8d2232e6164e1023e6925ec4fdb9f4359fd703`, 최종 메인 버전 `a51bde4f-24d9-4fab-ba82-a2393d0cb334` 100%.
+- 배포용 Sites 빌드는 로컬 `.env`를 제외하고 기존 npm CLI 경로로 통과했다. 본인 식별자 표시 보완 후 타입·빌드를 다시 통과했다. EN_Card Vite·실제 운영 설정 dry-run·check:free live 통과. 앞선 테스트780개와 로컬 브라우저 검증은 재사용했으며 이번에 전체를 다시 실행한 것으로 표시하지 않는다.
+- 실제 Chrome 로그인 계정 선택 → 홈의 영어 카드 버튼 → 통합 카드14장·기존 카드 미리보기·예약 화면을 확인했다. PNG 다운로드 이벤트 대기는 도구 시간 초과로 종료됐지만 실제 Downloads/english-card.png가 저장돼 있었고 PNG 시그니처·78,331바이트·1080×1080·SHA256 `8a8719ad7ad7484bd6e47a5aed0262573e56bb0c626f5d1b390e909e198f0d4d`를 확인했다.
+- 인증된 서버 연결의 state/cards/deliveries200, 두 앱 익명401, Sites 위조 인증 헤더401, 서버 연결의 다른 사용자 ID403을 확인했다. 실제 다른 사람의 로그인 계정으로 시험하지 않았다. 기존 독립 앱 HTML/JS/CSS가 로컬 빌드와 해시 일치, 기존 공개 원본 PNG200·87,785바이트·1080×1080, 비공개 발송 Worker404, 운영 모의 인증405도 확인했다.
+- 본인 브라우저의 API 직접 탐색이 Chrome ERR_BLOCKED_BY_CLIENT로 차단돼 보호된 /cards 페이지에 현재 로그인한 계정의 식별자 표시를 추가했다. 브라우저 보호를 해제하지 않았다. Cloudflare 인증 만료401은 기존 Wrangler 권한의 갱신으로 해결했다. Windows 입력 도우미의 줄바꿈 대기를 수정했다. 비밀값·개인 학습 답안은 진단에 기록하지 않았다.
+- `backups/haru-deploy-20261002/`의 before/after-table-hashes.json은 15개 테이블 전부 일치한다. DPAPI DB 백업90959바이트의 복호화 해시 검증 완료. 인증11/connected·카드14·이미지5·402286바이트·활성0·진행 중/미해결 unknown0·발송8/20·업로드3/100을 유지했다. DB 스키마 이전·운영 QA 쓰기·카카오 재연결·새 발송 없음.
+- 안전 tail에서 본인 조회 CPU2~5ms, 무작업 Cron1~3ms·예외0·버전 일치를 확인했고 수집기는 종료됐다. 비인증 요청 CPU0ms를 본인 조회 최솟값에 섞지 않았다. 발송/토큰 갱신 CPU·실제 iPhone·새 재연결 흐름은 이번에 실행하지 않았다.
+- 현재 Workers Free·US$0, Dashboard의 일일 요청926/100000·D1 읽기20.11k/5M·쓰기182/100k·299.01kB/5GB, GraphQL의 KV UTC 10/02 읽기9·목록1·저장403116바이트/5키를 확인했다. 집계 지연과 앱 PNG 바이트 합계의 차이를 보존했다. 새 유료 의존성·리소스·AI 호출은 없다. 상세 공식 근거·운영 설정·복구 절차는 [HARU_INTEGRATION.md](HARU_INTEGRATION.md)를 따른다.
+
+## 하루단어 최종 통합 회귀 — 2026-10-02
+
+- `npm test`: EN_Card 19파일/342개 통과(1091.59초). `npm run build`, 기본/live `check:free`, 서식·diff 검사 통과. 전체 검사는 `backups/haru-deploy-20261002/premerge-tests.log`, 빌드는 `premerge-build.log`에 있다.
+- 하루단어 GitHub main 기준 전체500, 운영 소스 전체722와 v103 추가 후 최신 평가/카드19개 통과. 타입·빌드 성공, lint 오류0/기존 경고13. 환경별 생성 번들 경로가 포함된 기존 진단 해시 비교 실패는 현재 소스 provenance 검증과 역사 판정 결과 전체 비교로 보완했다. 제품 판정 로직·평가 자료는 변경하지 않았다.
+- 새 `draft-navigation.spec.ts`: Chromium/WebKit 2/2(39.4초), 로컬 합성 계정+dry_run. 저장 지연/503에서 이동 차단, 복구 백업, 재시도, 학습/문법 초안 왕복·reload 보존, 기존 카드/예약 불변·학습 상태 복원·AI 요청0 확인. 최초 fixture/기능설정/선택자 준비 실패를 통과로 집계하지 않았다.
+- WebKit 첫 포인터 재개가 기존 시계 준비 잠금과 겹치는 관찰은 [통합 문서](HARU_INTEGRATION.md)에 남겼다. 재열기 보조 단계만 Enter를 사용하며 실제 iPhone·첫 마우스 재개 자체를 통과로 주장하지 않는다.
+- 전문/Red Team/독립 적대적 검토를 완료했고 계정 전환·접근성 이름·초안 회귀 보완을 반영했다. 보조 Codex CLI 검토는 버전/모델 호환 오류로 미실행이다.
+- v104 소스 `c2457b7`, 배포 `appgdep_6abf653ed81481919afaccb27116f9b6` succeeded(17:03:29 KST). 원본/생성129개 해시 일치, 원격 익명·위조401/다른 서버사용자403, 승인 전 쓰기0/발송0 재확인. 원격 접근 확인 로그와 CPU 기록에는 토큰·헤더·원문을 저장하지 않는다.
+- 별도 승인 후 17:16 KST/08:16 UTC 1회 예약을 하루단어 UI로 저장했다. `That makes sense` 정확히1장, 17:17:00.898 KST live/sent·attempts1, 예약completed·활성0·미해결0·일일8→9/20 확인. 실제 원격 API 연동이며 모의 발송이 아니다. 사용자가 “1장 수신했고 이미지·원본 보기 정상”이라고 직접 확인했다. 별도 실제 iPhone Safari 로그인·PNG 파일 앱 저장은 미확인이다. 이번 실행 중 PC는 켜져 있었다.
+- 해당 회차 안전 tail: 메인 Cron CPU5ms/wall3783ms, delivery prepare3ms/wall712ms, send4ms/wall2487ms, 모두 ok/예외0/기대 버전 일치. 인증connected/version11·카드14·이미지5·402286바이트 유지. 기록은 `final-send-cpu-en-card.jsonl`, `final-send-cpu-en-card-delivery.jsonl`, `test-send-latest.json`이다.

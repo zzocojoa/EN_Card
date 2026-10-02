@@ -3,6 +3,7 @@ import { StudioProvider, useStudio } from './studio';
 import { pages, pageTitles, type Page } from './navigation';
 import { Icon } from './ui';
 import { api } from './api';
+import { integratedStudio } from './environment';
 import { Modal } from './Modal';
 import { HomePage } from './pages/HomePage';
 import { EditorPage } from './pages/EditorPage';
@@ -20,6 +21,7 @@ const descriptions: Record<Page, string> = {
   history: '보낸 카드와 확인이 필요한 결과를 살펴보세요.',
   settings: '카카오 연결과 학습 자료를 관리하세요.',
 };
+const studioName = integratedStudio ? '하루단어' : '하루 한 표현';
 export function App(): ReactElement {
   return (
     <StudioProvider>
@@ -50,7 +52,7 @@ function Workspace(): ReactElement {
   const heading = useRef<HTMLHeadingElement>(null);
   const previousPage = useRef(page);
   useEffect(() => {
-    document.title = `${state ? pageTitles[page] : '로그인'} · 하루 한 표현`;
+    document.title = `${state ? pageTitles[page] : '로그인'} · ${studioName}`;
     if (previousPage.current !== page) {
       setMoreOpen(false);
       window.scrollTo({ top: 0 });
@@ -120,13 +122,14 @@ function Workspace(): ReactElement {
           className="brand"
           onClick={() => setPage('home')}
           disabled={busy}
-          aria-label="하루 한 표현 홈"
+          aria-label={`${studioName} 홈`}
         >
           <span className="brand-mark">
             a<span>↗</span>
           </span>
           <span>
-            하루 한 표현<small>MY ENGLISH STUDIO</small>
+            {studioName}
+            <small>{integratedStudio ? 'ENGLISH CARDS' : 'MY ENGLISH STUDIO'}</small>
           </span>
         </button>
         <div className="nav-label">나의 학습 공간</div>
@@ -153,11 +156,16 @@ function Workspace(): ReactElement {
       <main id="workspace-content" tabIndex={-1}>
         <header className="topbar">
           <span className="topbar-brand">
-            하루 한 표현 <span>나에게 보내는 영어</span>
+            {studioName} <span>{integratedStudio ? '나의 영어 카드' : '나에게 보내는 영어'}</span>
           </span>
           <div>
             <span className={`status-pill ${sendMode ?? 'unavailable'}`}>{modeLabel}</span>
-            {state && (
+            {integratedStudio && (
+              <a className="text-button" href="/" target="_top">
+                하루단어로 돌아가기
+              </a>
+            )}
+            {state && !integratedStudio && (
               <button
                 className="text-button"
                 disabled={busy}
@@ -228,7 +236,7 @@ function Workspace(): ReactElement {
           )}
         </div>
         <footer>
-          <strong>하루 한 표현</strong>
+          <strong>{studioName}</strong>
           <span>작게 만들고, 오래 기억하세요.</span>
           <span>한국 시간 · KST</span>
         </footer>
