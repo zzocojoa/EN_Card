@@ -1,6 +1,6 @@
 # 하루단어 영어 카드 통합
 
-2026-10-02 / 상태: 운영 반영 완료, 실제 iPhone·새 카카오 재연결/발송 검증은 별도
+2026-10-02 / 상태: 운영 반영·GitHub 병합·본인 예약 발송/수신·iPhone Safari PNG 저장 확인 완료
 
 [하루단어 영어 카드 열기](https://wordgrain-oxford-study.hoihou-o.chatgpt.site/cards). 기존 ChatGPT 계정으로 로그인하고 홈의 **영어 카드** 버튼을 누른다. 운영자 접속 토큰은 필요 없다. 카드 내용과 관리는 연결된 본인 계정만 허용한다.
 
@@ -67,7 +67,7 @@ EN_Card 작업 위치는 `.worktrees/haru-integration`이다. 하루단어 작�
 - [x] 메인 Worker와 동일 Site를 배포해 통합 기능을 활성화했다. delivery Worker·Cron·DB/KV는 유지했다.
 - [x] 본인 ChatGPT 로그인 → 홈 버튼 → 카드 목록/미리보기/예약 화면과 PNG 다운로드를 확인했다. 비로그인401·위조 플랫폼 헤더401·다른 bridge ID403을 확인했고 DB 15개 테이블 해시가 유지됐다. 다른 사람의 실제 계정을 사용한 시험은 하지 않았다.
 - [x] 조회 CPU 2~5ms, 무작업 Cron 1~3ms·예외 0을 관측했다. 실제 발송 CPU 재검증은 아니다.
-- [ ] 실제 iPhone Safari의 로그인 복귀·다운로드·키보드·날짜 입력을 확인한다.
+- [x] 사용자가 실제 iPhone Safari 로그인·미리보기·PNG 다운로드·파일 앱 저장 정상을 확인했다. 키보드·날짜 입력·VoiceOver 세부 조작 전체를 검사한 결과로 확대하지 않는다.
 
 ## 빌드와 로컬 검증 재현
 
@@ -141,5 +141,11 @@ node node_modules/@playwright/test/cli.js test --config playwright.haru.config.t
 - 예약 `bf5dcce4-8ee7-48a7-8798-89bc2f0fe671`의 발송 `df24eb94-b7dc-479c-bb24-60ac10ac5701-0`은 **live/sent, attempts=1**이다. **17:17:00.898 KST**에 카카오 API 접수를 기록했다. 이는 실제 휴대폰 수신·이미지 표시·열람 확인과 다르다.
 - 예약은 completed/비활성, 목록 커서1·다음 회차 없음이다. 이후 전체 활성 예약0, claimed/sending/미해결 unknown0, 오늘 실제 시도9/20(직전8/20)이다. 카드14·이미지5/402286바이트·업로드3/100·인증connected/version11 유지. 재연결·새 이미지 생성·추가 메시지 없음.
 - 해당 회차 Cron은 CPU5ms/wall3783ms, 발송 준비3ms/wall712ms, 실제 발송4ms/wall2487ms다. 모두 ok·예외0·기대 Worker 버전 일치. 네트워크 대기 포함 wall과 CPU를 구별하며 한 번의 측정으로 모든 부하를 보장하지 않는다.
-- 사용자가 **“1장 수신했고 이미지·원본 보기 정상”**이라고 확인했다. 실제 API 접수와 사용자 직접 수신·이미지·원본 보기 확인을 모두 완료했다. 별도 iPhone Safari 로그인·PNG 파일 앱 저장 결과는 아직 응답 대기다. 이번 실행 중 PC는 켜져 있었으며 과거의 PC 종료 검증과 구분한다.
+- 사용자가 **“1장 수신했고 이미지·원본 보기 정상”**이라고 확인했다. 실제 API 접수와 사용자 직접 수신·이미지·원본 보기 확인을 모두 완료했다. 이어 실제 iPhone Safari의 **“로그인·미리보기·파일 앱 저장 모두 정상”**을 확인했다. 이번 발송 중 PC는 켜져 있었으며 과거의 PC 종료 검증과 구분한다.
 - 안전한 상태·CPU 증거와 예약 화면은 Git 제외 `backups/haru-deploy-20261002/test-send-latest.json`, `final-send-cpu-*.jsonl`, `test-send-scheduled.jpg`에 있다.
+
+## 마무리 기록
+
+- [EN_Card PR #5](https://github.com/zzocojoa/EN_Card/pull/5)는 17:22:06 KST에 `cd56013a8e0abc6320ca0d7928a62c8da3f9d490`로 병합됐다. 로컬 검증한 HEAD와 병합 결과 트리가 일치한다. 별도 GitHub CI는 없으며 위 로컬 검사와 독립 검토를 사용했다.
+- 하루단어 PR #13과 EN_Card PR #5의 기능 병합, v104 운영 게시, 실제 1장 수신·iPhone 저장까지 완료했다. 후속 완료 기록은 문서만 바꾸므로 운영 앱을 다시 배포하지 않는다. 측정 수집기 2개는 종료됐다.
+- 카카오 재연결은 기존 연결이 정상이라 새로 실행하지 않았다. 통합 OAuth의 소유자/state/일회용/만료 검사는 로컬 모의 제공사로 검증했다. 사용자 확인 범위를 넘어 실제 재연결·VoiceOver·모든 iPhone 입력·전체 부하를 검증했다고 주장하지 않는다.
