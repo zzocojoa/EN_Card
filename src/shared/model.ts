@@ -215,7 +215,12 @@ export type DeliverySummary = Pick<
   | 'updated_at'
   | 'confirmed_by_user'
   | 'resolution'
-> & { total_attempts: number; occurrence_state: string };
+> & {
+  total_attempts: number;
+  occurrence_state: string;
+  card_title: string;
+  schedule_name: string | null;
+};
 export type FeedPayload = {
   object_type: 'feed';
   content: {

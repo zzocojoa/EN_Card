@@ -10,7 +10,7 @@ import {
   requireSession,
   retryTokenRefresh,
 } from './auth';
-import { assetPage, cardPage, deliveryPage } from './catalog';
+import { assetPage, cardPage, deliveryPage, homeSummary } from './catalog';
 import { dryRun, resolveUnknown, runEngine } from './engine';
 import { nativeTransport } from './kakao';
 import { isTokenError } from './token-errors';
@@ -54,10 +54,12 @@ export async function route(request: Request, env: Env): Promise<Response> {
   const session = await requireSession(request, env, now);
   if (path.startsWith('/api/page/') && request.method === 'GET') {
     const cursor: string | null = url.searchParams.get('cursor');
-    if (path === '/api/page/cards') return Response.json(await cardPage(env, cursor));
+    if (path === '/api/page/cards')
+      return Response.json(await cardPage(env, cursor, Object.fromEntries(url.searchParams)));
     if (path === '/api/page/assets') return Response.json(await assetPage(env, cursor));
     if (path === '/api/page/schedules') return Response.json(await schedulePage(env, cursor));
-    if (path === '/api/page/deliveries') return Response.json(await deliveryPage(env, cursor));
+    if (path === '/api/page/deliveries')
+      return Response.json(await deliveryPage(env, cursor, Object.fromEntries(url.searchParams)));
   }
   if (/^\/api\/deliveries\/[^/]+\/attempts$/.test(path) && request.method === 'GET') {
     const id: string = z.string().min(1).max(200).parse(path.split('/')[3]);
@@ -74,7 +76,7 @@ export async function route(request: Request, env: Env): Promise<Response> {
     return Response.json({ attempts: attempts.results, decisions: decisions.results });
   }
   if (path === '/api/state' && request.method === 'GET') {
-    const [cards, assets, schedules, deliveries, previews, usage, connection, totals] =
+    const [cards, assets, schedules, deliveries, previews, usage, connection, totals, summary] =
       await Promise.all([
         cardPage(env, null),
         assetPage(env, null),
@@ -92,9 +94,11 @@ export async function route(request: Request, env: Env): Promise<Response> {
         env.DB.prepare(
           "SELECT (SELECT count(*) FROM cards) AS cards,(SELECT count(*) FROM assets WHERE state!='deleted') AS assets,(SELECT count(*) FROM schedules) AS schedules,(SELECT count(*) FROM schedules WHERE enabled=1) AS active_schedules,(SELECT count(*) FROM deliveries) AS deliveries",
         ).first(),
+        homeSummary(env),
       ]);
     return Response.json({
       csrf: session.csrf,
+      summary,
       cards: cards.items,
       assets: assets.items,
       schedules: schedules.items,

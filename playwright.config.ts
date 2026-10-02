@@ -11,7 +11,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'webkit', testMatch: '**/redesign.spec.ts', use: { ...devices['Desktop Safari'] } },
+  ],
   webServer: {
     command: `npm run build:web && wrangler d1 migrations apply DB --local --config wrangler.local.jsonc --persist-to ${persistencePath} && wrangler dev --config wrangler.local.jsonc --local --port 8787 --persist-to ${persistencePath}`,
     url: 'http://127.0.0.1:8787/api/boot',

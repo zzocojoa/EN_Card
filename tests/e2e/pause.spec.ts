@@ -21,6 +21,10 @@ for (const [scenarioIndex, scenario] of (
       const assetIds: string[] = [];
       await page.goto('/');
       await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+      await page.getByRole('heading', { name: '오늘의 작업실', exact: true }).waitFor();
+      await page.evaluate(() => {
+        window.location.hash = '/editor';
+      });
       await expect(page.locator('canvas')).toBeVisible();
       const downloadPromise = page.waitForEvent('download');
       await page.getByRole('button', { name: 'PNG 다운로드' }).click();
@@ -187,6 +191,10 @@ for (const [scenarioIndex, scenario] of (
           await pause.getByRole('button', { name: '일시정지 실행' }).click();
           await recovery.getByRole('button', { name: '닫기', exact: true }).click();
           await article.getByRole('button', { name: '취소', exact: true }).click();
+          await page
+            .getByRole('dialog', { name: '예약 취소', exact: true })
+            .getByRole('button', { name: '예약 취소 실행' })
+            .click();
           await article.getByRole('button', { name: '중지 카드 확인' }).click();
           await expect(recovery).toContainText('기존 예약은 취소되어 재개할 수 없습니다.');
           await expect(recovery.getByRole('button', { name: '남은 5장 예약 재개' })).toBeDisabled();
@@ -208,6 +216,10 @@ test('누적 중지 45장을 화면에서 40장·5장씩 제외하고 매번 확
   const assetIds: string[] = [];
   await page.goto('/');
   await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await page.getByRole('heading', { name: '오늘의 작업실', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = '/editor';
+  });
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'PNG 다운로드' }).click();
   const path = await (await downloadPromise).path();
