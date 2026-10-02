@@ -1,0 +1,462 @@
+{
+  "schema_version": 1,
+  "description": "Whole Chromium E2E on the exact reviewed product commit in the normal Windows development environment. Local dry_run; no actual Kakao delivery or production deployment.",
+  "target_commit": "ee229e68d7ae55226f0799729d60a0777ebc37dc",
+  "merged_commit": "a26c81ce5e0c2cba83b2ec7c6e905d5d4a4758e4",
+  "git_tree": "f1cd6ad920f493d6bba5f0904639b989cfaec573",
+  "started_at_utc": "2026-10-02T00:57:47.523Z",
+  "finished_at_utc": "2026-10-02T00:59:23.791Z",
+  "timezone": "Asia/Seoul",
+  "runner_elapsed_ms": 96268,
+  "exit_code": 0,
+  "environment": {
+    "platform": "win32",
+    "os_release": "10.0.26300",
+    "arch": "x64",
+    "node": "v22.22.2",
+    "npm": "10.9.7",
+    "packages": {
+      "@playwright/test": "1.63.0",
+      "wrangler": "4.142.0",
+      "vite": "8.3.1",
+      "typescript": "7.0.2"
+    },
+    "chromium": "153.0.8010.12",
+    "chromium_present": true,
+    "node_options_present": false,
+    "runtime_patches_applied": false,
+    "configuration_changed": false,
+    "package_lock_sha256": "73c94dcb90163267b93585c54fa259cee766a46e1c362ba6b6170b4609de10a0",
+    "playwright_config_sha256": "0aff79b01de7a6bea4f58d131667ac4889a0665cf8bf29dec2ac74558de93120",
+    "local_config_sha256": "fb4daec58411ffc856ada2f90ce1ac4f0fd728a7487def73f75edb8b279f3bfb"
+  },
+  "command": "npm run test:e2e -- --reporter=line,json,html --output=<evidence>/test-results",
+  "reporter_environment": {
+    "PLAYWRIGHT_JSON_OUTPUT_NAME": "<evidence>/report.json",
+    "PLAYWRIGHT_HTML_OUTPUT_DIR": "<evidence>/html",
+    "PLAYWRIGHT_HTML_OPEN": "never"
+  },
+  "original_config": {
+    "base_url": "http://127.0.0.1:8787",
+    "workers": 1,
+    "persistence_path": ".wrangler/e2e-1790902668485",
+    "server_reuse": false,
+    "send_mode": "dry_run",
+    "local_bindings_only": true
+  },
+  "stats": {
+    "startTime": "2026-10-02T00:57:48.499Z",
+    "duration": 95142.564,
+    "expected": 22,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "global_errors": 0,
+  "retries": 0,
+  "source_before_after": {
+    "tracked_files": 219,
+    "changed_files": [],
+    "head_unchanged": true,
+    "working_tree_clean": true
+  },
+  "tests": [
+    {
+      "file": "pause.spec.ts",
+      "line": 16,
+      "title": "R3 매일 10장 실제 PNG와 중지 화면에서 미발송 2장 복구",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 6594,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "pause.spec.ts",
+      "line": 16,
+      "title": "R3 매일 10장 실제 PNG와 중지 화면에서 미발송 2장 제외",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 5916,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "pause.spec.ts",
+      "line": 16,
+      "title": "R3 일회 5장 실제 PNG와 중지 화면에서 미발송 2장 복구",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 5077,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "pause.spec.ts",
+      "line": 16,
+      "title": "R3 일회 5장 실제 PNG와 중지 화면에서 미발송 2장 제외",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 5098,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "pause.spec.ts",
+      "line": 16,
+      "title": "R3 매일 마지막 5장 실제 PNG와 중지 화면에서 미발송 2장 복구",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 4970,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "pause.spec.ts",
+      "line": 16,
+      "title": "R3 매일 마지막 5장 실제 PNG와 중지 화면에서 미발송 2장 제외",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 5108,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "pause.spec.ts",
+      "line": 16,
+      "title": "R3 요일 마지막 5장 실제 PNG와 중지 화면에서 미발송 2장 복구",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 5019,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "pause.spec.ts",
+      "line": 16,
+      "title": "R3 요일 마지막 5장 실제 PNG와 중지 화면에서 미발송 2장 제외",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 5206,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "pause.spec.ts",
+      "line": 203,
+      "title": "누적 중지 45장을 화면에서 40장·5장씩 제외하고 매번 확인한 뒤 재개한다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 4738,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "recovery.spec.ts",
+      "line": 6,
+      "title": "R7 저장 인증정보 오류를 표시하고 잘못된 설정의 복구 확인을 거부한다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 3463,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "recovery.spec.ts",
+      "line": 46,
+      "title": "이전 버전·취소 예약의 결과 불명을 수신 확인 없이 종료하고 이력을 표시한다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 4049,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "recovery.spec.ts",
+      "line": 136,
+      "title": "토큰 일시 오류와 소진을 구분하고 재로그인 없이 갱신 재시도를 시작한다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 5149,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 14,
+      "title": "로그인 전에도 서버 발송 모드를 표시하고 부팅 실패를 DRY RUN으로 오인하지 않는다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 567,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 46,
+      "title": "태블릿 메뉴에 접근성 이름이 유지된다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 306,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 55,
+      "title": "일시정지 POST 409를 대화상자 안에 표시하고 새 상태로 다시 시도할 수 있다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 5213,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 113,
+      "title": "결과 불명 재시도 SCHEDULE_INACTIVE를 대화상자 안에 표시하고 종료를 선택할 수 있다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 3863,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 181,
+      "title": "카드 작성 → 실제 PNG → 저장·검토 → 예약 → 비소비 미리검증",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 2192,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 246,
+      "title": "편집한 두 번째 카드의 미리보기·저장·PNG 복원이 동일한 바이트를 사용한다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1692,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 305,
+      "title": "저장·PNG 복원 응답을 기다리는 동안 편집 대상을 바꾸지 않고 다음 카드를 보존한다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1614,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 407,
+      "title": "100개를 넘는 보관함과 여러 JSON 백업 파일에 접근한다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1146,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 455,
+      "title": "세션 만료 후 화면에서 다시 로그인할 수 있다",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 688,
+          "retry": 0
+        }
+      ]
+    },
+    {
+      "file": "workflow.spec.ts",
+      "line": 465,
+      "title": "비교형·긴 문장·JSON 가져오기·모바일 표시",
+      "project": "chromium",
+      "expected_status": "passed",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration_ms": 1295,
+          "retry": 0
+        }
+      ]
+    }
+  ],
+  "original_artifacts": {
+    "directory": "backups/e2e-ee229e6-20261002",
+    "files": [
+      {
+        "path": "environment.json",
+        "bytes": 689,
+        "sha256": "182e2cefe4faa130ae0264189a7bacee95553b533415b45307d5c6b609fd27ac"
+      },
+      {
+        "path": "execution.log",
+        "bytes": 3717,
+        "sha256": "7bfbfd9c03d6f010bfabe96d0dec68a662d3861445e4b2788f76a81ae25f5916"
+      },
+      {
+        "path": "html/index.html",
+        "bytes": 597091,
+        "sha256": "c785082a257323567f380c0af6d1c84470a2cb3fab9278e2265d77281d989b5c"
+      },
+      {
+        "path": "report.json",
+        "bytes": 26735,
+        "sha256": "da7450ed9209be1174add44abc26175625374a44a9251143f6a6c69170d036e3"
+      },
+      {
+        "path": "run.mjs",
+        "bytes": 6923,
+        "sha256": "e9e8cb66f615104431949b45f9ca34c5f221162b70abb0402baa1e318048725a"
+      },
+      {
+        "path": "test-results/.last-run.json",
+        "bytes": 45,
+        "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+      },
+      {
+        "path": "tracked-after.json",
+        "bytes": 24896,
+        "sha256": "210622ed0d6a12419b11f16592240b9bc790ac65b906becd2982f7da3a9bf680"
+      },
+      {
+        "path": "tracked-before.json",
+        "bytes": 24896,
+        "sha256": "210622ed0d6a12419b11f16592240b9bc790ac65b906becd2982f7da3a9bf680"
+      },
+      {
+        "path": "artifact-manifest.json",
+        "bytes": 1131,
+        "sha256": "fd3db12d932be518e2d16a1194bfd45ae699671c732821a84d0c650fc74b9bb4"
+      },
+      {
+        "path": "run.json",
+        "bytes": 10890,
+        "sha256": "6f05eaa4af4e6358ee81df2f2c6cf8c8b7a31a9725c7ee6fa6b41530279d16c8"
+      }
+    ]
+  },
+  "archive": {
+    "archive": "backups/e2e-ee229e6-20261002.zip",
+    "bytes": 284427,
+    "sha256": "e276a90607c44761e2c640852e6a2d73f97441cb5524d8ac06e516737e82036c",
+    "verified_entries": 10,
+    "all_entry_hashes_match": true
+  },
+  "limitations": [
+    "Local mocked authentication and dry_run only.",
+    "No production CPU, remote quota or actual message verification repeated in this run.",
+    "The existing tests and configuration were not changed or weakened."
+  ]
+}

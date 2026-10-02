@@ -1,6 +1,8 @@
 # 검증 근거
 
-최종 검증: 2026-10-01 (KST). 최신 PR 재검토 수정의 로컬 검증과 이전 운영 확인은 문서 끝에 있습니다. 아래 첫 표와 macOS 환경은 9월 29일의 과거 실행 기록입니다.
+최신 검증: **2026-10-02 (KST)**. `ee229e6`의 전체 Vitest 334개·Chromium 22개와 0013 운영 반영·5장 실제 발송/CPU·사용자 수신·무료 계정 사용량을 문서 끝에 기록했습니다. PR #1은 09:33:26 KST에 `a26c81c`로 병합됐으며 두 제품 파일 트리가 같습니다. 이어 같은 `ee229e6`의 깨끗한 checkout에서 전체 Chromium E2E **22개·95.14초·종료 0**을 다시 확인했습니다. 개별 결과·환경·해시는 [보존 결과](evidence/E2E_2026-10-02_ee229e6.json), 실행·보존 절차는 마지막 절을 따릅니다.
+
+아래 첫 표와 macOS 환경은 **2026-09-29의 과거 실행 기록**입니다. 이후 날짜별 실패·성공·미측정 기록을 보존하며 현재 결과와 섞거나 통과 개수를 합산하지 않습니다.
 
 검증 환경: macOS arm64, Node.js 24.6.0, npm 11.5.1, Wrangler 4.142.0, Playwright 1.63.0. 라이브러리의 정확한 버전은 package-lock.json을 기준으로 합니다.
 
@@ -814,4 +816,35 @@ A2는 모의 400 진단 이후 실제 격리 Worker의 RECOVERY_TIME 400을 Chro
 
 KV Dashboard의 새 UTC일 작업 0과 저장 0B, GraphQL 저장 dataset 빈 결과를 실제 빈 저장소로 해석하지 않았다. [공식 KV GraphQL](https://developers.cloudflare.com/kv/observability/metrics-analytics/)의 계정 전체 작업 결과는 errors 없음·HTTP 200으로 확인했고, 기존 권한으로 제한된 키 목록 1회와 값 길이 읽기 5회로 실제 저장량을 대조했다. 이 조회는 그 자체의 목록/읽기 사용량에 포함한다. 데이터 원문·키 이름·토큰은 저장하거나 출력하지 않았다. KV 읽기 100,000/일·쓰기/삭제/목록 각각 1,000/일·저장 1GB, D1 읽기 5M/일·쓰기 100k/일·저장 5GB의 현재 [KV](https://developers.cloudflare.com/kv/platform/pricing/)·[D1](https://developers.cloudflare.com/d1/platform/pricing/) 무료 정책과 대조했다. 제공사 일일 집계는 UTC이고 앱 sends/uploads는 KST다. 집계 숫자는 조회 시각 기준이며 미래 모든 사용량을 보장하지 않는다.
 
-이 완료 범위는 최신 Chrome 정상 흐름·5장 실제 발송/CPU/휴대전화 확인·무료 사용량·최종 코드 리뷰와 수정이다. 기존 10월 1일 PC 종료 수신·자연 만료 갱신 기록은 그대로 보존하고, 이번 유효 토큰 5장을 새 자연 만료 또는 PC 종료 실측으로 표시하지 않는다. 최종 Git 반영과 병합 상태의 기준은 [PR #1](https://github.com/zzocojoa/EN_Card/pull/1)이며 검토한 HEAD를 지정해 Merge commit으로 병합하고 개발 브랜치를 보존한다.
+이 완료 범위는 최신 Chrome 정상 흐름·5장 실제 발송/CPU/휴대전화 확인·무료 사용량·최종 코드 리뷰와 수정이다. 기존 10월 1일 PC 종료 수신·자연 만료 갱신 기록은 그대로 보존하고, 이번 유효 토큰 5장을 새 자연 만료 또는 PC 종료 실측으로 표시하지 않는다. 최종 제품 커밋 `ee229e68d7ae55226f0799729d60a0777ebc37dc`를 일반 푸시하고 해당 HEAD를 지정해 [PR #1](https://github.com/zzocojoa/EN_Card/pull/1)을 **2026-10-02 09:33:26 KST**에 Merge commit `a26c81ce5e0c2cba83b2ec7c6e905d5d4a4758e4`로 병합했다. GitHub MERGED·master의 두 부모·제품과 같은 파일 트리 `f1cd6ad920f493d6bba5f0904639b989cfaec573`·개발 브랜치 보존·작업 트리 clean을 확인했다.
+
+## 동일 커밋의 정상 개발 환경 E2E 재실행·결과 보존 — 2026-10-02
+
+진행 문서의 과거 0012/OPEN 요약을 최신 0013/MERGED 상태와 구분하고, 병합 전 검증한 **동일 커밋 `ee229e68d7ae55226f0799729d60a0777ebc37dc`**의 E2E 결과를 보존했다. `master`의 병합 커밋 `a26c81ce5e0c2cba83b2ec7c6e905d5d4a4758e4`와 파일 트리가 동일함을 사전에 확인했다. 문서 정리는 이 재실행과 전후 소스 비교를 마친 뒤 수행했다.
+
+| 항목                             | 실제 실행·결과                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------- |
+| 환경                             | Windows x64·OS 10.0.26300·Node 22.22.2·npm 10.9.7                               |
+| 도구                             | Wrangler 4.142.0·Playwright 1.63.0·Chromium 153.0.8010.12·Vite 8.3.1            |
+| 대상                             | 깨끗한 `ee229e6` checkout, 파일 트리 `f1cd6ad920f493d6bba5f0904639b989cfaec573` |
+| 시작/종료 KST                    | Playwright 09:57:48.499 시작, 실행기 09:59:23.791 종료                          |
+| 전체 Chromium 결과               | **22개 통과·95.14초·종료 0**; 실행기 전체 경과 96.268초                         |
+| 실패/skip/flaky/재시도/전역 오류 | **모두 0**                                                                      |
+| 원래 실행 구성                   | worker 1·`http://127.0.0.1:8787`·새 서버·별도 `.wrangler/e2e-1790902668485`     |
+| 실행 전후 보존                   | 추적 파일 **219개 변경 0**·HEAD 동일·작업 트리 clean                            |
+
+기존 `npm run test:e2e`를 그대로 사용하고 CLI의 `--reporter=line,json,html`·`--output`과 보고서 위치 환경변수만 추가했다. 기존 `playwright.config.ts`·`wrangler.local.jsonc`·테스트·잠금 파일을 수정하지 않았고 Node 런타임 패치나 `NODE_OPTIONS`를 적용하지 않았다. 테스트는 원래 config의 build:web → 로컬 마이그레이션 → Wrangler 로컬 서버를 시작하고 별도 D1/KV에서 실행됐다. 기존 서버를 재사용하거나 제공사 오류를 우회하는 shim, skip, assertion 약화는 없다. `NO_COLOR`/`FORCE_COLOR` 표시 경고는 보존하며 테스트 실패로 집계하지 않는다. 이 실행은 모의 인증·로컬 dry_run E2E이며 실제 카카오 발송·운영 DB 변경·원격 CPU 측정·새 배포가 아니다.
+
+원본 결과는 `backups/e2e-ee229e6-20261002/`와 ZIP에 보존했다. JSON 보고서에는 22개 개별 결과가 있고 HTML 보고서·전체 실행 로그·환경 정보·전후 219개 파일 SHA-256·실행기·산출물 manifest·종합 결과를 함께 보관했다. ZIP **10개 파일·284,427바이트**의 각 압축 해제 내용 해시가 원본과 일치한다. ZIP SHA-256은 **`e276a90607c44761e2c640852e6a2d73f97441cb5524d8ac06e516737e82036c`**다. 원본 보고서·로컬 DB·생성 산출물은 기존 Git 제외 정책을 유지하고, 개인 경로·토큰·DB 원문을 제외한 [보존 결과](evidence/E2E_2026-10-02_ee229e6.json)를 문서와 함께 추적한다.
+
+정상 개발 환경에서 대상 커밋의 깨끗한 checkout과 잠금 의존성·Chromium이 준비된 경우 재현 명령은 다음과 같다. 해당 환경에서 설치가 이미 끝났으면 `npm ci`·브라우저 설치를 반복할 필요가 없다.
+
+```powershell
+git rev-parse HEAD
+# ee229e68d7ae55226f0799729d60a0777ebc37dc인지 확인
+npm ci
+npx playwright install chromium
+npm run test:e2e
+```
+
+보존된 HTML은 `backups/e2e-ee229e6-20261002/html/index.html`, 원본 JSON은 `backups/e2e-ee229e6-20261002/report.json`, 압축본은 `backups/e2e-ee229e6-20261002.zip`이다. 이후 문서만 정리한 작업을 새 제품 커밋의 E2E 성공으로 표시하지 않는다. 전체 Vitest 334개·빌드·CPU·수신·무료 계정 조회는 앞선 실제 실행 기록을 유지하며 이번 작업에서 다시 실행한 것은 동일 제품 커밋의 전체 Chromium E2E다.
