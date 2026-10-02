@@ -9,6 +9,7 @@ import { Icon } from '../ui';
 import { TextField } from '../ui';
 import { TextAreaField } from '../ui';
 import { useStudio } from '../studio';
+import { endpoint } from '../environment';
 export function EditorPage(): ReactElement | null {
   const {
     fieldErrors,
@@ -260,7 +261,7 @@ export function EditorPage(): ReactElement | null {
                 onClick={() =>
                   void perform(async () => {
                     if (restored) {
-                      const response = await fetch(`/images/${restored.public_id}.png`);
+                      const response = await fetch(endpoint(`/images/${restored.public_id}.png`));
                       if (!response.ok)
                         throw new Error('복원한 PNG를 내려받지 못했습니다. 다시 시도하세요.');
                       downloadBlob(await response.blob(), 'english-card.png');

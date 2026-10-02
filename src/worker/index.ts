@@ -2,6 +2,7 @@ import { z, ZodError } from 'zod';
 import { LIMITS, parseImport } from '../shared/model';
 import {
   beginOAuth,
+  prepareOAuth,
   cookie,
   disconnect,
   finishOAuth,
@@ -11,6 +12,7 @@ import {
 } from './auth';
 import { assetPage, cardPage, deliveryPage } from './catalog';
 import { readStudioState } from './studio-state';
+import { consumeStudioOAuth, issueStudioOAuth } from './studio-bridge';
 import { dryRun, resolveUnknown, runEngine } from './engine';
 import { nativeTransport } from './kakao';
 import { isTokenError } from './token-errors';
@@ -48,10 +50,19 @@ export async function route(request: Request, env: Env): Promise<Response> {
       limits: LIMITS,
     });
   if (path === '/auth/start' && request.method === 'POST') return beginOAuth(request, env, now);
+  if (path === '/auth/studio' && request.method === 'GET') {
+    await consumeStudioOAuth(request, env, now);
+    return prepareOAuth(env, now, true);
+  }
   if (path === '/auth/callback' && request.method === 'GET')
     return finishOAuth(request, env, now, nativeTransport);
   if (!path.startsWith('/api/')) return env.ASSETS.fetch(request);
   const session = await requireSession(request, env, now);
+  if (path === '/api/studio/kakao' && request.method === 'POST') {
+    if (session.id !== 'studio-bridge')
+      throw appError(403, 'STUDIO_FORBIDDEN', '하루단어에서 연결하세요.');
+    return issueStudioOAuth(env, now);
+  }
   if (path.startsWith('/api/page/') && request.method === 'GET') {
     const cursor: string | null = url.searchParams.get('cursor');
     if (path === '/api/page/cards')

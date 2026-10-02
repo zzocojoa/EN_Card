@@ -2,6 +2,7 @@ import { type ReactElement } from 'react';
 import { LIMITS } from '../../shared/model';
 import { formatKst } from '../../shared/time';
 import { api } from '../api';
+import { endpoint } from '../environment';
 import { label } from '../ui';
 import { useStudio } from '../studio';
 export function SettingsPage(): ReactElement | null {
@@ -175,7 +176,7 @@ export function SettingsPage(): ReactElement | null {
                   </small>
                 </span>
                 {asset.state === 'ready' ? (
-                  <a href={`/images/${asset.public_id}.png`} download="card.png">
+                  <a href={endpoint(`/images/${asset.public_id}.png`)} download="card.png">
                     PNG ↓
                   </a>
                 ) : null}

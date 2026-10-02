@@ -937,3 +937,15 @@ E2E 실행 시 개발 서버를 종료해 8787 포트를 비운다. 배포 dry-r
 3. 준비된 표현형·비교형 PNG를 파일 앱에 내려받아 한글·줄바꿈·1080×1080을 확인한다.
 
 비밀값·인증 코드는 채팅에 입력하지 않는다. 실제 기기 확인 결과가 없으므로 WebKit 자동화나 Chrome 결과를 아이폰 검증 완료로 대체하지 않는다.
+
+## 하루단어 통합 로컬 검증 — 2026-10-02
+
+검증 범위와 실제 운영 반영 체크리스트는 [HARU_INTEGRATION.md](HARU_INTEGRATION.md)를 따른다.
+
+- `npx vitest run tests/studio-bridge.test.ts tests/auth.test.ts`: 37개 통과.
+- `npx vitest run tests/catalog.test.ts tests/reaudit.test.ts`: 29개 통과.
+- 하루단어 `npm test`: 714개 통과. 새 체크아웃의 work 폴더 누락을 준비한 뒤 전체 재실행했다.
+- `npx playwright test --config playwright.haru.config.ts`: Chromium·WebKit 각 1개 통과. 실제 두 로컬 서버·로컬 D1/KV, 모의 ChatGPT 계정, dry_run이다. 표현형/비교형 PNG 1080×1080 다운로드·검토 저장·예약 생성·학습 기록 불변·모바일 메뉴/가로 넘침을 확인했다.
+- 기존 workflow의 로그인 모드/PNG·예약/100개 이상 조회 Chromium 3개는 별도 E2E DB에서 통과했다. 통합 미리보기 DB와 혼용한 첫 실행의 선택자 중복 실패는 제품 성공으로 집계하지 않는다.
+- 양쪽 타입·빌드, 하루단어 lint 오류 0·기존 경고 13, EN_Card 무료 구성 검사 통과. 전체 EN_Card 337개·기존 E2E 52개를 이번에 모두 재실행한 것은 아니다.
+- 기존 운영 서비스·Secret·DB·카카오 동의·발송은 변경하지 않았다. 새 통합 경로의 운영 CPU와 실제 iPhone Safari는 미검증이다.

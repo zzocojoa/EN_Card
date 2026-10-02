@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { LIMITS } from '../shared/model';
+import { studioOrigin, studioSession } from './studio-bridge';
 import { isTokenError, tokenError, type TokenError, type TokenFailure } from './token-errors';
 import { decrypt, digest, encrypt, randomToken, tokenCipher, type TokenCipher } from './crypto';
 import { kakaoOwner, nativeTransport, requestTokens } from './kakao';
@@ -40,6 +41,8 @@ export async function createSession(
   return { token, csrf };
 }
 export async function requireSession(request: Request, env: Env, now: number): Promise<Session> {
+  const studio = await studioSession(request, env);
+  if (studio) return studio;
   const token: string | null = getCookie(request, 'en_session');
   if (!token) throw appError(401, 'LOGIN_REQUIRED', '로그인이 필요합니다.');
   const session: Session | null = await env.DB.prepare(
@@ -78,6 +81,9 @@ export async function beginOAuth(request: Request, env: Env, now: number): Promi
       throw appError(403, 'SETUP_TOKEN', '로그인용 SETUP_TOKEN을 확인하세요.');
     }
   }
+  return prepareOAuth(env, now);
+}
+export async function prepareOAuth(env: Env, now: number, studio = false): Promise<Response> {
   if (!env.KAKAO_REST_API_KEY)
     throw appError(503, 'KAKAO_CONFIG', '카카오 REST API 키를 설정하세요.');
   const state: string = randomToken();
@@ -85,11 +91,12 @@ export async function beginOAuth(request: Request, env: Env, now: number): Promi
   await env.DB.batch([
     env.DB.prepare('DELETE FROM auth_state WHERE expires_at<?').bind(now),
     env.DB.prepare(
-      "INSERT INTO auth_state(id,kind,browser_hash,expires_at) VALUES(?,'oauth',?,?)",
+      "INSERT INTO auth_state(id,kind,browser_hash,expires_at,csrf) VALUES(?,'oauth',?,?,?)",
     ).bind(
       await digest(state, env.SESSION_SECRET),
       await digest(browser, env.SESSION_SECRET),
       now + 10 * 60_000,
+      studio ? 'studio-return' : null,
     ),
   ]);
   const url: URL = new URL('https://kauth.kakao.com/oauth/authorize');
@@ -100,6 +107,16 @@ export async function beginOAuth(request: Request, env: Env, now: number): Promi
     scope: 'talk_message',
     state,
   }).toString();
+  if (studio)
+    return new Response(null, {
+      status: 303,
+      headers: {
+        Location: url.toString(),
+        'Set-Cookie': cookie('en_oauth', browser, 600, env.APP_ORIGIN),
+        'Cache-Control': 'no-store',
+        'Referrer-Policy': 'no-referrer',
+      },
+    });
   return Response.json(
     { url: url.toString() },
     { headers: { 'Set-Cookie': cookie('en_oauth', browser, 600, env.APP_ORIGIN) } },
@@ -122,10 +139,10 @@ export async function finishOAuth(
       '인증 응답이 누락되었거나 취소되었습니다. 다시 로그인하세요.',
     );
   const consumed = await env.DB.prepare(
-    "DELETE FROM auth_state WHERE id=? AND kind='oauth' AND browser_hash=? AND expires_at>? RETURNING id",
+    "DELETE FROM auth_state WHERE id=? AND kind='oauth' AND browser_hash=? AND expires_at>? RETURNING id,csrf",
   )
     .bind(await digest(state, env.SESSION_SECRET), await digest(browser, env.SESSION_SECRET), now)
-    .first<{ id: string }>();
+    .first<{ id: string; csrf: string | null }>();
   if (!consumed)
     throw appError(
       403,
@@ -167,7 +184,9 @@ export async function finishOAuth(
     .first<{ owner_id: string }>();
   if (!saved) throw appError(403, 'NOT_OWNER', '등록된 운영자 계정만 사용할 수 있습니다.');
   const session = await createSession(env, now);
-  const headers: Headers = new Headers({ Location: env.APP_ORIGIN });
+  const headers: Headers = new Headers({
+    Location: consumed.csrf === 'studio-return' ? `${studioOrigin(env)}/cards` : env.APP_ORIGIN,
+  });
   headers.append('Set-Cookie', cookie('en_session', session.token, 86400, env.APP_ORIGIN));
   headers.append('Set-Cookie', cookie('en_oauth', '', 0, env.APP_ORIGIN));
   return new Response(null, { status: 303, headers });

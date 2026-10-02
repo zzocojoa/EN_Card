@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CatalogPage } from '../worker/catalog';
+import { endpoint } from './environment';
 
 // Each request belongs to its filter/revision. Late responses cannot replace a newer list.
 export function useCatalog<T extends { id: string }>(
@@ -22,7 +23,9 @@ export function useCatalog<T extends { id: string }>(
   async function read(cursor: string | null, controller: AbortController): Promise<CatalogPage<T>> {
     const url = new URLSearchParams(query);
     if (cursor) url.set('cursor', cursor);
-    const response = await fetch(`/api/page/${kind}?${url}`, { signal: controller.signal });
+    const response = await fetch(endpoint(`/api/page/${kind}?${url}`), {
+      signal: controller.signal,
+    });
     if (response.status === 401) expired.current();
     const body = (await response.json()) as CatalogPage<T> & { message?: string };
     if (!response.ok) throw new Error(body.message ?? '목록을 불러오지 못했습니다.');

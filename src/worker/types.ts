@@ -13,6 +13,9 @@ export type Env = {
   TOKEN_ENCRYPTION_KEY: string;
   KAKAO_REST_API_KEY?: string;
   KAKAO_CLIENT_SECRET?: string;
+  STUDIO_BRIDGE_SECRET?: string;
+  STUDIO_OWNER_ID?: string;
+  STUDIO_ORIGIN?: string;
   DELIVERY_SERVICE?: Fetcher;
 };
 export type Credentials = {
