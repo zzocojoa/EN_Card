@@ -269,8 +269,13 @@ export async function route(request: Request, env: Env): Promise<Response> {
   }
   throw appError(404, 'NOT_FOUND', '요청한 API가 없습니다.');
 }
-export async function handle(request: Request, env: Env): Promise<Response> {
+export async function handle(
+  request: Request,
+  env: Env,
+  validateEnvironment?: (env: Env) => void,
+): Promise<Response> {
   try {
+    validateEnvironment?.(env);
     const response: Response = await route(request, env);
     if (
       !new URL(request.url).pathname.startsWith('/api/') &&
@@ -361,10 +366,16 @@ export async function handle(request: Request, env: Env): Promise<Response> {
   }
 }
 function validateProduction(env: Env): void {
+  let protocol: string | null = null;
+  try {
+    protocol = new URL(env.APP_ORIGIN).protocol;
+  } catch {
+    // Report an invalid origin through the same safe configuration response.
+  }
   if (
     env.COST_MODE !== 'free_only' ||
     !['dry_run', 'live'].includes(env.SEND_MODE) ||
-    new URL(env.APP_ORIGIN).protocol !== 'https:'
+    protocol !== 'https:'
   )
     throw appError(
       503,
@@ -376,8 +387,7 @@ function validateProduction(env: Env): void {
 }
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    validateProduction(env);
-    return handle(request, env);
+    return handle(request, env, validateProduction);
   },
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
     validateProduction(env);

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseImport } from '../src/shared/model';
 import { kstToUtc, nextRun } from '../src/shared/time';
 import { decrypt, encrypt } from '../src/worker/crypto';
-import { kakaoOwner, makePayload, sendKakao } from '../src/worker/kakao';
+import { kakaoOwner, makePayload, sendKakao, validatePayload } from '../src/worker/kakao';
 import { validatePng } from '../src/worker/storage';
 import { layoutCard } from '../src/web/canvas';
 import { SAMPLE, png } from './helpers';
@@ -82,6 +82,91 @@ it('읽기 전용 사용자 조회의 네트워크 실패를 세 번까지만 �
 });
 describe('카카오 실제 어댑터의 응답 계약', () => {
   const payload = makePayload(SAMPLE, 'abc', 'https://example.test');
+  it('두 템플릿의 피드와 길이 경계를 검증한다', () => {
+    for (const template of ['expression', 'comparison'] as const) {
+      const feed = makePayload(
+        { ...SAMPLE, template, expression: '한'.repeat(200) },
+        'abc',
+        'https://example.test',
+      );
+      expect(validatePayload(feed, 'https://example.test')).toEqual(feed);
+      feed.content.title += 'x';
+      expect(() => validatePayload(feed, 'https://example.test')).toThrow();
+    }
+  });
+  it.each([
+    ['null', () => null],
+    ['배열', () => []],
+    ['루트 추가 필드', (p) => ({ ...p, extra: true })],
+    ['다른 형식', (p) => ({ ...p, object_type: 'text' })],
+    ['내용 누락', (p) => ({ object_type: p.object_type, buttons: p.buttons })],
+    ['내용 배열', (p) => ({ ...p, content: [] })],
+    ['내용 추가 필드', (p) => ({ ...p, content: { ...p.content, extra: true } })],
+    ['빈 제목', (p) => ({ ...p, content: { ...p.content, title: '' } })],
+    ['제목 타입', (p) => ({ ...p, content: { ...p.content, title: 1 } })],
+    ['빈 뜻', (p) => ({ ...p, content: { ...p.content, description: '' } })],
+    ['긴 뜻', (p) => ({ ...p, content: { ...p.content, description: 'x'.repeat(201) } })],
+    ['이미지 URL 타입', (p) => ({ ...p, content: { ...p.content, image_url: null } })],
+    ['가로 규격', (p) => ({ ...p, content: { ...p.content, image_width: 1 } })],
+    ['세로 규격', (p) => ({ ...p, content: { ...p.content, image_height: '1080' } })],
+    ['링크 null', (p) => ({ ...p, content: { ...p.content, link: null } })],
+    [
+      '링크 누락',
+      (p) => ({ ...p, content: { ...p.content, link: { web_url: 'https://example.test' } } }),
+    ],
+    [
+      '링크 추가 필드',
+      (p) => ({ ...p, content: { ...p.content, link: { ...p.content.link, extra: true } } }),
+    ],
+    ['버튼 없음', (p) => ({ ...p, buttons: [] })],
+    ['버튼 둘', (p) => ({ ...p, buttons: [p.buttons[0], p.buttons[0]] })],
+    ['버튼 null', (p) => ({ ...p, buttons: [null] })],
+    ['다른 버튼 제목', (p) => ({ ...p, buttons: [{ ...p.buttons[0], title: '다른 제목' }] })],
+    ['버튼 추가 필드', (p) => ({ ...p, buttons: [{ ...p.buttons[0], extra: true }] })],
+    [
+      '버튼 링크 추가 필드',
+      (p) => ({
+        ...p,
+        buttons: [{ ...p.buttons[0], link: { ...p.buttons[0]!.link, extra: true } }],
+      }),
+    ],
+  ] satisfies [string, (p: typeof payload) => unknown][])('%s 피드를 거부한다', (_, change) => {
+    expect(() =>
+      validatePayload(change(structuredClone(payload)), 'https://example.test'),
+    ).toThrow();
+  });
+  it('이미지와 두 링크의 모든 URL을 검사하며 출처를 제한한다', () => {
+    const setters = [
+      (p: typeof payload, url: string) => {
+        p.content.image_url = url;
+      },
+      (p: typeof payload, url: string) => {
+        p.content.link.web_url = url;
+      },
+      (p: typeof payload, url: string) => {
+        p.content.link.mobile_web_url = url;
+      },
+      (p: typeof payload, url: string) => {
+        p.buttons[0]!.link.web_url = url;
+      },
+      (p: typeof payload, url: string) => {
+        p.buttons[0]!.link.mobile_web_url = url;
+      },
+    ];
+    for (const set of setters) {
+      for (const url of [
+        '/relative',
+        'not a URL',
+        'https://outside.test/x',
+        'javascript:alert(1)',
+        'https://example.test.evil.test/x',
+      ]) {
+        const feed = structuredClone(payload);
+        set(feed, url);
+        expect(() => validatePayload(feed, 'https://example.test')).toThrow();
+      }
+    }
+  });
   it('URL·인증·form 본문과 result_code=0을 요구한다', async () => {
     const result = await sendKakao(payload, 'token', async (url, init) => {
       expect(url).toBe('https://kapi.kakao.com/v2/api/talk/memo/default/send');
@@ -95,6 +180,14 @@ describe('카카오 실제 어댑터의 응답 계약', () => {
   });
   it.each([
     [200, {}, 'unknown'],
+    [200, null, 'unknown'],
+    [200, [], 'unknown'],
+    [200, { result_code: '0' }, 'unknown'],
+    [200, { result_code: null }, 'unknown'],
+    [200, { result_code: 0, code: 'bad' }, 'unknown'],
+    [200, { result_code: 0, code: null }, 'unknown'],
+    [200, { result_code: 0, extra: true }, 'sent'],
+    [400, { result_code: 0, code: -2 }, 'failed'],
     [500, { code: -1 }, 'unknown'],
     [401, { code: -401 }, 'unauthorized'],
     [403, { code: -402 }, 'reconnect'],

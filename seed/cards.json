@@ -1,14 +1,98 @@
-{"schema_version":1,"cards":[
-{"template":"expression","expression":"Take your time","meaning_ko":"서두르지 말고 천천히 해","example_en":"Take your time. The next train comes in ten minutes.","example_ko":"천천히 해. 다음 기차는 10분 뒤에 와.","note_ko":"상대가 서두르지 않아도 될 때","category":"일상","level":"기초"},
-{"template":"expression","expression":"I'm on my way","meaning_ko":"지금 가는 중이야","example_en":"I'm on my way. I'll meet you by the door.","example_ko":"지금 가는 중이야. 문 앞에서 만나자."},
-{"template":"expression","expression":"That makes sense","meaning_ko":"그 말이 이해가 돼","example_en":"That makes sense. Let's start with the smaller task.","example_ko":"이해가 돼. 더 작은 일부터 시작하자."},
-{"template":"comparison","base_expression":"I don't know","base_meaning_ko":"모르겠어","expression":"I'm not sure yet","meaning_ko":"아직 확실하지 않아","example_en":"I'm not sure yet. Can I tell you tomorrow?","example_ko":"아직 확실하지 않아. 내일 말해도 될까?"},
-{"template":"expression","expression":"Let me check","meaning_ko":"내가 확인해 볼게","example_en":"Let me check the schedule before we book a table.","example_ko":"테이블을 예약하기 전에 일정을 확인해 볼게."},
-{"template":"expression","expression":"It's up to you","meaning_ko":"네가 결정하면 돼","example_en":"We can walk or take the bus. It's up to you.","example_ko":"걸어도 되고 버스를 타도 돼. 네가 결정해."},
-{"template":"comparison","base_expression":"I'm busy","base_meaning_ko":"바빠","expression":"I've got a lot on my plate","meaning_ko":"지금 처리할 일이 많아","example_en":"I've got a lot on my plate this week, so let's meet next week.","example_ko":"이번 주에는 할 일이 많으니 다음 주에 만나자."},
-{"template":"expression","expression":"Keep me posted","meaning_ko":"진행 상황을 알려 줘","example_en":"Keep me posted when you hear back from the team.","example_ko":"팀에서 답이 오면 알려 줘."},
-{"template":"expression","expression":"I'll give it a try","meaning_ko":"한번 해 볼게","example_en":"I've never made bread, but I'll give it a try.","example_ko":"빵을 만들어 본 적은 없지만 한번 해 볼게."},
-{"template":"comparison","base_expression":"Thank you","base_meaning_ko":"고마워","expression":"I really appreciate it","meaning_ko":"정말 고맙게 생각해","example_en":"You stayed to help me clean up. I really appreciate it.","example_ko":"남아서 정리를 도와줬구나. 정말 고마워."},
-{"template":"expression","expression":"Let's call it a day","meaning_ko":"오늘은 이쯤에서 마치자","example_en":"We've finished the first draft. Let's call it a day.","example_ko":"초안을 완성했네. 오늘은 이쯤에서 마치자."},
-{"template":"expression","expression":"One step at a time","meaning_ko":"한 번에 한 단계씩","example_en":"You don't need to learn everything today. One step at a time.","example_ko":"오늘 모든 것을 배울 필요는 없어. 한 단계씩 해 보자."}
-]}
+{
+  "schema_version": 1,
+  "cards": [
+    {
+      "template": "expression",
+      "expression": "Take your time",
+      "meaning_ko": "서두르지 말고 천천히 해",
+      "example_en": "Take your time. The next train comes in ten minutes.",
+      "example_ko": "천천히 해. 다음 기차는 10분 뒤에 와.",
+      "note_ko": "상대가 서두르지 않아도 될 때",
+      "category": "일상",
+      "level": "기초"
+    },
+    {
+      "template": "expression",
+      "expression": "I'm on my way",
+      "meaning_ko": "지금 가는 중이야",
+      "example_en": "I'm on my way. I'll meet you by the door.",
+      "example_ko": "지금 가는 중이야. 문 앞에서 만나자."
+    },
+    {
+      "template": "expression",
+      "expression": "That makes sense",
+      "meaning_ko": "그 말이 이해가 돼",
+      "example_en": "That makes sense. Let's start with the smaller task.",
+      "example_ko": "이해가 돼. 더 작은 일부터 시작하자."
+    },
+    {
+      "template": "comparison",
+      "base_expression": "I don't know",
+      "base_meaning_ko": "모르겠어",
+      "expression": "I'm not sure yet",
+      "meaning_ko": "아직 확실하지 않아",
+      "example_en": "I'm not sure yet. Can I tell you tomorrow?",
+      "example_ko": "아직 확실하지 않아. 내일 말해도 될까?"
+    },
+    {
+      "template": "expression",
+      "expression": "Let me check",
+      "meaning_ko": "내가 확인해 볼게",
+      "example_en": "Let me check the schedule before we book a table.",
+      "example_ko": "테이블을 예약하기 전에 일정을 확인해 볼게."
+    },
+    {
+      "template": "expression",
+      "expression": "It's up to you",
+      "meaning_ko": "네가 결정하면 돼",
+      "example_en": "We can walk or take the bus. It's up to you.",
+      "example_ko": "걸어도 되고 버스를 타도 돼. 네가 결정해."
+    },
+    {
+      "template": "comparison",
+      "base_expression": "I'm busy",
+      "base_meaning_ko": "바빠",
+      "expression": "I've got a lot on my plate",
+      "meaning_ko": "지금 처리할 일이 많아",
+      "example_en": "I've got a lot on my plate this week, so let's meet next week.",
+      "example_ko": "이번 주에는 할 일이 많으니 다음 주에 만나자."
+    },
+    {
+      "template": "expression",
+      "expression": "Keep me posted",
+      "meaning_ko": "진행 상황을 알려 줘",
+      "example_en": "Keep me posted when you hear back from the team.",
+      "example_ko": "팀에서 답이 오면 알려 줘."
+    },
+    {
+      "template": "expression",
+      "expression": "I'll give it a try",
+      "meaning_ko": "한번 해 볼게",
+      "example_en": "I've never made bread, but I'll give it a try.",
+      "example_ko": "빵을 만들어 본 적은 없지만 한번 해 볼게."
+    },
+    {
+      "template": "comparison",
+      "base_expression": "Thank you",
+      "base_meaning_ko": "고마워",
+      "expression": "I really appreciate it",
+      "meaning_ko": "정말 고맙게 생각해",
+      "example_en": "You stayed to help me clean up. I really appreciate it.",
+      "example_ko": "남아서 정리를 도와줬구나. 정말 고마워."
+    },
+    {
+      "template": "expression",
+      "expression": "Let's call it a day",
+      "meaning_ko": "오늘은 이쯤에서 마치자",
+      "example_en": "We've finished the first draft. Let's call it a day.",
+      "example_ko": "초안을 완성했네. 오늘은 이쯤에서 마치자."
+    },
+    {
+      "template": "expression",
+      "expression": "One step at a time",
+      "meaning_ko": "한 번에 한 단계씩",
+      "example_en": "You don't need to learn everything today. One step at a time.",
+      "example_ko": "오늘 모든 것을 배울 필요는 없어. 한 단계씩 해 보자."
+    }
+  ]
+}

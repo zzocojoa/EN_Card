@@ -179,6 +179,7 @@ export function App(): ReactElement {
   const modalOpener = useRef<HTMLElement | null>(null);
   const hadModal = useRef(false);
   const authenticated: boolean = state !== null;
+  const sendMode = state?.mode ?? boot?.mode;
   useEffect(() => {
     if (authenticated && (pauseConfirm || recovery || unknownId)) {
       hadModal.current = true;
@@ -439,9 +440,13 @@ export function App(): ReactElement {
           <strong>
             {boot?.local
               ? '로컬 작업실'
-              : state?.mode === 'live'
+              : sendMode === 'live'
                 ? '클라우드 발송'
-                : '발송 전 검증 모드'}
+                : sendMode
+                  ? '발송 전 검증 모드'
+                  : loading
+                    ? '발송 모드 확인 중'
+                    : '발송 모드 확인 불가'}
           </strong>
           <p>
             {boot?.local
@@ -456,7 +461,13 @@ export function App(): ReactElement {
           <span>나만을 위한 작은 영어 습관</span>
           <div>
             <span className="status-pill">
-              {state?.mode === 'live' ? 'LIVE' : 'DRY RUN · 실제 발송 없음'}
+              {sendMode === 'live'
+                ? 'LIVE'
+                : sendMode
+                  ? 'DRY RUN · 실제 발송 없음'
+                  : loading
+                    ? '발송 모드 확인 중'
+                    : '발송 모드 확인 불가'}
             </span>
             <button
               className="text-button"
@@ -539,7 +550,7 @@ export function App(): ReactElement {
                     >
                       카카오로 로그인
                     </button>
-                    {!boot?.kakao_configured ? (
+                    {boot && !boot.kakao_configured ? (
                       <p>먼저 Worker에 카카오 앱 설정을 등록하세요.</p>
                     ) : null}
                   </>
@@ -1287,6 +1298,7 @@ export function App(): ReactElement {
                       <PauseDialog
                         preview={pauseConfirm}
                         busy={busy}
+                        error={notice?.kind === 'error' ? notice.text : null}
                         returnFocus={modalOpener.current}
                         onClose={() => setPauseConfirm(null)}
                         onPause={() =>
@@ -1495,6 +1507,7 @@ export function App(): ReactElement {
                               className="secondary"
                               onClick={(event) => {
                                 modalOpener.current = event.currentTarget;
+                                setNotice(null);
                                 setUnknownId(item.id);
                                 setAcceptDuplicate(false);
                               }}
@@ -1534,6 +1547,11 @@ export function App(): ReactElement {
                       onClose={() => setUnknownId(null)}
                     >
                       <h2 tabIndex={-1}>먼저 나와의 채팅을 확인하세요.</h2>
+                      {notice?.kind === 'error' ? (
+                        <p className="notice error" role="alert">
+                          {notice.text}
+                        </p>
+                      ) : null}
                       <p>
                         이미 도착한 메시지를 재시도하면 중복으로 받을 수 있습니다. 사용자 확인
                         사실과 새 시도는 별도로 기록됩니다. 수신 여부를 알 수 없다면 재전송하지 않고

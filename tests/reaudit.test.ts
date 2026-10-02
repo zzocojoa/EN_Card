@@ -513,9 +513,25 @@ it('운영 진입점은 잘못된 구성을 거부하고 dry_run Cron은 운영 
   for (const env of [
     { ...h.env, COST_MODE: 'paid' },
     { ...h.env, APP_ORIGIN: 'http://localhost' },
+    { ...h.env, APP_ORIGIN: 'invalid origin' },
     { ...h.env, SEND_MODE: 'mock' as const },
-  ])
-    await expect(production.fetch(request, env)).rejects.toThrow('운영 환경');
+  ]) {
+    const failure = await production.fetch(request, env);
+    expect(failure.status).toBe(503);
+    expect(failure.headers.get('Cache-Control')).toBe('no-store');
+    expect(await failure.json()).toEqual({
+      error: 'CONFIG',
+      message: '운영 환경은 HTTPS, free_only, dry_run 또는 live 설정이 필요합니다.',
+    });
+    await expect(production.scheduled({} as ScheduledController, env)).rejects.toThrow('운영 환경');
+  }
+  const missingBinding = await production.fetch(request, { ...h.env, SEND_MODE: 'live' });
+  expect(missingBinding.status).toBe(503);
+  expect(await missingBinding.json()).toEqual({
+    error: 'DELIVERY_CONFIG',
+    message: '비공개 발송 Worker 연결을 확인하세요.',
+  });
+  expect(await h.env.DB.prepare('SELECT count(*) AS n FROM occurrences').first('n')).toBe(0);
   const response = await production.fetch(request, h.env);
   expect(await response.json()).toMatchObject({ local: false, mode: 'dry_run' });
   const { id } = await saveSchedule(await daily(), null, null, h.env, NOW);

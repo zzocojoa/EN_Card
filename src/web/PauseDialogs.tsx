@@ -6,6 +6,7 @@ import { Modal } from './Modal';
 type PauseProps = {
   preview: PausePreview;
   busy: boolean;
+  error: string | null;
   returnFocus: HTMLElement | null;
   onClose: () => void;
   onPause: () => void;
@@ -13,6 +14,7 @@ type PauseProps = {
 export function PauseDialog({
   preview,
   busy,
+  error,
   returnFocus,
   onClose,
   onPause,
@@ -20,6 +22,11 @@ export function PauseDialog({
   return (
     <Modal label="일시정지 확인" busy={busy} returnFocus={returnFocus} onClose={onClose}>
       <h2 tabIndex={-1}>현재 회차의 미발송 {preview.items.length}장</h2>
+      {error ? (
+        <p className="notice error" role="alert">
+          {error}
+        </p>
+      ) : null}
       <p>
         아래 카드는 현재 회차에서 제외됩니다. 재개할 때 새 미래 시각에 다시 예약하거나 제외할 수
         있습니다. 확인 중 발송이 진행되면 실제 중지 결과 목록을 다시 보여드립니다.

@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Card } from '../../src/shared/model';
+import { seed } from './db';
 
 const sample = {
   template: 'expression',
@@ -10,12 +11,170 @@ const sample = {
   example_ko: '저장 전에 카드를 확인하세요.',
 };
 
+test('로그인 전에도 서버 발송 모드를 표시하고 부팅 실패를 DRY RUN으로 오인하지 않는다', async ({
+  page,
+}) => {
+  await page.route('**/api/state', (route) =>
+    route.fulfill({ status: 401, json: { error: 'SESSION', message: '로그인이 필요합니다.' } }),
+  );
+  await page.route('**/api/boot', (route) =>
+    route.fulfill({ json: { local: false, mode: 'live', kakao_configured: true } }),
+  );
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: '카카오로 로그인', exact: true })).toBeEnabled();
+  await expect(page.locator('.status-pill')).toHaveText('LIVE');
+  await expect(page.locator('.sidebar-bottom')).toContainText('클라우드 발송');
+
+  await page.unroute('**/api/boot');
+  await page.route('**/api/boot', (route) =>
+    route.fulfill({ json: { local: false, mode: 'dry_run', kakao_configured: true } }),
+  );
+  await page.reload();
+  await expect(page.locator('.status-pill')).toHaveText('DRY RUN · 실제 발송 없음');
+
+  await page.unroute('**/api/boot');
+  await page.route('**/api/boot', (route) => route.abort('blockedbyclient'));
+  await page.reload();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.locator('.status-pill')).toHaveText('발송 모드 확인 불가');
+  await expect(page.getByRole('button', { name: '카카오로 로그인', exact: true })).toBeDisabled();
+  await expect(
+    page.getByText('먼저 Worker에 카카오 앱 설정을 등록하세요.', { exact: true }),
+  ).toHaveCount(0);
+});
+
 test('태블릿 메뉴에 접근성 이름이 유지된다', async ({ page }) => {
   await page.setViewportSize({ width: 800, height: 900 });
   await page.goto('/');
   const menu = page.getByRole('navigation', { name: '주 메뉴' });
   for (const name of ['카드 만들기', '카드 보관함', '발송 예약', '발송 기록', '연결 및 설정']) {
     await expect(menu.getByRole('button', { name, exact: true })).toHaveCount(1);
+  }
+});
+
+test('일시정지 POST 409를 대화상자 안에 표시하고 새 상태로 다시 시도할 수 있다', async ({
+  page,
+}, info) => {
+  const scheduleId: string = crypto.randomUUID();
+  const name: string = `일시정지 오류-${scheduleId}`;
+  const future: Date = new Date(Date.now() + 9 * 3600_000 + 600_000);
+  await seed(
+    `INSERT INTO schedules(id,name,kind,date,time,weekdays,cards_per_occurrence,timezone,next_run_at_utc,version,enabled) VALUES('${scheduleId}','${name}','once','${future.toISOString().slice(0, 10)}','${future.toISOString().slice(11, 16)}','[]',1,'Asia/Seoul',${Date.now() + 600_000},1,1);`,
+    info,
+  );
+  try {
+    await page.goto('/');
+    await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+    await page.getByRole('button', { name: '발송 예약', exact: true }).click();
+    const article = page
+      .locator('.schedule-card')
+      .filter({ has: page.getByRole('heading', { name, exact: true }) });
+    const opener = article.getByRole('button', { name: '일시정지', exact: true });
+    await opener.click();
+    const dialog = page.getByRole('dialog', { name: '일시정지 확인' });
+    await expect(dialog).toBeVisible();
+    await seed(`UPDATE schedules SET version=2 WHERE id='${scheduleId}';`, info);
+    const rejected = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().endsWith(`/api/schedules/${scheduleId}/pause`),
+    );
+    await dialog.getByRole('button', { name: '일시정지 실행', exact: true }).click();
+    const response = await rejected;
+    expect(response.status()).toBe(409);
+    expect(await response.json()).toMatchObject({ error: 'SCHEDULE_CHANGED' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('alert')).toBeVisible();
+    await expect(dialog.getByRole('alert')).toContainText('예약 버전이 변경되었습니다.');
+    await expect(dialog.getByRole('button', { name: '일시정지 실행', exact: true })).toBeEnabled();
+    await expect(dialog.getByRole('button', { name: '닫기', exact: true })).toBeEnabled();
+    await dialog.getByRole('button', { name: '닫기', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(opener).toBeFocused();
+    await page.getByRole('button', { name: '새로고침', exact: true }).click();
+    await opener.click();
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
+    const resumedRequest = page.waitForResponse(
+      (result) =>
+        result.request().method() === 'POST' &&
+        result.url().endsWith(`/api/schedules/${scheduleId}/pause`),
+    );
+    await dialog.getByRole('button', { name: '일시정지 실행', exact: true }).click();
+    expect((await resumedRequest).status()).toBe(200);
+    const recovery = page.getByRole('dialog', { name: '미발송 카드 다시 예약' });
+    await expect(recovery).toBeVisible();
+    await recovery.getByRole('button', { name: '닫기', exact: true }).click();
+    await expect(article).toContainText('일시정지');
+  } finally {
+    await seed(`DELETE FROM schedules WHERE id='${scheduleId}';`, info);
+  }
+});
+
+test('결과 불명 재시도 SCHEDULE_INACTIVE를 대화상자 안에 표시하고 종료를 선택할 수 있다', async ({
+  page,
+}, info) => {
+  const scheduleId: string = crypto.randomUUID();
+  const cardId: string = crypto.randomUUID();
+  const assetId: string = crypto.randomUUID();
+  const deliveryId: string = crypto.randomUUID();
+  const occurrenceId: string = crypto.randomUUID();
+  const now: number = Date.now();
+  const failure: string = `중지된 예약의 결과 불명-${deliveryId}`;
+  await seed(
+    `
+    INSERT INTO cards(id,revision,content,status,created_at) VALUES('${cardId}',1,'{"template":"expression","expression":"Unknown result error","meaning_ko":"결과 불명 오류","example_en":"Check the result first.","example_ko":"결과를 먼저 확인하세요."}','draft',${now});
+    INSERT INTO assets(id,card_id,revision,snapshot,kv_key,public_id,bytes,state,created_at,usage_day) VALUES('${assetId}','${cardId}',1,'{"expression":"Unknown result error"}','${assetId}','${assetId}',33,'ready',${now},'2026-09-29');
+    INSERT INTO schedules(id,name,kind,date,time,weekdays,cards_per_occurrence,timezone,version,enabled,reason) VALUES('${scheduleId}','중지된 오류 검사 예약','daily','2026-09-28','12:05','[]',1,'Asia/Seoul',1,0,'cancelled');
+    INSERT INTO occurrences VALUES('${occurrenceId}','${scheduleId}',1,${now},'mock',${now});
+    INSERT INTO deliveries(id,occurrence_id,schedule_id,schedule_version,position,asset_id,payload,state,mode,due_at_utc,error,updated_at) VALUES('${deliveryId}','${occurrenceId}','${scheduleId}',1,0,'${assetId}','{}','unknown','mock',${now},'${failure}',${now});
+    `,
+    info,
+  );
+  try {
+    await page.goto('/');
+    await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+    await page.getByRole('button', { name: '발송 기록', exact: true }).click();
+    const article = page.locator('.journal article').filter({ hasText: failure });
+    const opener = article.getByRole('button', { name: '결과 확인', exact: true });
+    await opener.click();
+    const dialog = page.getByRole('dialog', { name: '결과 불명 확인' });
+    await dialog.getByRole('checkbox').check();
+    const rejected = page.waitForResponse(
+      (response) =>
+        response.request().method() === 'POST' &&
+        response.url().endsWith(`/api/deliveries/${deliveryId}/resolve`),
+    );
+    await dialog.getByRole('button', { name: '다시 보내기', exact: true }).click();
+    const response = await rejected;
+    expect(response.status()).toBe(409);
+    expect(await response.json()).toMatchObject({ error: 'SCHEDULE_INACTIVE' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('alert')).toBeVisible();
+    await expect(dialog.getByRole('alert')).toContainText(
+      '예약이 수정·중지·취소되어 재시도할 수 없습니다.',
+    );
+    await expect(dialog.getByRole('checkbox')).toBeChecked();
+    for (const name of ['이미 수신함', '다시 보내기', '재전송하지 않고 종료', '닫기']) {
+      await expect(dialog.getByRole('button', { name, exact: true })).toBeEnabled();
+    }
+    await dialog.getByRole('button', { name: '닫기', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(opener).toBeFocused();
+    await expect(page.locator('.workspace > .notice.error')).toBeVisible();
+    await opener.click();
+    await expect(dialog.getByRole('alert')).toHaveCount(0);
+    await expect(page.locator('.workspace > .notice.error')).toHaveCount(0);
+    await dialog.getByRole('checkbox').check();
+    await dialog.getByRole('button', { name: '재전송하지 않고 종료', exact: true }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(page.locator('.journal article').filter({ hasText: failure })).toContainText(
+      '재전송 없이 종료 (수신 미확인)',
+    );
+  } finally {
+    await seed(
+      `DELETE FROM manual_decisions WHERE delivery_id='${deliveryId}'; DELETE FROM deliveries WHERE id='${deliveryId}'; DELETE FROM occurrences WHERE id='${occurrenceId}'; DELETE FROM schedules WHERE id='${scheduleId}'; UPDATE assets SET state='deleted' WHERE id='${assetId}'; DELETE FROM assets WHERE id='${assetId}'; DELETE FROM cards WHERE id='${cardId}';`,
+      info,
+    );
   }
 });
 

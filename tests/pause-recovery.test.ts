@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { afterEach, beforeEach, expect, it } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { recoverySchema, type RecoveryInput } from '../src/shared/model';
 import { runEngine } from '../src/worker/engine';
 import { disconnect } from '../src/worker/auth';
@@ -868,6 +868,116 @@ it('45장 미리보기는 이번 40장만 이미지 확인하고 미결정 총�
   expect(plan).toMatchObject({ pending_count: 45 });
   expect(plan.items).toHaveLength(40);
   expect(reads).toBe(40);
+});
+
+it('복구 이미지 확인은 최대 네 개씩 진행하며 순서·누락을 보존하고 스트림을 해제한다', async () => {
+  const id = await accumulatedPause();
+  const expected = await recoveryPreview(id, 1, h.env);
+  let active = 0;
+  let peak = 0;
+  let reads = 0;
+  let cancelled = 0;
+  const get = vi.fn(async (_key: string, type: string) => {
+    expect(type).toBe('stream');
+    const index = reads++;
+    active++;
+    peak = Math.max(peak, active);
+    await new Promise<void>((resolve) => setTimeout(resolve, index % 2 ? 1 : 5));
+    active--;
+    return index === 2
+      ? null
+      : new ReadableStream({
+          cancel() {
+            cancelled++;
+          },
+        });
+  });
+  const plan = await recoveryPreview(id, 1, {
+    ...h.env,
+    CARD_IMAGES: { get } as unknown as KVNamespace,
+  });
+  expect(peak).toBe(4);
+  expect(reads).toBe(40);
+  expect(cancelled).toBe(39);
+  expect(plan.items.map((item) => item.delivery_id)).toEqual(
+    expected.items.map((item) => item.delivery_id),
+  );
+  expect(plan.items.map((item) => item.available)).toEqual(
+    Array.from({ length: 40 }, (_, index) => index !== 2),
+  );
+  expect(plan.pending_count).toBe(45);
+});
+
+it('여러 복구 예약의 중간 한도 실패는 모든 변경을 롤백하고 같은 선택을 다시 처리할 수 있다', async () => {
+  const id = await accumulatedPause();
+  const assetId = (await h.env.DB.prepare(
+    'SELECT asset_id FROM schedule_items WHERE schedule_id=? ORDER BY position LIMIT 1',
+  )
+    .bind(id)
+    .first<string>('asset_id'))!;
+  const activeIds: string[] = [];
+  for (let index = 0; index < 4; index++) {
+    activeIds.push(
+      (
+        await saveSchedule(
+          {
+            name: `한도 점검 ${index}`,
+            kind: 'once',
+            date: '2026-09-28',
+            time: '13:00',
+            end_date: null,
+            weekdays: [],
+            cards_per_occurrence: 1,
+            asset_ids: [assetId],
+          },
+          null,
+          null,
+          h.env,
+          due,
+        )
+      ).id,
+    );
+  }
+  const plan = await recoveryPreview(id, 1, h.env);
+  const input = {
+    version: 1,
+    recover_ids: plan.items.slice(0, 35).map((item) => item.delivery_id),
+    exclude_ids: plan.items.slice(35).map((item) => item.delivery_id),
+    date: '2026-09-28',
+    time: '12:10',
+    warning_accepted: true,
+  };
+  const snapshot = async () => {
+    const tables = [
+      'schedules',
+      'schedule_items',
+      'pause_recoveries',
+      'deliveries',
+      'occurrences',
+      'delivery_attempts',
+      'usage_counters',
+      'tick_limits',
+    ] as const;
+    return Promise.all(
+      tables.map(
+        async (table) =>
+          (await h.env.DB.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all()).results,
+      ),
+    );
+  };
+  const before = await snapshot();
+  await expect(decideRecovery(id, input, h.env, due)).rejects.toThrow('active_schedule_limit');
+  expect(await snapshot()).toEqual(before);
+  expect((await recoveryPreview(id, 1, h.env)).pending_count).toBe(45);
+  await stopSchedule(activeIds[0]!, 1, 'cancelled', h.env, due);
+  const result = await decideRecovery(id, input, h.env, due);
+  expect(result).toMatchObject({ recovered: 35, excluded: 5 });
+  expect(result.schedule_ids).toHaveLength(7);
+  expect((await recoveryPreview(id, 1, h.env)).pending_count).toBe(5);
+  expect(
+    await h.env.DB.prepare('SELECT count(*) AS n FROM schedules WHERE enabled=1').first('n'),
+  ).toBe(10);
+  expect((await h.env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
 });
 
 it('85건 미결정 조회·선택 처리와 완료 이력은 DB 제한·동률 커서 페이지를 사용한다', async () => {

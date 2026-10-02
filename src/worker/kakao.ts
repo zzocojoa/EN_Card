@@ -11,11 +11,6 @@ export const tokenSchema = z.object({
   scope: z.string().max(2000).optional(),
 });
 export type TokenResponse = z.infer<typeof tokenSchema>;
-// Build provider response validators once per isolate, outside the Cron hot path.
-const messageResponseSchema = z.object({
-  result_code: z.number().optional(),
-  code: z.number().optional(),
-});
 const tokenErrorSchema = z.object({
   error: z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/),
   error_code: z
@@ -24,35 +19,72 @@ const tokenErrorSchema = z.object({
     .optional(),
 });
 const ownerSchema = z.object({ id: z.number().int().safe().positive() });
-const linkSchema = z.object({ web_url: z.url(), mobile_web_url: z.url() }).strict();
-const feedSchema = z
-  .object({
-    object_type: z.literal('feed'),
-    content: z
-      .object({
-        title: z.string().min(1).max(200),
-        description: z.string().min(1).max(200),
-        image_url: z.url(),
-        image_width: z.literal(1080),
-        image_height: z.literal(1080),
-        link: linkSchema,
-      })
-      .strict(),
-    buttons: z
-      .array(z.object({ title: z.literal('원본 보기'), link: linkSchema }).strict())
-      .length(1),
-  })
-  .strict();
+function record(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value);
+}
+function exactKeys(value: Record<string, unknown>, keys: readonly string[]): boolean {
+  return (
+    Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key))
+  );
+}
+function feedText(value: unknown): value is string {
+  return typeof value === 'string' && value.length >= 1 && value.length <= 200;
+}
+function feedLink(value: unknown): value is FeedPayload['content']['link'] {
+  return (
+    record(value) &&
+    exactKeys(value, ['web_url', 'mobile_web_url']) &&
+    typeof value.web_url === 'string' &&
+    typeof value.mobile_web_url === 'string'
+  );
+}
 export function validatePayload(value: unknown, origin: string): FeedPayload {
-  const payload = feedSchema.parse(value);
+  // The Free delivery invocation must also stay small on its first call. Keep this
+  // fixed feed contract independent of a schema parser's lazy first-use setup.
+  if (
+    !record(value) ||
+    !exactKeys(value, ['object_type', 'content', 'buttons']) ||
+    value.object_type !== 'feed' ||
+    !record(value.content) ||
+    !exactKeys(value.content, [
+      'title',
+      'description',
+      'image_url',
+      'image_width',
+      'image_height',
+      'link',
+    ]) ||
+    !feedText(value.content.title) ||
+    !feedText(value.content.description) ||
+    typeof value.content.image_url !== 'string' ||
+    value.content.image_width !== 1080 ||
+    value.content.image_height !== 1080 ||
+    !feedLink(value.content.link) ||
+    !Array.isArray(value.buttons) ||
+    value.buttons.length !== 1 ||
+    !record(value.buttons[0]) ||
+    !exactKeys(value.buttons[0], ['title', 'link']) ||
+    value.buttons[0].title !== '원본 보기' ||
+    !feedLink(value.buttons[0].link)
+  )
+    throw appError(400, 'PAYLOAD_FORMAT', '저장된 피드 형식이 올바르지 않습니다.');
+  const payload = value as FeedPayload;
   const urls: string[] = [
     payload.content.image_url,
     payload.content.link.web_url,
     payload.content.link.mobile_web_url,
     ...payload.buttons.flatMap((button) => [button.link.web_url, button.link.mobile_web_url]),
   ];
-  if (urls.some((url) => new URL(url).origin !== origin))
-    throw appError(400, 'PAYLOAD_ORIGIN', '피드 이미지·원본 링크는 등록된 앱 출처여야 합니다.');
+  for (const url of urls) {
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      throw appError(400, 'PAYLOAD_FORMAT', '피드 이미지·원본 링크의 URL 형식을 확인하세요.');
+    }
+    if (parsed.origin !== origin)
+      throw appError(400, 'PAYLOAD_ORIGIN', '피드 이미지·원본 링크는 등록된 앱 출처여야 합니다.');
+  }
   return payload;
 }
 export const nativeTransport: Transport = (url: string, init: RequestInit): Promise<Response> =>
@@ -110,10 +142,17 @@ export async function sendKakao(
       detail: `HTTP ${response.status}: JSON 응답이 아닙니다. 접수 여부를 확인하세요.`,
     };
   }
-  const parsed = messageResponseSchema.safeParse(body);
-  const code: number | undefined = parsed.success ? parsed.data.code : undefined;
-  const detail: string = `카카오 메시지 API HTTP ${response.status}, code=${String(code)}, result_code=${parsed.success ? String(parsed.data.result_code) : 'invalid'}; payload_title=${payload.content.title}`;
-  if (response.ok && parsed.success && parsed.data.result_code === 0)
+  const validNumber = (value: unknown): boolean =>
+    value === undefined || (typeof value === 'number' && Number.isFinite(value));
+  const responseBody = record(body) ? body : null;
+  const valid =
+    responseBody !== null &&
+    validNumber(responseBody.code) &&
+    validNumber(responseBody.result_code);
+  const code = valid ? (responseBody.code as number | undefined) : undefined;
+  const resultCode = valid ? (responseBody.result_code as number | undefined) : undefined;
+  const detail: string = `카카오 메시지 API HTTP ${response.status}, code=${String(code)}, result_code=${valid ? String(resultCode) : 'invalid'}; payload_title=${payload.content.title}`;
+  if (response.ok && valid && resultCode === 0)
     return { outcome: 'sent', detail: '카카오 API 접수 확인 (열람 확인 아님)' };
   if (response.status === 401 && code === -401) return { outcome: 'unauthorized', detail };
   if (code === -402 || code === -3 || code === -403) return { outcome: 'reconnect', detail };
@@ -124,7 +163,7 @@ export async function sendKakao(
     code === -1 ||
     code === -7 ||
     response.ok ||
-    !parsed.success ||
+    !valid ||
     code === undefined
   )
     return { outcome: 'unknown', detail };

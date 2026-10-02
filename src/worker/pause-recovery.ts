@@ -73,12 +73,19 @@ export async function pausePreview(id: string, version: number, env: Env): Promi
   };
 }
 async function recoveryItem(item: Candidate, env: Env): Promise<RecoveryItem> {
-  const present: boolean =
+  let present = false;
+  if (
     item.decision === null &&
     item.safe === 1 &&
     item.asset_state === 'ready' &&
-    item.kv_key !== null &&
-    (await env.CARD_IMAGES.get(item.kv_key, 'arrayBuffer')) !== null;
+    item.kv_key !== null
+  ) {
+    const image = await env.CARD_IMAGES.get(item.kv_key, 'stream');
+    if (image !== null) {
+      await image.cancel();
+      present = true;
+    }
+  }
   return {
     delivery_id: item.delivery_id,
     title: item.title,
@@ -95,13 +102,26 @@ async function recoveryItem(item: Candidate, env: Env): Promise<RecoveryItem> {
     target_schedule_id: item.target_schedule_id,
   };
 }
+async function recoveryItems(items: Candidate[], env: Env): Promise<RecoveryItem[]> {
+  const results = new Array<RecoveryItem>(items.length);
+  let next = 0;
+  const readConcurrency = 4;
+  await Promise.all(
+    Array.from({ length: Math.min(readConcurrency, items.length) }, async () => {
+      while (next < items.length) {
+        const index = next++;
+        results[index] = await recoveryItem(items[index]!, env);
+      }
+    }),
+  );
+  return results;
+}
 export async function recoveryPreview(
   id: string,
   version: number,
   env: Env,
 ): Promise<PausePreview> {
   const row: Source = await source(id, version, env);
-  const items: RecoveryItem[] = [];
   const pendingCount = await env.DB.prepare(
     'SELECT count(*) AS n FROM pause_recoveries r JOIN deliveries d ON d.id=r.delivery_id WHERE d.schedule_id=? AND r.decision IS NULL',
   )
@@ -109,7 +129,7 @@ export async function recoveryPreview(
     .first<number>('n');
   const history = pendingCount ? null : await recoveryHistory(id, version, env, null);
   const current: Candidate[] = pendingCount ? await candidates(id, env) : [];
-  for (const item of current) items.push(await recoveryItem(item, env));
+  const items = await recoveryItems(current, env);
   return {
     schedule_id: id,
     version,
@@ -137,7 +157,7 @@ export async function recoveryHistory(
     [id],
   );
   return {
-    items: await Promise.all(page.items.map((item) => recoveryItem(item, env))),
+    items: await recoveryItems(page.items, env),
     next: page.next,
   };
 }
@@ -182,8 +202,10 @@ export async function decideRecovery(
       ).first())
     )
       throw appError(409, 'NEEDS_RECONNECT', '카카오를 연결한 뒤 복구 예약을 만드세요.');
-    for (const item of recovering) {
-      const view: RecoveryItem = await recoveryItem(item, env);
+    const views = await recoveryItems(recovering, env);
+    for (let index = 0; index < recovering.length; index++) {
+      const item = recovering[index]!;
+      const view = views[index]!;
       if (
         !view.available ||
         item.created_at === null ||
