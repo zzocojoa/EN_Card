@@ -134,3 +134,12 @@ Sites 환경 변경은 저장된 버전을 재배포해야 적용된다. 비활�
 ```powershell
 node node_modules/@playwright/test/cli.js test --config playwright.haru.config.ts tests/haru/draft-navigation.spec.ts --reporter line
 ```
+
+## 승인된 본인 1장 예약 발송 — 2026-10-02 17:16 KST
+
+- 사용자가 기존 준비 카드 `That makes sense` 1장의 본인 시험 발송을 명시적으로 승인했다. 하루단어 정상 예약 화면에서 1회·1장, 17:16 KST/08:16 UTC(`1790928960000`)로 저장했다. 서버 직접 쓰기나 추가 발송은 수행하지 않았다.
+- 예약 `bf5dcce4-8ee7-48a7-8798-89bc2f0fe671`의 발송 `df24eb94-b7dc-479c-bb24-60ac10ac5701-0`은 **live/sent, attempts=1**이다. **17:17:00.898 KST**에 카카오 API 접수를 기록했다. 이는 실제 휴대폰 수신·이미지 표시·열람 확인과 다르다.
+- 예약은 completed/비활성, 목록 커서1·다음 회차 없음이다. 이후 전체 활성 예약0, claimed/sending/미해결 unknown0, 오늘 실제 시도9/20(직전8/20)이다. 카드14·이미지5/402286바이트·업로드3/100·인증connected/version11 유지. 재연결·새 이미지 생성·추가 메시지 없음.
+- 해당 회차 Cron은 CPU5ms/wall3783ms, 발송 준비3ms/wall712ms, 실제 발송4ms/wall2487ms다. 모두 ok·예외0·기대 Worker 버전 일치. 네트워크 대기 포함 wall과 CPU를 구별하며 한 번의 측정으로 모든 부하를 보장하지 않는다.
+- 사용자에게 카카오 1장 수신·이미지·원본 보기 결과를 요청했다. 실제 iPhone 로그인·PNG 파일 앱 저장 확인도 응답 대기다. 현재 상태는 **실제 API 접수 완료 / 기기 수신 확인 대기**다.
+- 안전한 상태·CPU 증거와 예약 화면은 Git 제외 `backups/haru-deploy-20261002/test-send-latest.json`, `final-send-cpu-*.jsonl`, `test-send-scheduled.jpg`에 있다.
