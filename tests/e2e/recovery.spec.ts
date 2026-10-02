@@ -14,6 +14,10 @@ test('R7 저장 인증정보 오류를 표시하고 잘못된 설정의 복구 �
   try {
     await page.goto('/');
     await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+    await page.getByRole('heading', { name: '오늘의 작업실', exact: true }).waitFor();
+    await page.evaluate(() => {
+      window.location.hash = '/editor';
+    });
     await page.getByRole('button', { name: '연결 및 설정', exact: true }).click();
     await expect(page.getByText('저장 인증정보 오류', { exact: true })).toBeVisible();
     await expect(
@@ -66,6 +70,10 @@ test('이전 버전·취소 예약의 결과 불명을 수신 확인 없이 종�
   try {
     await page.goto('/');
     await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+    await page.getByRole('heading', { name: '오늘의 작업실', exact: true }).waitFor();
+    await page.evaluate(() => {
+      window.location.hash = '/editor';
+    });
     await page.getByRole('button', { name: '발송 기록', exact: true }).click();
     const article = page.locator('article').filter({ hasText: '과거 토큰 발송의 응답 유실' });
     await article.getByRole('button', { name: '결과 확인', exact: true }).click();
@@ -144,6 +152,10 @@ test('토큰 일시 오류와 소진을 구분하고 재로그인 없이 갱신 
   try {
     await page.goto('/');
     await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+    await page.getByRole('heading', { name: '오늘의 작업실', exact: true }).waitFor();
+    await page.evaluate(() => {
+      window.location.hash = '/editor';
+    });
     await page.getByRole('button', { name: '연결 및 설정', exact: true }).click();
     await expect(
       page.getByText('토큰 갱신 일시 오류로 대기 중입니다. 재로그인은 필요하지 않습니다.'),

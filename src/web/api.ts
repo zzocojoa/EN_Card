@@ -1,4 +1,5 @@
 import type { Asset, Card, DeliverySummary, Schedule, SendMode } from '../shared/model';
+import type { HomeSummary } from '../shared/catalog';
 
 export type Collection = 'cards' | 'assets' | 'schedules' | 'deliveries';
 export type AttemptHistory = {
@@ -16,6 +17,7 @@ export type AttemptHistory = {
   }[];
 };
 export type AppState = {
+  summary: HomeSummary;
   csrf: string;
   cards: Card[];
   assets: Asset[];
@@ -52,9 +54,11 @@ export async function api(
   method: string,
   body: unknown,
   csrf: string,
+  signal?: AbortSignal,
 ): Promise<unknown> {
   const response: Response = await fetch(path, {
     method,
+    ...(signal ? { signal } : {}),
     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
     ...(body === null ? {} : { body: JSON.stringify(body) }),
   });

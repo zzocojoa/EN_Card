@@ -65,6 +65,10 @@ test('일시정지 POST 409를 대화상자 안에 표시하고 새 상태로 �
   try {
     await page.goto('/');
     await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+    await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+    await page.evaluate(() => {
+      window.location.hash = '/editor';
+    });
     await page.getByRole('button', { name: '발송 예약', exact: true }).click();
     const article = page
       .locator('.schedule-card')
@@ -133,6 +137,10 @@ test('결과 불명 재시도 SCHEDULE_INACTIVE를 대화상자 안에 표시하
   try {
     await page.goto('/');
     await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+    await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+    await page.evaluate(() => {
+      window.location.hash = '/editor';
+    });
     await page.getByRole('button', { name: '발송 기록', exact: true }).click();
     const article = page.locator('.journal article').filter({ hasText: failure });
     const opener = article.getByRole('button', { name: '결과 확인', exact: true });
@@ -183,9 +191,15 @@ test('카드 작성 → 실제 PNG → 저장·검토 → 예약 → 비소비 �
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto('/');
   await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
-  await expect(page.getByRole('heading', { name: '오늘, 어떤 표현을 담을까요?' })).toBeVisible();
-  await page.getByLabel('영어 표현', { exact: true }).fill('A little progress every day');
-  await page.getByLabel('한글 뜻', { exact: true }).fill('매일 조금씩 앞으로');
+  await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = '/editor';
+  });
+  await expect(page.getByRole('heading', { name: '카드 만들기', exact: true })).toBeVisible();
+  await page
+    .getByRole('textbox', { name: '영어 표현', exact: true })
+    .fill('A little progress every day');
+  await page.getByRole('textbox', { name: '한글 뜻', exact: true }).fill('매일 조금씩 앞으로');
   await expect(page.locator('canvas')).toBeVisible();
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'PNG 다운로드' }).click();
@@ -200,25 +214,31 @@ test('카드 작성 → 실제 PNG → 저장·검토 → 예약 → 비소비 �
   expect(png.length).toBeLessThan(1048576);
   await page.getByLabel('내용과 미리보기를 직접 검토했습니다.').check();
   await page.getByRole('button', { name: 'PNG 저장·검토 완료' }).click();
-  await expect(page.getByRole('status')).toContainText('검토가 완료');
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText('검토가 완료');
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: 'test-results/editor-desktop.png', fullPage: true });
   await page.getByText('PNG 백업 복원', { exact: true }).click();
   await page
     .getByLabel('PNG 백업 파일')
     .setInputFiles({ name: 'restore.png', mimeType: 'image/png', buffer: png });
-  await expect(page.getByRole('status')).toContainText('PNG를 복원');
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText('PNG를 복원');
   await expect(page.locator('.preview-paper img')).toBeVisible();
   await page.getByLabel('내용과 미리보기를 직접 검토했습니다.').check();
   await page.getByRole('button', { name: 'PNG 저장·검토 완료' }).click();
-  await expect(page.getByRole('status')).toContainText('복원한 PNG의 검토');
-  await page.getByRole('button', { name: '발송 예약', exact: true }).click();
-  await page.getByLabel('예약 이름', { exact: true }).fill('브라우저 검증 예약');
-  await page.getByLabel('A little progress every day', { exact: true }).last().check();
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText(
+    '복원한 PNG의 검토',
+  );
+  await page.getByRole('button', { name: '이 카드 예약하기', exact: true }).click();
+  await page.getByRole('textbox', { name: '예약 이름', exact: true }).fill('브라우저 검증 예약');
+  await expect(
+    page.getByLabel('A little progress every day', { exact: true }).last(),
+  ).toBeChecked();
   await page.getByRole('button', { name: '예약 저장', exact: true }).click();
-  await expect(page.getByRole('status')).toContainText('예약을 저장');
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText('예약을 저장');
   await page.locator('.schedule-card').getByRole('button', { name: '수정', exact: true }).click();
-  await page.getByLabel('예약 이름', { exact: true }).fill('수정한 브라우저 검증 예약');
+  await page
+    .getByRole('textbox', { name: '예약 이름', exact: true })
+    .fill('수정한 브라우저 검증 예약');
   const updated = page.waitForResponse(
     (response) =>
       response.request().method() === 'PUT' && response.url().includes('/api/schedules/'),
@@ -229,7 +249,7 @@ test('카드 작성 → 실제 PNG → 저장·검토 → 예약 → 비소비 �
   const before = await page.request.get('/api/state');
   const beforeState = (await before.json()) as { schedules: { id: string; cursor: number }[] };
   await page.getByRole('button', { name: '예약 발송 미리검증' }).click();
-  await expect(page.getByRole('heading', { name: '보낸 기록, 남은 이야기' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '발송 기록', exact: true })).toBeVisible();
   await expect(page.getByText('시간·피드 형식 검사 완료.', { exact: false }).first()).toBeVisible();
   const after = await page.request.get('/api/state');
   const afterState = (await after.json()) as {
@@ -248,7 +268,11 @@ test('편집한 두 번째 카드의 미리보기·저장·PNG 복원이 동일�
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
-  await expect(page.getByRole('heading', { name: '오늘, 어떤 표현을 담을까요?' })).toBeVisible();
+  await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = '/editor';
+  });
+  await expect(page.getByRole('heading', { name: '카드 만들기', exact: true })).toBeVisible();
   const session = (await (await page.request.get('/api/state')).json()) as { csrf: string };
   const imported = await page.request.post('/api/import', {
     headers: { 'X-CSRF-Token': session.csrf, Origin: 'http://127.0.0.1:8787' },
@@ -273,7 +297,7 @@ test('편집한 두 번째 카드의 미리보기·저장·PNG 복원이 동일�
   expect(await readFile(path)).toEqual(Buffer.from(preview, 'base64'));
   await page.getByLabel('내용과 미리보기를 직접 검토했습니다.').check();
   await page.getByRole('button', { name: 'PNG 저장·검토 완료' }).click();
-  await expect(page.getByRole('status')).toContainText('검토가 완료');
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText('검토가 완료');
   const state = (await (await page.request.get('/api/state')).json()) as {
     assets: { public_id: string }[];
   };
@@ -307,6 +331,10 @@ test('저장·PNG 복원 응답을 기다리는 동안 편집 대상을 바꾸�
 }) => {
   await page.goto('/');
   await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = '/editor';
+  });
   await expect(page.locator('canvas')).toBeVisible();
   const session = (await (await page.request.get('/api/state')).json()) as { csrf: string };
   const firstContent = { ...sample, expression: 'First card stays first' };
@@ -348,13 +376,15 @@ test('저장·PNG 복원 응답을 기다리는 동안 편집 대상을 바꾸�
   try {
     await expect(library).toBeDisabled();
     await library.click({ force: true });
-    await expect(page.getByLabel('영어 표현', { exact: true })).toHaveValue(
+    await expect(page.getByRole('textbox', { name: '영어 표현', exact: true })).toHaveValue(
       firstContent.expression,
     );
   } finally {
     releaseSave();
   }
-  await expect(page.getByRole('status')).toContainText('PNG를 저장했습니다');
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText(
+    'PNG를 저장했습니다',
+  );
   await library.click();
   await page
     .locator('.library-card')
@@ -362,7 +392,9 @@ test('저장·PNG 복원 응답을 기다리는 동안 편집 대상을 바꾸�
     .getByRole('button', { name: '편집하기' })
     .click();
   await page.getByRole('button', { name: 'PNG와 초안 저장' }).click();
-  await expect(page.getByRole('status')).toContainText('PNG를 저장했습니다');
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText(
+    'PNG를 저장했습니다',
+  );
   const backup: string = await page
     .locator('canvas')
     .evaluate((canvas) => (canvas as HTMLCanvasElement).toDataURL('image/png').split(',')[1]!);
@@ -388,7 +420,7 @@ test('저장·PNG 복원 응답을 기다리는 동안 편집 대상을 바꾸�
   try {
     await expect(library).toBeDisabled();
     await library.click({ force: true });
-    await expect(page.getByLabel('영어 표현', { exact: true })).toHaveValue(
+    await expect(page.getByRole('textbox', { name: '영어 표현', exact: true })).toHaveValue(
       secondContent.expression,
     );
   } finally {
@@ -397,7 +429,9 @@ test('저장·PNG 복원 응답을 기다리는 동안 편집 대상을 바꾸�
   await expect(page.locator('.preview-paper img')).toBeVisible();
   await page.getByLabel('내용과 미리보기를 직접 검토했습니다.').check();
   await page.getByRole('button', { name: 'PNG 저장·검토 완료' }).click();
-  await expect(page.getByRole('status')).toContainText('복원한 PNG의 검토');
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText(
+    '복원한 PNG의 검토',
+  );
   const state = (await (await page.request.get('/api/state')).json()) as { cards: Card[] };
   expect(state.cards.find((card) => card.id === first.id)?.content).toEqual(firstContent);
   expect(state.cards.find((card) => card.id === second.id)?.content).toEqual(secondContent);
@@ -407,7 +441,11 @@ test('저장·PNG 복원 응답을 기다리는 동안 편집 대상을 바꾸�
 test('100개를 넘는 보관함과 여러 JSON 백업 파일에 접근한다', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
-  await expect(page.getByRole('heading', { name: '오늘, 어떤 표현을 담을까요?' })).toBeVisible();
+  await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = '/editor';
+  });
+  await expect(page.getByRole('heading', { name: '카드 만들기', exact: true })).toBeVisible();
   const session = (await (await page.request.get('/api/state')).json()) as { csrf: string };
   const response = await page.request.post('/api/import', {
     headers: { 'X-CSRF-Token': session.csrf, Origin: 'http://127.0.0.1:8787' },
@@ -435,6 +473,7 @@ test('100개를 넘는 보관함과 여러 JSON 백업 파일에 접근한다', 
   await page.getByRole('button', { name: '더 불러오기' }).click();
   await expect(page.locator('.library-card')).toHaveCount(state.totals.cards);
   const firstPromise = page.waitForEvent('download');
+  await page.getByText('가져오기·백업', { exact: true }).click();
   await page.getByRole('button', { name: 'JSON 백업 ↓', exact: false }).click();
   const first = await firstPromise;
   const firstPath = await first.path();
@@ -455,22 +494,37 @@ test('100개를 넘는 보관함과 여러 JSON 백업 파일에 접근한다', 
 test('세션 만료 후 화면에서 다시 로그인할 수 있다', async ({ page, context }) => {
   await page.goto('/');
   await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = '/editor';
+  });
   await expect(page.locator('canvas')).toBeVisible();
   await context.clearCookies();
   await page.getByRole('button', { name: '새로고침', exact: true }).click();
   await expect(page.getByRole('button', { name: '로컬 작업실 열기' })).toBeVisible();
   await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
-  await expect(page.getByRole('heading', { name: '오늘, 어떤 표현을 담을까요?' })).toBeVisible();
+  await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = '/editor';
+  });
+  await expect(page.getByRole('heading', { name: '카드 만들기', exact: true })).toBeVisible();
 });
 test('비교형·긴 문장·JSON 가져오기·모바일 표시', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   await page.getByRole('button', { name: '로컬 작업실 열기' }).click();
+  await page.getByRole('button', { name: '로그아웃', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = '/editor';
+  });
   await page.getByRole('button', { name: '비교형', exact: true }).click();
   await page.getByLabel('기본 영어 표현').fill('Thank you');
   await page.getByLabel('기본 표현의 뜻').fill('고마워');
-  await page.getByLabel('영어 표현', { exact: true }).fill('I really appreciate it');
-  await page.getByLabel('한글 뜻', { exact: true }).fill('정말 고맙게 생각해');
+  await page
+    .getByRole('textbox', { name: '영어 표현', exact: true })
+    .fill('I really appreciate it');
+  await page.getByRole('textbox', { name: '한글 뜻', exact: true }).fill('정말 고맙게 생각해');
+  await page.getByRole('button', { name: '미리보기 펼치기', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: 'test-results/editor-mobile.png', fullPage: true });
@@ -491,12 +545,15 @@ test('비교형·긴 문장·JSON 가져오기·모바일 표시', async ({ page
     ).getUint32(16),
   ).toBe(1080);
   expect(comparisonPng.length).toBeGreaterThan(15000);
-  await page.getByLabel('영어 예문', { exact: true }).fill('W'.repeat(500));
+  await page.getByRole('textbox', { name: '영어 예문', exact: true }).fill('W'.repeat(500));
   await expect(page.getByRole('alert')).toContainText('모두 들어가지');
   await expect(page.getByRole('button', { name: 'PNG와 초안 저장' })).toBeDisabled();
   await page.getByRole('button', { name: '카드 보관함', exact: false }).click();
+  await page.getByText('가져오기·백업', { exact: true }).click();
   await page.getByRole('button', { name: '예제 12개 가져오기' }).click();
-  await expect(page.getByRole('status')).toContainText('초안으로 가져왔습니다');
+  await expect(page.locator('.workspace > .notice[role=status]')).toContainText(
+    '초안으로 가져왔습니다',
+  );
   await page.getByRole('button', { name: 'JSON 가져오기', exact: true }).click();
   await page.getByLabel('가져올 JSON').fill('{"schema_version":1,"cards":[{}]}');
   await page.getByRole('button', { name: '가져오기', exact: true }).click();
