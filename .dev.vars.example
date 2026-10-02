@@ -1,0 +1,5 @@
+KAKAO_REST_API_KEY="replace-with-rest-api-key"
+KAKAO_CLIENT_SECRET="replace-with-client-secret"
+TOKEN_ENCRYPTION_KEY="replace-with-base64-32-random-bytes"
+SESSION_SECRET="replace-with-at-least-32-random-characters"
+SETUP_TOKEN="replace-with-at-least-32-random-characters"

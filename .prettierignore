@@ -1,0 +1,8 @@
+AGENTS.md
+public/fonts/
+package-lock.json
+node_modules/
+dist/
+.worker-build/
+.wrangler/
+test-results/
