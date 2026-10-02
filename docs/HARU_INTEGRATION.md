@@ -117,3 +117,20 @@ Sites 환경 변경은 저장된 버전을 재배포해야 적용된다. 비활�
 - 로컬 npm 경로 오류는 기존 설치의 npm CLI를 명시하여 해결했다. 만료된 Cloudflare CLI 인증은 기존 권한으로 갱신했다. 비밀키 입력 도우미의 Windows 줄바꿈 대기를 수정했으며 비밀값은 출력하지 않았다. 배포용 빌드에서 로컬 `.env`를 제외하고 완료 후 복원했다.
 - 안전한 증거는 Git 제외 `backups/haru-deploy-20261002/`에 있다. CPU 수집기는 종료했다. 새 운영 카드/예약 저장·실제 메시지 발송·카카오 재연결·실제 iPhone 검사는 하지 않았다. 로컬 dry_run 제작·예약 검증과 운영 읽기 검증을 구분한다.
 - Sites 소스는 게시 절차로 동기화했다. GitHub PR 병합은 이번 배포에 포함하지 않았고 기존 정확성 개선 PR도 변경하지 않았다.
+
+## 후속 검토·운영 v104 — 2026-10-02
+
+- 계정이 다른 경우 기존 Sites 로그아웃·고정 `/cards` 복귀 링크를 제공하고, 통합 홈 버튼의 접근성 이름을 `하루단어 홈`으로 수정했다. 독립 앱의 표시 이름·인증 계약은 유지한다.
+- 운영 v103의 정확성 작업 `af2ca8e`를 보존한 소스 `c2457b746a3a8a8fafdbf317735bbe14a6816de4`로 **v104**, 환경49/정책4, 배포 `appgdep_6abf653ed81481919afaccb27116f9b6`가 **17:03:29 KST succeeded**다. 이 작업은 운영 환경 값을 변경하지 않았다. 후속 UI 수정의 롤백은 v103이다.
+- GitHub main의 카드 기능만 분리한 [하루단어 PR #13](https://github.com/zzocojoa/haru-word/pull/13)은 exact HEAD `1a39f24`의 Node22/24 push·PR 검사 4개 통과 후 **17:14:05 KST**, `06fbd8382410a6b1e3d0579e5a189f4e431b1a05`로 병합됐다. 정확성 초안 PR #12는 OPEN/draft로 유지했다. GitHub main과 Sites 운영 전체 소스가 다르므로 다음 게시 전 Sites 최신 소스를 열어 보존한다.
+- EN_Card 전체 **19개 파일/342개 테스트**, 타입·Vite·양쪽 Worker dry-run·기본/live 무료 구성 검사 통과. 하루단어 GitHub main 기준 **500개**, 운영 소스 기준 **722개**, 이후 최신 평가/카드 **19개**와 타입·lint·빌드 통과. lint는 오류0/기존 경고13이다.
+- 전문 보안/API/성능/유지보수/디자인/테스트, Red Team, 독립 적대적 검토를 수행했다. 계정 전환·접근성 이름·저장 실패 회귀 검사 보완을 완료했다. 보조 Codex CLI 검토는 설치 CLI와 현재 모델 호환 오류로 실행되지 않았으므로 통과로 집계하지 않는다.
+- `tests/haru/draft-navigation.spec.ts`는 로컬 합성 계정에서 학습·문법 저장 지연/503, 이동 잠금, 초안 백업, 재시도, 카드 왕복·새로고침 후 보존을 검증한다. Chromium/WebKit **2/2·39.4초**, 타입·Prettier 통과. 기존 카드/이미지/예약/발송 불변·합성 학습 상태 복원·AI 요청0을 확인했다.
+- WebKit의 카드→홈→새로고침 후 첫 마우스 재개 클릭에서 시계 GET만 발생했다. 기존 focus/pageshow 시계 준비 잠금이 원인으로 추정되지만 이벤트 인과관계는 미확정이다. 관련 학습 코드는 통합에서 변경되지 않았다. 재열기 보조 단계만 포커스 후 Enter로 분리했고 핵심 카드 이동 검사는 실제 클릭이다. 실제 iPhone 영향은 아직 미검증이며 자동 검사 성공으로 대체하지 않는다.
+- 원본·129개 생성 산출물 해시 일치, v104 운영 익명/위조401·다른 bridge 사용자403 재확인. 메인 Worker `a51bde4f`와 발송 Worker `6af1daf0`는 이번 후속 UI 수정에서 재배포하지 않았다. 신규 의존성·DB 이전·유료 자원·운영 학습 QA 쓰기 없음.
+
+초안 회귀만 재현하려면 로컬 하루단어의 grammar 기능을 활성화한 뒤 두 로컬 서버를 실행하고 다음 명령을 사용한다. 이 검사는 고정 로컬 계정 `local_seedy`와 dry_run을 확인한 후 시작한다.
+
+```powershell
+node node_modules/@playwright/test/cli.js test --config playwright.haru.config.ts tests/haru/draft-navigation.spec.ts --reporter line
+```

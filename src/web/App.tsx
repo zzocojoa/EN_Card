@@ -122,7 +122,7 @@ function Workspace(): ReactElement {
           className="brand"
           onClick={() => setPage('home')}
           disabled={busy}
-          aria-label="하루 한 표현 홈"
+          aria-label={`${studioName} 홈`}
         >
           <span className="brand-mark">
             a<span>↗</span>

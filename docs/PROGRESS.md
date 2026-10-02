@@ -326,3 +326,11 @@ PR #1의 `9b0b43f`를 `master` 대비 전체 검토해 R9(업그레이드 시 �
 - EN_Card DB 15개 테이블의 배포 전후 해시가 같고 활성0·진행 중/미해결 unknown0·인증11/connected·준비 이미지5장·발송예산8/20을 유지했다. 운영 학습 기록에 QA 쓰기를 하지 않았다. 조회 CPU2~5ms·무작업 Cron1~3ms, 예외0이며 수집기는 종료했다.
 - Workers Free·US$0과 D1/KV 공유 사용량을 확인했다. 추가 유료 자원·AI 호출·새 운영 예약·메시지 발송·카카오 재연결은 없다. 실제 iPhone과 새 카카오 재연결/발송은 이번 검증 범위 밖이다. 세부 결과·중간 실패·복구는 [HARU_INTEGRATION.md](HARU_INTEGRATION.md)를 따른다.
 - Sites 소스 동기화는 완료했으나 GitHub PR 병합은 수행하지 않았다. 로컬 실행 `npm run dev`, 배포 전 `npm run check:free -- --config wrangler.live.jsonc --delivery-config wrangler.delivery.deploy.jsonc --mode live` 및 `npx wrangler deploy --dry-run --config wrangler.live.jsonc`, 승인된 메인 배포는 `npx wrangler deploy --config wrangler.live.jsonc`다. 하루단어 게시에는 기존 Sites 절차를 사용한다.
+
+## 하루단어 후속 검토·병합 — 2026-10-02 17시 KST
+
+- 계정 전환 링크·통합 접근성 이름·초안 저장 실패 회귀 검사를 보완했다. 기존 정확성 작업을 보존한 v104가 17:03:29에 게시됐으며 환경49·정책4다. 후속 수정은 환경·스키마·카카오 연결을 변경하지 않았다.
+- EN 전체342, 하루단어 main500/운영722+최신19, 추가 Chromium/WebKit 초안 보존2/2 및 타입·빌드·무료 구성 검사를 통과했다. 학습 합성 상태 복원·기존 카드/예약 불변을 확인했다. 실제 iPhone은 사용자 결과 대기다.
+- 하루단어 [PR #13](https://github.com/zzocojoa/haru-word/pull/13)은 Node22/24 검사4개 통과 후 `06fbd83`으로 병합됐다. 정확성 PR #12는 병합하지 않았다. EN_Card 변경은 검증된 통합 브랜치에서 별도 PR로 병합한다.
+- 사용자에게 본인 1장 시험 발송 승인을 받았다. `That makes sense`를 하루단어 정상 화면에서 17:16 KST/08:16 UTC, 1회·1장으로 저장했다. 승인 이전 발송 없음, 저장 전 인증 connected·활성0·미해결0·발송8/20 확인. 실제 결과는 다음 검증 기록에 추가한다.
+- 세부 근거·WebKit 시계 동기화 관찰·보조 CLI 검토 불가·재현 명령은 [HARU_INTEGRATION.md](HARU_INTEGRATION.md)를 따른다. 현재 남은 실제 기기 검증을 완료로 표시하지 않는다.
