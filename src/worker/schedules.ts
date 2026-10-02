@@ -14,6 +14,12 @@ type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items' | 'pending_
   weekdays: string;
   pending_delivery_count?: number;
 };
+export type ScheduleCatalogRow = ScheduleRow & { items_json: string };
+export const SCHEDULE_SELECTION = `SELECT s.*,enabled AS sort_key,(SELECT count(*) FROM deliveries d WHERE d.schedule_id=s.id AND d.schedule_version=s.version AND d.state IN ('pending','claimed','retry_wait','blocked')) AS pending_delivery_count,(SELECT json_group_array(json_object('asset_id',asset_id,'title',json_extract(payload,'$.content.title'))) FROM (SELECT asset_id,payload FROM schedule_items WHERE schedule_id=s.id AND version=s.version ORDER BY position)) AS items_json FROM schedules s WHERE 1=1`;
+export function decodeScheduleCatalog({ items_json, ...row }: ScheduleCatalogRow): Schedule {
+  const items = JSON.parse(items_json) as Schedule['items'];
+  return { ...decodeSchedule(row), items, asset_ids: items.map((item) => item.asset_id) };
+}
 export function decodeSchedule(row: ScheduleRow): Schedule {
   return {
     ...row,
@@ -27,19 +33,16 @@ export async function listSchedules(env: Env): Promise<Schedule[]> {
   return (await schedulePage(env, null)).items;
 }
 export async function schedulePage(env: Env, cursor: string | null): Promise<Page<Schedule>> {
-  const page = await readPage<ScheduleRow & { items_json: string }>(
+  const page = await readPage<ScheduleCatalogRow>(
     env.DB,
-    `SELECT s.*,enabled AS sort_key,(SELECT count(*) FROM deliveries d WHERE d.schedule_id=s.id AND d.schedule_version=s.version AND d.state IN ('pending','claimed','retry_wait','blocked')) AS pending_delivery_count,(SELECT json_group_array(json_object('asset_id',asset_id,'title',json_extract(payload,'$.content.title'))) FROM (SELECT asset_id,payload FROM schedule_items WHERE schedule_id=s.id AND version=s.version ORDER BY position)) AS items_json FROM schedules s WHERE 1=1`,
+    SCHEDULE_SELECTION,
     'enabled',
     cursor,
     100,
   );
   return {
     ...page,
-    items: page.items.map(({ items_json, ...row }) => {
-      const items = JSON.parse(items_json) as Schedule['items'];
-      return { ...decodeSchedule(row), items, asset_ids: items.map((item) => item.asset_id) };
-    }),
+    items: page.items.map(decodeScheduleCatalog),
   };
 }
 export async function saveSchedule(

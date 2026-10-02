@@ -886,3 +886,54 @@ npm run check:free
 ```
 
 E2E 실행 시 개발 서버를 종료해 8787 포트를 비운다. 배포 dry-run은 `npm run build`에 포함된다. 실제 배포·발송은 별도 작업이다.
+
+## UI·UX 운영 반영·조회 CPU 보완 — 2026-10-02
+
+사용자 진행 승인 후 PR #3 병합본과 후속 조회 경량화를 기존 [운영 홈](https://en-card.kmksla4.workers.dev/#/home)에 반영했다. 메인 Worker만 교체했고 비공개 발송 Worker `6af1daf0-a247-4481-a52c-94b861361624`, D1·KV·Service Binding·Secret 이름·live/free_only·매분 Cron 하나를 유지했다. 신규 리소스·마이그레이션·발송 예약·메시지 호출은 없다.
+
+| 단계                               | 메인 버전                              | 결과                                                                                |
+| ---------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------- |
+| 개편 최초 배포 · 13:23:30 KST      | `457ecb89-a96e-4f13-b21f-8fdca265baea` | HTTP 정상이나 상태 조회 CPU 11ms 두 번. 무료 CPU 검증 실패로 보존                   |
+| 전체 상태 읽기 배치 · 13:32:53 KST | `7b9621c4-fd4c-4568-bf8a-f78254781d90` | 상태 조회 개선. 발송 필터 CPU 11ms 한 번을 추가 발견                                |
+| 목록·건수 배치 · 13:37:12 KST      | `42f7a460-dbd4-425a-a221-371d441d2af5` | 최종 제품 `cdaff10fcb8852cb574a13fb0c436f8a49221678`, 100% 배포·아래 조회 실측 통과 |
+
+원인은 새 조회에서 별도로 수행하던 D1 응답 처리 비용을 줄일 필요가 있다는 운영 관측이다. 정확한 CPU 프로파일로 모든 비용을 분해한 것은 아니다. `/api/state`는 인증 확인 뒤 12회 읽기를 9개 SELECT의 한 배치로 줄였다. 카드·발송 페이지는 목록과 총 건수를 한 배치로 읽는다. SQL·목록 디코더·100개 커서 생성은 공통 구현을 사용하며 인증·CSRF·발송 엔진·응답 계약은 유지한다.
+
+### 최종 측정과 보존 확인
+
+| 최종 버전의 관측 경로  | 표본 수 | CPU 범위                          |
+| ---------------------- | ------- | --------------------------------- |
+| `/api/state`           | 7       | 0~6ms · 비인증 접근 검사 1건 포함 |
+| `/api/page/cards`      | 3       | 1~3ms                             |
+| `/api/page/deliveries` | 2       | 1~4ms                             |
+| 무작업 Cron            | 2       | 0~3ms                             |
+
+위 14개 호출의 outcome은 모두 ok·예외 0이며, 보안 검사의 HTTP 401을 로그인된 조회 성공으로 계산하지 않는다. Chrome의 기존 운영자 세션으로 홈(준비 5장), 보관함 14장, `Take your time` 검색 3장→검토 완료 필터 2장, 발송 확인 필요 1건, 예약 목록과 설정 이동을 확인했다. 확인 필요 1건은 9월 30일 기존 HTTP 403/-402 실패 이력이다. 본 측정은 현재 소량 데이터·짧은 관측 구간이며 전체 부하·향후 모든 요청의 CPU 보장이 아니다. 발송·갱신 CPU와 실제 수신은 이번 측정에 포함하지 않는다. 수집기는 종료했다.
+
+- 배포 전 활성 예약·claimed/sending/미해결 unknown은 0이다. 신규 마이그레이션이 없어 Cron·DB 쓰기 설정을 변경하지 않고 메인 코드를 교체했다.
+- 전체 D1 91,369바이트 내보내기를 접근 제한된 디렉터리에서 Windows DPAPI CurrentUser로 암호화했다. 복호화 왕복 SHA-256 일치 후 평문을 삭제했다. 백업·증거는 Git 제외 `backups/ui-refresh-20261002/`에 있다.
+- 최초 배포 전과 최종 배포 후 15개 테이블의 행 수·해시가 모두 같다. 0013까지 13개 이력·FK 오류 0, 인증 connected/version 10·잠금/오류 없음, 카드 14장·준비 이미지 5장/402,286바이트·오늘 시도 8/20·업로드 3/100을 유지했다.
+- `/api/boot` 200/live/local=false, 비인증 `/api/state` 401, 운영 `/auth/local` POST 405, Origin 없는 `/auth/start` POST 403, 비공개 자식 공개 URL 404를 확인했다. 새 로그인·토큰 회전·메시지 전송을 실행한 검사가 아니다.
+- 원격 HTML·JS·CSS 바이트 해시가 검증한 dist와 일치한다. 기존 원본 PNG는 쿠키 없이 HTTP 200·image/png·1080×1080·87,785바이트다. Chrome 운영 홈 캡처는 `backups/ui-refresh-20261002/deployed-home.png`다.
+
+### 로컬 수정 검증
+
+- `npx vitest run tests/catalog.test.ts tests/reaudit.test.ts`: 29개 통과·97.52초. 기존 205개 카드/105개 발송 fixture에서 배치 상태 응답의 전체 집계·커서·불변 제목·예약 카드 순서와 기존 복구 경로를 검증했다.
+- `npm run test:e2e -- tests/e2e/workflow.spec.ts tests/e2e/recovery.spec.ts tests/e2e/pause.spec.ts --project=chromium`: 22개 통과·1.5분. 실제 로컬 Worker/D1/Canvas와 일부 모의 오류 응답을 사용했다.
+- 필터 배치 후 `npx vitest run tests/catalog.test.ts`: 3개 재통과·26.26초. `npm run test:e2e -- tests/e2e/workflow.spec.ts --project=chromium -g '100개|카드 작성'`: 2개 재통과·16.6초.
+- 최종 `npm run build`, 실제 live 설정 `wrangler deploy --dry-run`, `check:free -- --config wrangler.live.jsonc --delivery-config wrangler.delivery.deploy.jsonc --mode live`, Prettier와 diff 검사 통과. 최종 메인 번들 SHA-256은 `3b68ade68ea06b5883a89dc4920888b16731a7167c837531c0e229e460dc8110`이다.
+- 첫 타입 검사에서 미사용 import·배치 결과 nullability를 수정했다. Playwright 바이너리를 직접 실행한 시도는 하위 `wrangler` PATH 오류로 서버 시작 전에 종료했으며, 정상 npm script로 재실행해 통과했다. 이 중간 실패를 통과 횟수에 넣지 않는다. 이전 전체 334+3개와 Chromium/WebKit 52개를 이번에 전부 재실행한 것은 아니다.
+
+### 무료 구성과 남은 실제 기기 확인
+
+13:20 전후 Cloudflare Dashboard의 현재 Workers 플랜은 Free·US$0였다. D1은 전체 계정 데이터베이스 1/10, UTC 10월 2일 읽기 약 6.22k/5M·쓰기 171/100k·저장 299.01kB/5GB였다. KV는 읽기 5·쓰기/삭제 0·목록 1·저장 약 403kB로 표시됐다. 이는 표시 시각의 집계이며 이후 이 작업의 읽기 검사는 별도 소비한다. 운영 앱 카운터만으로 계정 한도를 판단하지 않았다. 기존 Wrangler 권한으로 진행했고 권한 확대·유료 플랜·결제 변경은 없다.
+
+[Workers 요금](https://developers.cloudflare.com/workers/platform/pricing/), [CPU 제한](https://developers.cloudflare.com/workers/platform/limits/), [D1 요금](https://developers.cloudflare.com/d1/platform/pricing/), [KV 요금](https://developers.cloudflare.com/kv/platform/pricing/)을 당일 다시 확인했다. 이번 구성은 기존 Workers/D1/KV만 사용한다.
+
+실제 아이폰 Safari 확인은 사용자 응답 대기다. [운영 홈](https://en-card.kmksla4.workers.dev/#/home)에서 다음을 확인한다. 입력을 수정할 필요는 없으며 실제 예약을 활성화하지 않는다.
+
+1. 입력 필드에 포커스했을 때 자동 확대·키보드에 의한 버튼 가림이 없는지 확인한다.
+2. 예약 작성 화면의 날짜·한국 시간 선택, 하단 메뉴·안전 영역을 확인하고 저장하지 않는다.
+3. 준비된 표현형·비교형 PNG를 파일 앱에 내려받아 한글·줄바꿈·1080×1080을 확인한다.
+
+비밀값·인증 코드는 채팅에 입력하지 않는다. 실제 기기 확인 결과가 없으므로 WebKit 자동화나 Chrome 결과를 아이폰 검증 완료로 대체하지 않는다.
