@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { cardPage, deliveryPage, homeSummary } from '../src/worker/catalog';
 import { saveCard } from '../src/worker/storage';
+import { readStudioState } from '../src/worker/studio-state';
+import { schedulePage } from '../src/worker/schedules';
+import { createSession } from '../src/worker/auth';
+import { route } from '../src/worker/index';
 import { dueSchedule, harness, NOW, SAMPLE, type Harness } from './helpers';
 
 let h: Harness;
@@ -35,6 +39,36 @@ it('검색은 첫 100장 밖의 표현·한글 뜻도 찾고 필터와 커서를
   const all = await cardPage(h.env, null);
   expect(all.total).toBe(205);
   expect(all.items).toHaveLength(100);
+  const session = await createSession(h.env, Date.now());
+  const response = await route(
+    new Request(`${h.env.APP_ORIGIN}/api/state`, {
+      headers: { Cookie: `en_session=${session.token}` },
+    }),
+    h.env,
+  );
+  const state = (await response.json()) as Awaited<ReturnType<typeof readStudioState>> & {
+    csrf: string;
+    mode: string;
+  };
+  expect(state.totals).toEqual({
+    cards: 205,
+    assets: 0,
+    schedules: 0,
+    active_schedules: 0,
+    deliveries: 0,
+  });
+  expect(state.cards).toEqual(all.items);
+  expect(state.cursors.cards).toBe(all.next);
+  expect(state.summary).toEqual({
+    ready_cards: 0,
+    attention: 0,
+    api_accepted: 0,
+    next_schedule: null,
+  });
+  expect(state.connection).toBeNull();
+  expect(state.csrf).toBe(session.csrf);
+  expect(state.mode).toBe('dry_run');
+  expect(Object.keys(state)).not.toContain('credentials');
   const first = await cardPage(h.env, null, {
     q: 'search',
     status: 'draft',
@@ -111,6 +145,17 @@ it('전체 집계·확인 필요 필터는 첫 페이지 밖 결과 불명을 �
   const all = await deliveryPage(h.env, null);
   expect(all.items).toHaveLength(100);
   expect(all.items.every((item) => item.state === 'sent')).toBe(true);
+  const state = await readStudioState(h.env, NOW);
+  expect(state.totals.deliveries).toBe(105);
+  expect(state.deliveries).toEqual(all.items);
+  expect(state.cursors.deliveries).toBe(all.next);
+  expect(state.schedules).toEqual((await schedulePage(h.env, null)).items);
+  expect(state.summary).toMatchObject({
+    ready_cards: 1,
+    attention: 1,
+    api_accepted: 103,
+    next_schedule: { id: scheduleId },
+  });
   const attention = await deliveryPage(h.env, null, { filter: 'attention' });
   expect(attention.total).toBe(1);
   expect(attention.items.map((item) => item.id)).toEqual(['delivery-0']);

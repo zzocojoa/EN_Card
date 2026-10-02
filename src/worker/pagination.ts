@@ -4,6 +4,18 @@ import { appError } from './types';
 export type Page<T> = { items: T[]; next: string | null };
 const cursorSchema = z.tuple([z.number().finite(), z.string().min(1).max(200)]);
 
+export function pageFromRows<T extends { id: string }>(
+  result: (T & { sort_key: number })[],
+  size: number,
+): Page<T> {
+  const rows = result.slice(0, size);
+  const last = rows.at(-1);
+  return {
+    items: rows,
+    next: result.length > size && last ? JSON.stringify([last.sort_key, last.id]) : null,
+  };
+}
+
 export async function readPage<T extends { id: string }>(
   db: D1Database,
   selection: string,
@@ -30,10 +42,5 @@ export async function readPage<T extends { id: string }>(
     .prepare(`${selection}${condition} ORDER BY ${orderColumn} DESC,id DESC LIMIT ?`)
     .bind(...parameters, ...values)
     .all<T & { sort_key: number }>();
-  const rows = result.results.slice(0, size);
-  const last = rows.at(-1);
-  return {
-    items: rows,
-    next: result.results.length > size && last ? JSON.stringify([last.sort_key, last.id]) : null,
-  };
+  return pageFromRows(result.results, size);
 }

@@ -1,6 +1,5 @@
 import { z, ZodError } from 'zod';
 import { LIMITS, parseImport } from '../shared/model';
-import { kstDate } from '../shared/time';
 import {
   beginOAuth,
   cookie,
@@ -10,7 +9,8 @@ import {
   requireSession,
   retryTokenRefresh,
 } from './auth';
-import { assetPage, cardPage, deliveryPage, homeSummary } from './catalog';
+import { assetPage, cardPage, deliveryPage } from './catalog';
+import { readStudioState } from './studio-state';
 import { dryRun, resolveUnknown, runEngine } from './engine';
 import { nativeTransport } from './kakao';
 import { isTokenError } from './token-errors';
@@ -76,43 +76,9 @@ export async function route(request: Request, env: Env): Promise<Response> {
     return Response.json({ attempts: attempts.results, decisions: decisions.results });
   }
   if (path === '/api/state' && request.method === 'GET') {
-    const [cards, assets, schedules, deliveries, previews, usage, connection, totals, summary] =
-      await Promise.all([
-        cardPage(env, null),
-        assetPage(env, null),
-        schedulePage(env, null),
-        deliveryPage(env, null),
-        env.DB.prepare(
-          'SELECT id,schedule_id,due_at_utc,detail,created_at FROM dry_runs ORDER BY created_at DESC LIMIT 50',
-        ).all(),
-        env.DB.prepare("SELECT * FROM usage_counters WHERE day IN (?,'storage')")
-          .bind(kstDate(now))
-          .all(),
-        env.DB.prepare(
-          'SELECT status,expires_at,refresh_expires_at,version,refresh_attempts,refresh_retry_at,refresh_failure,refresh_http_status,refresh_provider_error,refresh_provider_code FROM credentials WHERE singleton=1',
-        ).first(),
-        env.DB.prepare(
-          "SELECT (SELECT count(*) FROM cards) AS cards,(SELECT count(*) FROM assets WHERE state!='deleted') AS assets,(SELECT count(*) FROM schedules) AS schedules,(SELECT count(*) FROM schedules WHERE enabled=1) AS active_schedules,(SELECT count(*) FROM deliveries) AS deliveries",
-        ).first(),
-        homeSummary(env),
-      ]);
     return Response.json({
+      ...(await readStudioState(env, now)),
       csrf: session.csrf,
-      summary,
-      cards: cards.items,
-      assets: assets.items,
-      schedules: schedules.items,
-      deliveries: deliveries.items,
-      cursors: {
-        cards: cards.next,
-        assets: assets.next,
-        schedules: schedules.next,
-        deliveries: deliveries.next,
-      },
-      totals,
-      previews: previews.results,
-      usage: usage.results,
-      connection,
       mode: env.SEND_MODE,
       now,
     });
