@@ -318,3 +318,11 @@ PR #1의 `9b0b43f`를 `master` 대비 전체 검토해 R9(업그레이드 시 �
 - Sites의 본인 로그인과 서버 전용 연결을 사용하며 기존 카드 D1/KV·Cron·발송 엔진·공개 이미지 URL을 유지한다. 평소 접속 토큰 입력을 없애고 카카오 재연결은 일회용 요청·기존 소유자 검증을 거쳐 하루단어로 돌아온다.
 - 인증·통합 37개, 조회·접근 회귀 29개, 하루단어 전체 714개, Chromium/WebKit 통합 2개, 기존 독립 앱 Chromium 3개를 통과했다. PNG 시그니처·1080×1080·예약 저장·학습 기록 불변·비인증 거부를 로컬 dry_run에서 확인했다. 초기 환경·런타임·테스트 격리 실패와 수정은 통합 문서에 기록했다.
 - 새 의존성·DB 스키마·유료 자원을 추가하지 않았다. 타입·빌드·무료 구성·lint(기존 경고 13개)을 확인했다. 본인 Site ID 매핑·새 서버 연결 키·운영 배포·원격 CPU·실제 iPhone은 아직 미완료다. 통합 구현을 운영 반영 완료나 실제 카카오 발송 완료로 표시하지 않는다.
+
+## 하루단어 통합 운영 반영 — 2026-10-02 16:09 KST
+
+- 사용자의 진행 승인 후 기존 Site v101/환경48과 메인 Worker `a51bde4f-24d9-4fab-ba82-a2393d0cb334`를 배포했다. [영어 카드](https://wordgrain-oxford-study.hoihou-o.chatgpt.site/cards)는 기존 ChatGPT 로그인으로 본인만 사용하며 운영자 토큰을 입력하지 않는다. 발송 Worker·Cron·D1/KV·기존 공개 정책과 환경 값은 유지했다.
+- 실제 본인 로그인·홈 버튼·기존 카드14장/미리보기·예약 화면·PNG 다운로드 78,331바이트/1080×1080을 확인했다. 비로그인401·위조 플랫폼 헤더401·잘못된 서버 사용자403이다. 서버 키는 양쪽 Secret과 제한된 DPAPI 백업에만 보관했다. 전체 사용자 목록을 조회하거나 첫 방문자를 소유자로 지정하지 않았다.
+- EN_Card DB 15개 테이블의 배포 전후 해시가 같고 활성0·진행 중/미해결 unknown0·인증11/connected·준비 이미지5장·발송예산8/20을 유지했다. 운영 학습 기록에 QA 쓰기를 하지 않았다. 조회 CPU2~5ms·무작업 Cron1~3ms, 예외0이며 수집기는 종료했다.
+- Workers Free·US$0과 D1/KV 공유 사용량을 확인했다. 추가 유료 자원·AI 호출·새 운영 예약·메시지 발송·카카오 재연결은 없다. 실제 iPhone과 새 카카오 재연결/발송은 이번 검증 범위 밖이다. 세부 결과·중간 실패·복구는 [HARU_INTEGRATION.md](HARU_INTEGRATION.md)를 따른다.
+- Sites 소스 동기화는 완료했으나 GitHub PR 병합은 수행하지 않았다. 로컬 실행 `npm run dev`, 배포 전 `npm run check:free -- --config wrangler.live.jsonc --delivery-config wrangler.delivery.deploy.jsonc --mode live` 및 `npx wrangler deploy --dry-run --config wrangler.live.jsonc`, 승인된 메인 배포는 `npx wrangler deploy --config wrangler.live.jsonc`다. 하루단어 게시에는 기존 Sites 절차를 사용한다.
