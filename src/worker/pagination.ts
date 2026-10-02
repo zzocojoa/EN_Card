@@ -16,14 +16,14 @@ export function pageFromRows<T extends { id: string }>(
   };
 }
 
-export async function readPage<T extends { id: string }>(
+export function preparePage(
   db: D1Database,
   selection: string,
   orderColumn: string,
   cursor: string | null,
   size: number,
   parameters: (number | string)[] = [],
-): Promise<Page<T>> {
+): D1PreparedStatement {
   let boundary: [number, string] | null = null;
   if (cursor !== null) {
     try {
@@ -38,9 +38,21 @@ export async function readPage<T extends { id: string }>(
   const values: (number | string)[] = boundary
     ? [boundary[0], boundary[0], boundary[1], size + 1]
     : [size + 1];
-  const result = await db
+  return db
     .prepare(`${selection}${condition} ORDER BY ${orderColumn} DESC,id DESC LIMIT ?`)
-    .bind(...parameters, ...values)
-    .all<T & { sort_key: number }>();
+    .bind(...parameters, ...values);
+}
+
+export async function readPage<T extends { id: string }>(
+  db: D1Database,
+  selection: string,
+  orderColumn: string,
+  cursor: string | null,
+  size: number,
+  parameters: (number | string)[] = [],
+): Promise<Page<T>> {
+  const result = await preparePage(db, selection, orderColumn, cursor, size, parameters).all<
+    T & { sort_key: number }
+  >();
   return pageFromRows(result.results, size);
 }

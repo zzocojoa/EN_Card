@@ -1,6 +1,7 @@
 import type { Asset, Card, CardInput, DeliverySummary } from '../shared/model';
-import { readPage, type Page } from './pagination';
+import { pageFromRows, preparePage, readPage, type Page } from './pagination';
 import type { Env } from './types';
+import { appError } from './types';
 import { cardFilterSchema, deliveryFilterSchema, type HomeSummary } from '../shared/catalog';
 
 export type CatalogPage<T> = Page<T> & { total: number };
@@ -42,20 +43,16 @@ export async function cardPage(
     parameters.push(template);
   }
   const where = conditions.join(' AND ');
-  const page = await readPage<CardRow>(
-    env.DB,
-    CARD_SELECTION + where,
-    'created_at',
-    cursor,
-    100,
-    parameters,
-  );
-  const count = await env.DB.prepare(`SELECT count(*) AS total FROM cards WHERE ${where}`)
-    .bind(...parameters)
-    .first<{ total: number }>();
+  const [rows, count] = await env.DB.batch([
+    preparePage(env.DB, CARD_SELECTION + where, 'created_at', cursor, 100, parameters),
+    env.DB.prepare(`SELECT count(*) AS total FROM cards WHERE ${where}`).bind(...parameters),
+  ]);
+  if (!rows || !count?.results[0])
+    throw appError(503, 'CATALOG_READ', '카드 목록을 읽지 못했습니다. 다시 시도해 주세요.');
+  const page = pageFromRows(rows.results as (CardRow & { sort_key: number })[], 100);
   return {
     ...page,
-    total: count!.total,
+    total: (count.results[0] as { total: number }).total,
     items: page.items.map(decodeCard),
   };
 }
@@ -69,17 +66,14 @@ export async function deliveryPage(
 ): Promise<CatalogPage<DeliverySummary>> {
   const { filter } = deliveryFilterSchema.parse(filters);
   const where = filter === 'attention' ? ATTENTION : '1=1';
-  const page = await readPage<DeliverySummary>(
-    env.DB,
-    DELIVERY_SELECTION + where,
-    'due_at_utc',
-    cursor,
-    100,
-  );
-  const count = await env.DB.prepare(
-    `SELECT count(*) AS total FROM deliveries WHERE ${where}`,
-  ).first<{ total: number }>();
-  return { ...page, total: count!.total };
+  const [rows, count] = await env.DB.batch([
+    preparePage(env.DB, DELIVERY_SELECTION + where, 'due_at_utc', cursor, 100),
+    env.DB.prepare(`SELECT count(*) AS total FROM deliveries WHERE ${where}`),
+  ]);
+  if (!rows || !count?.results[0])
+    throw appError(503, 'CATALOG_READ', '발송 기록을 읽지 못했습니다. 다시 시도해 주세요.');
+  const page = pageFromRows(rows.results as (DeliverySummary & { sort_key: number })[], 100);
+  return { ...page, total: (count.results[0] as { total: number }).total };
 }
 
 export async function homeSummary(env: Env): Promise<HomeSummary> {
