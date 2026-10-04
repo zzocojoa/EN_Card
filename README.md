@@ -68,7 +68,7 @@ npm run test:e2e
 
 `build`에는 타입 검사·Vite 빌드·폰트 준비와 세 Worker의 배포 dry-run이 포함됩니다. 별도 검사는 `npm run deploy:dry-run`, `npm run deploy:delivery:dry-run`, `npm run deploy:automation:dry-run`입니다. 이 명령은 원격에 배포하지 않습니다. E2E는 8787 포트와 별도 `.wrangler/e2e-*` 저장소를 사용하므로 개발 서버를 종료한 뒤 실행합니다.
 
-화면 주소는 `#/home`, `#/editor`, `#/library`, `#/schedules`, `#/history`, `#/settings`입니다. 화면 이동 중 작성 내용은 유지되지만 브라우저를 닫으면 저장하지 않은 입력은 사라집니다. 아이폰에서는 하단 **더보기**로 제작·설정 화면에 접근합니다. Chromium은 기존 로컬 D1 회귀와 새 UI 검증을, WebKit은 새 UI 검증을 실행합니다. WebKit의 모의 API 검증은 실제 아이폰·카카오 연동 확인과 구분합니다. 개편 범위는 [계획](docs/UI_UX_REDESIGN_PLAN.md)과 [검토 기록](docs/UI_UX_REVIEW.md)을 따릅니다.
+화면 주소는 `#/home`, `#/editor`, `#/library`, `#/automation`, `#/schedules`, `#/history`, `#/settings`입니다. 화면 이동 중 작성 내용은 유지되지만 브라우저를 닫으면 저장하지 않은 입력은 사라집니다. 아이폰에서는 하단 **더보기**로 제작·설정 화면에 접근합니다. Chromium은 기존 로컬 D1 회귀와 새 UI 검증을, WebKit은 새 UI 검증을 실행합니다. WebKit의 모의 API 검증은 실제 아이폰·카카오 연동 확인과 구분합니다. 개편 범위는 [계획](docs/UI_UX_REDESIGN_PLAN.md)과 [검토 기록](docs/UI_UX_REVIEW.md)을 따릅니다.
 
 ## 운영 및 비용 조건
 
