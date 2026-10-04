@@ -1,0 +1,267 @@
+{
+  "measured_at_utc": "2026-10-02T13:30:24.910Z",
+  "qualification": "not_qualified",
+  "scope": "Local workerd warm sampling via V8 Inspector; unchanged pipeline code, local preloaded font asset binding; not remote CPU, wall time or per-request limit evidence. Self samples include runtime work and idle is excluded from displayed fractions. Native work may be attributed to its JS caller.",
+  "inputs": [
+    {
+      "fixture": "expression",
+      "pages": 22,
+      "chunks": 11,
+      "asset_bytes": 5110786,
+      "requested_glyphs": 41,
+      "bundle_bytes": 42520
+    },
+    {
+      "fixture": "comparison",
+      "pages": 14,
+      "chunks": 7,
+      "asset_bytes": 3418978,
+      "requested_glyphs": 24,
+      "bundle_bytes": 28627
+    },
+    {
+      "fixture": "long",
+      "pages": 14,
+      "chunks": 7,
+      "asset_bytes": 3465708,
+      "requested_glyphs": 41,
+      "bundle_bytes": 50276
+    },
+    {
+      "fixture": "long_comparison",
+      "pages": 13,
+      "chunks": 7,
+      "asset_bytes": 3282532,
+      "requested_glyphs": 40,
+      "bundle_bytes": 49525
+    },
+    {
+      "fixture": "coverage",
+      "pages": 33,
+      "chunks": 17,
+      "asset_bytes": 7614150,
+      "requested_glyphs": 81,
+      "bundle_bytes": 89329
+    }
+  ],
+  "profiles": [
+    {
+      "name": "assembly",
+      "rounds": 50,
+      "fixtures": 5,
+      "total_samples": 440,
+      "non_idle_samples": 431,
+      "top_self": [
+        {
+          "name": "zlibSync @ ",
+          "samples": 203,
+          "fraction": 0.4709976798143852
+        },
+        {
+          "name": "paintText @ script-0.mjs",
+          "samples": 48,
+          "fraction": 0.11136890951276102
+        },
+        {
+          "name": "crc @ script-0.mjs",
+          "samples": 24,
+          "fraction": 0.05568445475638051
+        },
+        {
+          "name": "unpackAtlasChunk @ script-0.mjs",
+          "samples": 20,
+          "fraction": 0.04640371229698376
+        },
+        {
+          "name": "(anonymous) @ script-0.mjs",
+          "samples": 17,
+          "fraction": 0.03944315545243619
+        },
+        {
+          "name": "readBoundedBody @ script-0.mjs",
+          "samples": 15,
+          "fraction": 0.03480278422273782
+        },
+        {
+          "name": "read @ ",
+          "samples": 13,
+          "fraction": 0.030162412993039442
+        },
+        {
+          "name": "planCardAtlas @ script-0.mjs",
+          "samples": 12,
+          "fraction": 0.027842227378190254
+        },
+        {
+          "name": "mergeAtlases @ script-0.mjs",
+          "samples": 12,
+          "fraction": 0.027842227378190254
+        },
+        {
+          "name": "(anonymous) @ ",
+          "samples": 7,
+          "fraction": 0.016241299303944315
+        },
+        {
+          "name": "paintAtlasRows @ script-0.mjs",
+          "samples": 6,
+          "fraction": 0.013921113689095127
+        },
+        {
+          "name": "Response @ ",
+          "samples": 6,
+          "fraction": 0.013921113689095127
+        },
+        {
+          "name": "(program) @ ",
+          "samples": 5,
+          "fraction": 0.01160092807424594
+        },
+        {
+          "name": "assembleAtlasBundle @ script-0.mjs",
+          "samples": 5,
+          "fraction": 0.01160092807424594
+        },
+        {
+          "name": "lookup @ script-0.mjs",
+          "samples": 4,
+          "fraction": 0.009280742459396751
+        },
+        {
+          "name": "selectAtlas @ script-0.mjs",
+          "samples": 4,
+          "fraction": 0.009280742459396751
+        },
+        {
+          "name": "prepareAtlasCard @ script-0.mjs",
+          "samples": 4,
+          "fraction": 0.009280742459396751
+        },
+        {
+          "name": "(garbage collector) @ ",
+          "samples": 3,
+          "fraction": 0.0069605568445475635
+        },
+        {
+          "name": "fetch @ script-0.mjs",
+          "samples": 3,
+          "fraction": 0.0069605568445475635
+        },
+        {
+          "name": "validatePng @ script-0.mjs",
+          "samples": 2,
+          "fraction": 0.004640371229698376
+        }
+      ]
+    },
+    {
+      "name": "glyphs",
+      "rounds": 10,
+      "fixtures": 5,
+      "total_samples": 676,
+      "non_idle_samples": 617,
+      "top_self": [
+        {
+          "name": "readBoundedBody @ script-0.mjs",
+          "samples": 272,
+          "fraction": 0.44084278768233387
+        },
+        {
+          "name": "(anonymous) @ script-0.mjs",
+          "samples": 59,
+          "fraction": 0.09562398703403566
+        },
+        {
+          "name": "(anonymous) @ ",
+          "samples": 58,
+          "fraction": 0.0940032414910859
+        },
+        {
+          "name": "(program) @ ",
+          "samples": 54,
+          "fraction": 0.08752025931928688
+        },
+        {
+          "name": "planCardAtlas @ script-0.mjs",
+          "samples": 36,
+          "fraction": 0.05834683954619125
+        },
+        {
+          "name": "fetch @ ",
+          "samples": 27,
+          "fraction": 0.04376012965964344
+        },
+        {
+          "name": "decodeAtlasPage @ script-0.mjs",
+          "samples": 21,
+          "fraction": 0.03403565640194489
+        },
+        {
+          "name": "zlibSync @ ",
+          "samples": 20,
+          "fraction": 0.03241491085899514
+        },
+        {
+          "name": "(garbage collector) @ ",
+          "samples": 16,
+          "fraction": 0.02593192868719611
+        },
+        {
+          "name": "packAtlasChunk @ script-0.mjs",
+          "samples": 10,
+          "fraction": 0.01620745542949757
+        },
+        {
+          "name": "Response @ ",
+          "samples": 9,
+          "fraction": 0.014586709886547812
+        },
+        {
+          "name": "loadAtlasChunk @ script-0.mjs",
+          "samples": 6,
+          "fraction": 0.009724473257698542
+        },
+        {
+          "name": "pipelinePlan @ script-0.mjs",
+          "samples": 5,
+          "fraction": 0.008103727714748784
+        },
+        {
+          "name": "wrap @ script-0.mjs",
+          "samples": 4,
+          "fraction": 0.006482982171799027
+        },
+        {
+          "name": "atlasChunks @ script-0.mjs",
+          "samples": 4,
+          "fraction": 0.006482982171799027
+        },
+        {
+          "name": "inflateSync @ node-internal:internal_zlib",
+          "samples": 2,
+          "fraction": 0.0032414910858995136
+        },
+        {
+          "name": "runChecks @ script-0.mjs",
+          "samples": 2,
+          "fraction": 0.0032414910858995136
+        },
+        {
+          "name": "inst._zod.parse @ script-0.mjs",
+          "samples": 2,
+          "fraction": 0.0032414910858995136
+        },
+        {
+          "name": "inst._zod.run @ script-0.mjs",
+          "samples": 2,
+          "fraction": 0.0032414910858995136
+        },
+        {
+          "name": "blocks @ script-0.mjs",
+          "samples": 1,
+          "fraction": 0.0016207455429497568
+        }
+      ]
+    }
+  ]
+}

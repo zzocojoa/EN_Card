@@ -1,0 +1,167 @@
+{
+  "measured_at_utc": "2026-10-02T13:33:22.867Z",
+  "qualification": "not_qualified",
+  "scope": "Deterministic layout estimate, not an implemented format or CPU benchmark. Reuses current independently compressed glyphs with 16-byte page headers and 32-byte direct records. Omits empty pages, retains all supported glyphs/styles. Counts unique cold-cache reads; no Range support or cache hits assumed. Existing 1024-slot page-size estimates are checked against actual files.",
+  "results": [
+    {
+      "page_size": 1024,
+      "estimated_asset_files_including_license": 477,
+      "estimated_total_bytes": 101902091,
+      "cards": [
+        {
+          "fixture": "expression",
+          "page_fetches": 22,
+          "bytes": 5110786
+        },
+        {
+          "fixture": "comparison",
+          "page_fetches": 14,
+          "bytes": 3418978
+        },
+        {
+          "fixture": "long",
+          "page_fetches": 14,
+          "bytes": 3465708
+        },
+        {
+          "fixture": "long_comparison",
+          "page_fetches": 13,
+          "bytes": 3282532
+        },
+        {
+          "fixture": "coverage",
+          "page_fetches": 33,
+          "bytes": 7614150
+        }
+      ]
+    },
+    {
+      "page_size": 256,
+      "estimated_asset_files_including_license": 1667,
+      "estimated_total_bytes": 99971435,
+      "cards": [
+        {
+          "fixture": "expression",
+          "page_fetches": 32,
+          "bytes": 1792350
+        },
+        {
+          "fixture": "comparison",
+          "page_fetches": 21,
+          "bytes": 1214221
+        },
+        {
+          "fixture": "long",
+          "page_fetches": 25,
+          "bytes": 1576028
+        },
+        {
+          "fixture": "long_comparison",
+          "page_fetches": 23,
+          "bytes": 1483056
+        },
+        {
+          "fixture": "coverage",
+          "page_fetches": 58,
+          "bytes": 3280570
+        }
+      ]
+    },
+    {
+      "page_size": 128,
+      "estimated_asset_files_including_license": 3231,
+      "estimated_total_bytes": 99578667,
+      "cards": [
+        {
+          "fixture": "expression",
+          "page_fetches": 36,
+          "bytes": 961285
+        },
+        {
+          "fixture": "comparison",
+          "page_fetches": 24,
+          "bytes": 674178
+        },
+        {
+          "fixture": "long",
+          "page_fetches": 30,
+          "bytes": 948046
+        },
+        {
+          "fixture": "long_comparison",
+          "page_fetches": 31,
+          "bytes": 995770
+        },
+        {
+          "fixture": "coverage",
+          "page_fetches": 68,
+          "bytes": 1895365
+        }
+      ]
+    },
+    {
+      "page_size": 64,
+      "estimated_asset_files_including_license": 6291,
+      "estimated_total_bytes": 99279467,
+      "cards": [
+        {
+          "fixture": "expression",
+          "page_fetches": 39,
+          "bytes": 526235
+        },
+        {
+          "fixture": "comparison",
+          "page_fetches": 24,
+          "bytes": 345670
+        },
+        {
+          "fixture": "long",
+          "page_fetches": 34,
+          "bytes": 527303
+        },
+        {
+          "fixture": "long_comparison",
+          "page_fetches": 36,
+          "bytes": 570368
+        },
+        {
+          "fixture": "coverage",
+          "page_fetches": 73,
+          "bytes": 1022767
+        }
+      ]
+    },
+    {
+      "page_size": 32,
+      "estimated_asset_files_including_license": 12377,
+      "estimated_total_bytes": 99167947,
+      "cards": [
+        {
+          "fixture": "expression",
+          "page_fetches": 40,
+          "bytes": 275066
+        },
+        {
+          "fixture": "comparison",
+          "page_fetches": 24,
+          "bytes": 177835
+        },
+        {
+          "fixture": "long",
+          "page_fetches": 38,
+          "bytes": 292361
+        },
+        {
+          "fixture": "long_comparison",
+          "page_fetches": 38,
+          "bytes": 300124
+        },
+        {
+          "fixture": "coverage",
+          "page_fetches": 74,
+          "bytes": 520804
+        }
+      ]
+    }
+  ]
+}

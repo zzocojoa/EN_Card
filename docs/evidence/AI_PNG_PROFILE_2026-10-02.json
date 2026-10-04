@@ -1,0 +1,673 @@
+{
+  "measured_at_utc": "2026-10-02T10:13:14.792Z",
+  "environment": {
+    "runtime": "v22.22.2",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12400F"
+  },
+  "scope": "Local phase diagnostics. Raster phase reuses parsed SVG. Whole-raster includes parsing and PNG validation, excludes card-to-SVG. Not Cloudflare invocation CPU.",
+  "qualification": "not_qualified",
+  "rows": [
+    {
+      "fixture": "expression",
+      "phase": "parse_and_free",
+      "count": 50,
+      "process_cpu_ms": 7.18,
+      "thread_cpu_ms": 1.86,
+      "wall_ms": 1.7719460000000005
+    },
+    {
+      "fixture": "expression",
+      "phase": "render_and_free",
+      "count": 50,
+      "process_cpu_ms": 10.32,
+      "thread_cpu_ms": 5.96,
+      "wall_ms": 5.854243999999999
+    },
+    {
+      "fixture": "expression",
+      "phase": "rgba_copy",
+      "count": 50,
+      "process_cpu_ms": 0.92,
+      "thread_cpu_ms": 0.92,
+      "wall_ms": 0.8124520000000007
+    },
+    {
+      "fixture": "expression",
+      "phase": "wasm_png",
+      "count": 50,
+      "process_cpu_ms": 21.58,
+      "thread_cpu_ms": 19.7,
+      "wall_ms": 19.77396
+    },
+    {
+      "fixture": "expression",
+      "phase": "native_png",
+      "count": 50,
+      "process_cpu_ms": 21.54,
+      "thread_cpu_ms": 4.38,
+      "wall_ms": 17.215950000000003
+    },
+    {
+      "fixture": "expression",
+      "phase": "fast_png",
+      "count": 50,
+      "process_cpu_ms": 6.58,
+      "thread_cpu_ms": 5.3,
+      "wall_ms": 5.104378000000006
+    },
+    {
+      "fixture": "expression",
+      "phase": "fast_whole_raster",
+      "count": 50,
+      "process_cpu_ms": 15.3,
+      "thread_cpu_ms": 11.24,
+      "wall_ms": 11.759765999999999
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_0",
+      "count": 50,
+      "process_cpu_ms": 5.32,
+      "thread_cpu_ms": 4.06,
+      "wall_ms": 4.1364800000000015
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_1",
+      "count": 50,
+      "process_cpu_ms": 7.8,
+      "thread_cpu_ms": 4.4,
+      "wall_ms": 4.229555999999993
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_2",
+      "count": 50,
+      "process_cpu_ms": 5.3,
+      "thread_cpu_ms": 4.36,
+      "wall_ms": 4.757528000000002
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_3",
+      "count": 50,
+      "process_cpu_ms": 8.14,
+      "thread_cpu_ms": 4.36,
+      "wall_ms": 4.813471999999993
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_4",
+      "count": 50,
+      "process_cpu_ms": 7.2,
+      "thread_cpu_ms": 4.7,
+      "wall_ms": 4.921858000000011
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_5",
+      "count": 50,
+      "process_cpu_ms": 6.86,
+      "thread_cpu_ms": 5.62,
+      "wall_ms": 5.707250000000004
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_6",
+      "count": 50,
+      "process_cpu_ms": 5.94,
+      "thread_cpu_ms": 4.38,
+      "wall_ms": 4.8434539999999835
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_7",
+      "count": 50,
+      "process_cpu_ms": 4.06,
+      "thread_cpu_ms": 3.42,
+      "wall_ms": 3.9377080000000024
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_8",
+      "count": 50,
+      "process_cpu_ms": 6.26,
+      "thread_cpu_ms": 3.76,
+      "wall_ms": 3.9808660000000056
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_9",
+      "count": 50,
+      "process_cpu_ms": 5.62,
+      "thread_cpu_ms": 3.76,
+      "wall_ms": 4.077677999999996
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_10",
+      "count": 50,
+      "process_cpu_ms": 6.24,
+      "thread_cpu_ms": 4.36,
+      "wall_ms": 4.148701999999994
+    },
+    {
+      "fixture": "expression",
+      "phase": "band_11",
+      "count": 50,
+      "process_cpu_ms": 5.02,
+      "thread_cpu_ms": 3.76,
+      "wall_ms": 3.954473999999991
+    },
+    {
+      "fixture": "expression",
+      "phase": "join_bands",
+      "count": 50,
+      "process_cpu_ms": 1.86,
+      "thread_cpu_ms": 0.62,
+      "wall_ms": 0.4566400000000067
+    },
+    {
+      "fixture": "comparison",
+      "phase": "parse_and_free",
+      "count": 50,
+      "process_cpu_ms": 0.62,
+      "thread_cpu_ms": 0.62,
+      "wall_ms": 0.6402579999999943
+    },
+    {
+      "fixture": "comparison",
+      "phase": "render_and_free",
+      "count": 50,
+      "process_cpu_ms": 5,
+      "thread_cpu_ms": 5,
+      "wall_ms": 4.865543999999991
+    },
+    {
+      "fixture": "comparison",
+      "phase": "rgba_copy",
+      "count": 50,
+      "process_cpu_ms": 0.94,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.7581880000000092
+    },
+    {
+      "fixture": "comparison",
+      "phase": "wasm_png",
+      "count": 50,
+      "process_cpu_ms": 19.68,
+      "thread_cpu_ms": 19.68,
+      "wall_ms": 19.47859400000001
+    },
+    {
+      "fixture": "comparison",
+      "phase": "native_png",
+      "count": 50,
+      "process_cpu_ms": 19.06,
+      "thread_cpu_ms": 4.08,
+      "wall_ms": 15.180756
+    },
+    {
+      "fixture": "comparison",
+      "phase": "fast_png",
+      "count": 50,
+      "process_cpu_ms": 4.38,
+      "thread_cpu_ms": 4.38,
+      "wall_ms": 4.203330000000006
+    },
+    {
+      "fixture": "comparison",
+      "phase": "fast_whole_raster",
+      "count": 50,
+      "process_cpu_ms": 15.32,
+      "thread_cpu_ms": 11.86,
+      "wall_ms": 12.225746
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_0",
+      "count": 50,
+      "process_cpu_ms": 9.68,
+      "thread_cpu_ms": 4.68,
+      "wall_ms": 4.679060000000026
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_1",
+      "count": 50,
+      "process_cpu_ms": 5.62,
+      "thread_cpu_ms": 4.38,
+      "wall_ms": 4.392136000000027
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_2",
+      "count": 50,
+      "process_cpu_ms": 7.18,
+      "thread_cpu_ms": 4.68,
+      "wall_ms": 4.516905999999981
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_3",
+      "count": 50,
+      "process_cpu_ms": 4.08,
+      "thread_cpu_ms": 3.76,
+      "wall_ms": 4.195584000000017
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_4",
+      "count": 50,
+      "process_cpu_ms": 8.1,
+      "thread_cpu_ms": 4.7,
+      "wall_ms": 4.578401999999987
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_5",
+      "count": 50,
+      "process_cpu_ms": 5.96,
+      "thread_cpu_ms": 4.68,
+      "wall_ms": 4.691980000000004
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_6",
+      "count": 50,
+      "process_cpu_ms": 6.24,
+      "thread_cpu_ms": 5,
+      "wall_ms": 4.859916000000012
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_7",
+      "count": 50,
+      "process_cpu_ms": 5.62,
+      "thread_cpu_ms": 4.38,
+      "wall_ms": 4.628953999999976
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_8",
+      "count": 50,
+      "process_cpu_ms": 5.02,
+      "thread_cpu_ms": 3.42,
+      "wall_ms": 3.688355999999985
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_9",
+      "count": 50,
+      "process_cpu_ms": 3.42,
+      "thread_cpu_ms": 3.44,
+      "wall_ms": 3.7941939999999885
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_10",
+      "count": 50,
+      "process_cpu_ms": 3.76,
+      "thread_cpu_ms": 3.76,
+      "wall_ms": 3.9259319999999933
+    },
+    {
+      "fixture": "comparison",
+      "phase": "band_11",
+      "count": 50,
+      "process_cpu_ms": 4.06,
+      "thread_cpu_ms": 4.06,
+      "wall_ms": 4.147464
+    },
+    {
+      "fixture": "comparison",
+      "phase": "join_bands",
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.3735819999999876
+    },
+    {
+      "fixture": "long",
+      "phase": "parse_and_free",
+      "count": 50,
+      "process_cpu_ms": 1.26,
+      "thread_cpu_ms": 1.26,
+      "wall_ms": 1.057400000000016
+    },
+    {
+      "fixture": "long",
+      "phase": "render_and_free",
+      "count": 50,
+      "process_cpu_ms": 6.24,
+      "thread_cpu_ms": 6.24,
+      "wall_ms": 7.010421999999998
+    },
+    {
+      "fixture": "long",
+      "phase": "rgba_copy",
+      "count": 50,
+      "process_cpu_ms": 0.6,
+      "thread_cpu_ms": 0.62,
+      "wall_ms": 0.7617139999999927
+    },
+    {
+      "fixture": "long",
+      "phase": "wasm_png",
+      "count": 50,
+      "process_cpu_ms": 19.7,
+      "thread_cpu_ms": 19.68,
+      "wall_ms": 19.541464000000015
+    },
+    {
+      "fixture": "long",
+      "phase": "native_png",
+      "count": 50,
+      "process_cpu_ms": 20.3,
+      "thread_cpu_ms": 3.76,
+      "wall_ms": 17.495668000000006
+    },
+    {
+      "fixture": "long",
+      "phase": "fast_png",
+      "count": 50,
+      "process_cpu_ms": 5.96,
+      "thread_cpu_ms": 4.68,
+      "wall_ms": 4.800329999999994
+    },
+    {
+      "fixture": "long",
+      "phase": "fast_whole_raster",
+      "count": 50,
+      "process_cpu_ms": 17.5,
+      "thread_cpu_ms": 14.38,
+      "wall_ms": 14.971533999999993
+    },
+    {
+      "fixture": "long",
+      "phase": "band_0",
+      "count": 50,
+      "process_cpu_ms": 7.18,
+      "thread_cpu_ms": 4.68,
+      "wall_ms": 4.771478000000025
+    },
+    {
+      "fixture": "long",
+      "phase": "band_1",
+      "count": 50,
+      "process_cpu_ms": 6.24,
+      "thread_cpu_ms": 5,
+      "wall_ms": 4.893061999999991
+    },
+    {
+      "fixture": "long",
+      "phase": "band_2",
+      "count": 50,
+      "process_cpu_ms": 6.56,
+      "thread_cpu_ms": 5.3,
+      "wall_ms": 5.277730000000011
+    },
+    {
+      "fixture": "long",
+      "phase": "band_3",
+      "count": 50,
+      "process_cpu_ms": 6.88,
+      "thread_cpu_ms": 5.62,
+      "wall_ms": 5.603386000000028
+    },
+    {
+      "fixture": "long",
+      "phase": "band_4",
+      "count": 50,
+      "process_cpu_ms": 7.18,
+      "thread_cpu_ms": 5.96,
+      "wall_ms": 6.426003999999994
+    },
+    {
+      "fixture": "long",
+      "phase": "band_5",
+      "count": 50,
+      "process_cpu_ms": 5.32,
+      "thread_cpu_ms": 5.3,
+      "wall_ms": 5.236676000000006
+    },
+    {
+      "fixture": "long",
+      "phase": "band_6",
+      "count": 50,
+      "process_cpu_ms": 7.52,
+      "thread_cpu_ms": 6.24,
+      "wall_ms": 6.358552000000055
+    },
+    {
+      "fixture": "long",
+      "phase": "band_7",
+      "count": 50,
+      "process_cpu_ms": 6.88,
+      "thread_cpu_ms": 5.62,
+      "wall_ms": 5.4818639999999865
+    },
+    {
+      "fixture": "long",
+      "phase": "band_8",
+      "count": 50,
+      "process_cpu_ms": 5.92,
+      "thread_cpu_ms": 5,
+      "wall_ms": 4.968391999999949
+    },
+    {
+      "fixture": "long",
+      "phase": "band_9",
+      "count": 50,
+      "process_cpu_ms": 5.32,
+      "thread_cpu_ms": 4.08,
+      "wall_ms": 4.215017999999982
+    },
+    {
+      "fixture": "long",
+      "phase": "band_10",
+      "count": 50,
+      "process_cpu_ms": 4.36,
+      "thread_cpu_ms": 4.06,
+      "wall_ms": 4.1835900000000406
+    },
+    {
+      "fixture": "long",
+      "phase": "band_11",
+      "count": 50,
+      "process_cpu_ms": 4.08,
+      "thread_cpu_ms": 4.06,
+      "wall_ms": 4.0990639999999985
+    },
+    {
+      "fixture": "long",
+      "phase": "join_bands",
+      "count": 50,
+      "process_cpu_ms": 0.62,
+      "thread_cpu_ms": 0.62,
+      "wall_ms": 0.5996919999999955
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "parse_and_free",
+      "count": 50,
+      "process_cpu_ms": 1.24,
+      "thread_cpu_ms": 1.24,
+      "wall_ms": 1.2602659999999741
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "render_and_free",
+      "count": 50,
+      "process_cpu_ms": 7.5,
+      "thread_cpu_ms": 7.5,
+      "wall_ms": 7.452966000000015
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "rgba_copy",
+      "count": 50,
+      "process_cpu_ms": 0.92,
+      "thread_cpu_ms": 0.96,
+      "wall_ms": 0.8099620000000141
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "wasm_png",
+      "count": 50,
+      "process_cpu_ms": 20,
+      "thread_cpu_ms": 20,
+      "wall_ms": 20.16035600000003
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "native_png",
+      "count": 50,
+      "process_cpu_ms": 18.14,
+      "thread_cpu_ms": 3.44,
+      "wall_ms": 17.223987999999952
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "fast_png",
+      "count": 50,
+      "process_cpu_ms": 5.3,
+      "thread_cpu_ms": 4.7,
+      "wall_ms": 4.8170840000000315
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "fast_whole_raster",
+      "count": 50,
+      "process_cpu_ms": 18.76,
+      "thread_cpu_ms": 14.66,
+      "wall_ms": 15.145527999999977
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_0",
+      "count": 50,
+      "process_cpu_ms": 7.18,
+      "thread_cpu_ms": 4.7,
+      "wall_ms": 4.560409999999974
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_1",
+      "count": 50,
+      "process_cpu_ms": 8.44,
+      "thread_cpu_ms": 4.38,
+      "wall_ms": 4.660889999999999
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_2",
+      "count": 50,
+      "process_cpu_ms": 7.18,
+      "thread_cpu_ms": 5.62,
+      "wall_ms": 5.556094000000012
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_3",
+      "count": 50,
+      "process_cpu_ms": 4.7,
+      "thread_cpu_ms": 4.7,
+      "wall_ms": 4.909264000000039
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_4",
+      "count": 50,
+      "process_cpu_ms": 5.92,
+      "thread_cpu_ms": 5.92,
+      "wall_ms": 5.671771999999983
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_5",
+      "count": 50,
+      "process_cpu_ms": 6.58,
+      "thread_cpu_ms": 4.7,
+      "wall_ms": 5.377870000000039
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_6",
+      "count": 50,
+      "process_cpu_ms": 7.18,
+      "thread_cpu_ms": 5.62,
+      "wall_ms": 5.943584000000047
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_7",
+      "count": 50,
+      "process_cpu_ms": 7.2,
+      "thread_cpu_ms": 6.56,
+      "wall_ms": 6.884270000000033
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_8",
+      "count": 50,
+      "process_cpu_ms": 9.68,
+      "thread_cpu_ms": 6.86,
+      "wall_ms": 7.405735999999961
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_9",
+      "count": 50,
+      "process_cpu_ms": 9.68,
+      "thread_cpu_ms": 5.64,
+      "wall_ms": 6.153896000000023
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_10",
+      "count": 50,
+      "process_cpu_ms": 4.68,
+      "thread_cpu_ms": 4.38,
+      "wall_ms": 4.543925999999992
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "band_11",
+      "count": 50,
+      "process_cpu_ms": 7.82,
+      "thread_cpu_ms": 5.3,
+      "wall_ms": 5.592099999999991
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "join_bands",
+      "count": 50,
+      "process_cpu_ms": 1.56,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.7563380000000325
+    }
+  ],
+  "results": [
+    {
+      "fixture": "expression",
+      "bytes": 58603,
+      "bands_bytes": 57590
+    },
+    {
+      "fixture": "comparison",
+      "bytes": 54964,
+      "bands_bytes": 53892
+    },
+    {
+      "fixture": "long",
+      "bytes": 81392,
+      "bands_bytes": 80215
+    },
+    {
+      "fixture": "long_comparison",
+      "bytes": 82966,
+      "bands_bytes": 81656
+    }
+  ]
+}

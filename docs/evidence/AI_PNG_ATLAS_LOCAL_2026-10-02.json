@@ -1,0 +1,62 @@
+{
+  "measured_at_utc": "2026-10-02T11:12:15.305Z",
+  "qualification": "not_qualified",
+  "scope": "Local full-character page decoding + glyph selection + dynamic layout + PNG. Page bytes pre-read; I/O not measured. Not Cloudflare CPU.",
+  "results": [
+    {
+      "fixture": "expression",
+      "count": 50,
+      "process_cpu_ms": 4.38,
+      "thread_cpu_ms": 2.48,
+      "wall_ms": 2.932538,
+      "page_fetches": 22,
+      "fetched_bytes": 5110786,
+      "selected_pixels": 79982,
+      "png_bytes": 25223
+    },
+    {
+      "fixture": "comparison",
+      "count": 50,
+      "process_cpu_ms": 4.06,
+      "thread_cpu_ms": 2.5,
+      "wall_ms": 2.4172480000000007,
+      "page_fetches": 14,
+      "fetched_bytes": 3418978,
+      "selected_pixels": 64302,
+      "png_bytes": 23041
+    },
+    {
+      "fixture": "long",
+      "count": 50,
+      "process_cpu_ms": 4.06,
+      "thread_cpu_ms": 3.12,
+      "wall_ms": 3.3393140000000003,
+      "page_fetches": 14,
+      "fetched_bytes": 3465708,
+      "selected_pixels": 111448,
+      "png_bytes": 38211
+    },
+    {
+      "fixture": "long_comparison",
+      "count": 50,
+      "process_cpu_ms": 4.06,
+      "thread_cpu_ms": 3.44,
+      "wall_ms": 3.5558640000000015,
+      "page_fetches": 13,
+      "fetched_bytes": 3282532,
+      "selected_pixels": 104533,
+      "png_bytes": 38677
+    },
+    {
+      "fixture": "coverage",
+      "count": 50,
+      "process_cpu_ms": 6.24,
+      "thread_cpu_ms": 4.36,
+      "wall_ms": 4.721314,
+      "page_fetches": 33,
+      "fetched_bytes": 7614150,
+      "selected_pixels": 122379,
+      "png_bytes": 38493
+    }
+  ]
+}

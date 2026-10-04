@@ -1,0 +1,33 @@
+{
+  "checked_at_utc": "2026-10-03T02:13:53.940Z",
+  "result": "passed",
+  "previous_goal_turn": "progress: local candidate implementation and measured evidence completed",
+  "requirements": {
+    "additional_methods": 5,
+    "prior_attempts": 25,
+    "remote_groups": 34,
+    "local_measurement_rows": 785,
+    "visualization": "5 interactive charts + source-backed tables and proposals"
+  },
+  "checks": [
+    "5 chart SVGs have visible dimensions and painted bar marks",
+    "Missing glyph CPU has null cells and no fabricated zero bars",
+    "SVG encoder groups remain distinct",
+    "Trial All/reset, preparation/assembly and all three independent comparisons render",
+    "Native source inspection opens",
+    "Attempt search narrows and resets",
+    "1280px/390px layouts: no horizontal page overflow; all five proposals present",
+    "Complete build and manifest hashes verified; single HTML renders all charts and filters without HTTP requests"
+  ],
+  "source_hashes_checked": 19,
+  "artifact": {
+    "file": "docs/performance/ai-png-performance.html",
+    "bytes": 2914812,
+    "sha256": "e4e2b4bafd73fd13e91e2f3497153a85a95223237e2191dd2933e0b2dfead379",
+    "app_id": "report:fac17dd1-47db-48e2-85d0-b0c9369b6641",
+    "snapshot_sha256": "97793d593eaa2182352a4cc4a9a607ade647888a6b9a59d436f086b5ffaff7e9"
+  },
+  "uncaught_browser_errors": [],
+  "new_remote_requests": 0,
+  "scope": "Artifact data and browser verification. No new CPU benchmark, provider account check, AI or Kakao test."
+}

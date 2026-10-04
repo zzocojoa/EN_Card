@@ -2,7 +2,6 @@ import { readFile } from 'node:fs/promises';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { recoverySchema, type RecoveryInput } from '../src/shared/model';
 import { runEngine } from '../src/worker/engine';
-import { disconnect } from '../src/worker/auth';
 import {
   decideRecovery,
   pausePreview,
@@ -328,6 +327,22 @@ async function applyRecoveryCauseGuardMigration(): Promise<void> {
     ).replaceAll('\n', ' '),
   );
 }
+async function disconnectBeforeAutomation(now: number): Promise<void> {
+  // Historical pre-0014 snapshot for the 0008 upgrade fixtures below. Current auth
+  // requires automation tables; the fixture's legacy adapter still removes the
+  // cancellation_reason assignment until migration 0011 adds that column.
+  await h.env.DB.batch([
+    h.env.DB.prepare(
+      "UPDATE credentials SET access_token=NULL,refresh_token=NULL,status='disconnected',version=version+1,lock_owner=NULL,lock_until=NULL,refresh_attempts=0,refresh_retry_at=NULL,refresh_failure=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL WHERE singleton=1",
+    ),
+    h.env.DB.prepare(
+      "UPDATE schedules SET enabled=0,reason='disconnected' WHERE reason IS NOT 'cancelled' AND reason IS NOT 'paused' AND (enabled=1 OR EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND d.schedule_version=schedules.version AND d.state IN ('pending','claimed','sending','retry_wait','blocked')))",
+    ),
+    h.env.DB.prepare(
+      "UPDATE deliveries SET state='cancelled',cancellation_reason='disconnected',error='자동 발송 연결 해제',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE state IN ('pending','claimed','retry_wait','blocked')",
+    ).bind(now),
+  ]);
+}
 async function legacyEditedDelivery(
   cancellation: 'edit' | 'disconnect' = 'edit',
 ): Promise<{ id: string; editedDeliveryId: string }> {
@@ -352,7 +367,7 @@ async function legacyEditedDelivery(
     "SELECT id FROM deliveries WHERE state='pending'",
   ).first<string>('id');
   expect(editedDeliveryId).toBeTruthy();
-  if (cancellation === 'disconnect') await disconnect(h.env, NOW + 1);
+  if (cancellation === 'disconnect') await disconnectBeforeAutomation(NOW + 1);
   await saveSchedule(
     {
       ...input,
@@ -498,7 +513,7 @@ it('R12 호출 직전 연결 해제의 과거 미분류 취소는 이미 보낸 
                           const result: unknown = await Reflect.apply(query.first, query, args);
                           if (!disconnected) {
                             disconnected = true;
-                            await disconnect(h.env, NOW);
+                            await disconnectBeforeAutomation(NOW);
                           }
                           return result;
                         };

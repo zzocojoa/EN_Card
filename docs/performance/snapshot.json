@@ -1,0 +1,1549 @@
+{
+  "id": "en-card-png-performance-20261003",
+  "surface": "report",
+  "title": "PNG 생성 시간 개선 실험",
+  "subtitle": "2026.10.02–10.03 · 원격 CPU와 로컬 비교를 구분한 기록",
+  "generatedAt": "2026-10-03T01:53:57.419Z",
+  "buildStatus": "creating",
+  "status": "reviewed",
+  "filters": [],
+  "queries": {
+    "remote": {
+      "rows": [
+        {
+          "trial": "svg",
+          "label": "SVG 기본 Wasm",
+          "stage": "render",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 12,
+          "captured": 12,
+          "missing": 0,
+          "min_ms": 49,
+          "max_ms": 258,
+          "over_10ms": 12,
+          "source": "AI_PNG_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "svg",
+          "label": "SVG CompressionStream",
+          "stage": "render",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 12,
+          "captured": 12,
+          "missing": 0,
+          "min_ms": 35,
+          "max_ms": 142,
+          "over_10ms": 12,
+          "source": "AI_PNG_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "svg",
+          "label": "인증·전달",
+          "stage": "collector",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 24,
+          "captured": 24,
+          "missing": 0,
+          "min_ms": 0,
+          "max_ms": 1,
+          "over_10ms": 0,
+          "source": "AI_PNG_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "bands",
+          "label": "구간 렌더",
+          "stage": "render_band",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 96,
+          "captured": 55,
+          "missing": 41,
+          "min_ms": 6,
+          "max_ms": 72,
+          "over_10ms": 41,
+          "source": "AI_PNG_BANDS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "bands",
+          "label": "수집·PNG 합성",
+          "stage": "collector_assembly",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 8,
+          "captured": 8,
+          "missing": 0,
+          "min_ms": 6,
+          "max_ms": 17,
+          "over_10ms": 6,
+          "source": "AI_PNG_BANDS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "atlas",
+          "label": "글자 읽기·조립",
+          "stage": "render",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 8,
+          "captured": 8,
+          "missing": 0,
+          "min_ms": 17,
+          "max_ms": 54,
+          "over_10ms": 8,
+          "source": "AI_PNG_ATLAS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "atlas",
+          "label": "인증·전달",
+          "stage": "collector",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 8,
+          "captured": 8,
+          "missing": 0,
+          "min_ms": 0,
+          "max_ms": 1,
+          "over_10ms": 0,
+          "source": "AI_PNG_ATLAS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "chunks",
+          "label": "글자 준비",
+          "stage": "glyphs",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 58,
+          "captured": 58,
+          "missing": 0,
+          "min_ms": 1,
+          "max_ms": 11,
+          "over_10ms": 1,
+          "source": "AI_PNG_ATLAS_CHUNKS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "chunks",
+          "label": "수집·조립",
+          "stage": "collector_assembly",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 8,
+          "captured": 8,
+          "missing": 0,
+          "min_ms": 13,
+          "max_ms": 28,
+          "over_10ms": 8,
+          "source": "AI_PNG_ATLAS_CHUNKS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "pipeline",
+          "label": "글자 준비",
+          "stage": "glyphs",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 84,
+          "captured": 58,
+          "missing": 26,
+          "min_ms": 3,
+          "max_ms": 28,
+          "over_10ms": 11,
+          "source": "AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "pipeline",
+          "label": "PNG 조립",
+          "stage": "assembly",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 8,
+          "captured": 3,
+          "missing": 5,
+          "min_ms": 16,
+          "max_ms": 35,
+          "over_10ms": 3,
+          "source": "AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "pipeline",
+          "label": "수집",
+          "stage": "collector",
+          "size": 1080,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 8,
+          "captured": 8,
+          "missing": 0,
+          "min_ms": 5,
+          "max_ms": 18,
+          "over_10ms": 2,
+          "source": "AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "trial": "optimized",
+          "label": "glyphs",
+          "stage": "glyphs",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 70,
+          "captured": 45,
+          "missing": 25,
+          "min_ms": 2,
+          "max_ms": 13,
+          "over_10ms": 2,
+          "source": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json",
+          "pointer": "/cpu/0"
+        },
+        {
+          "trial": "optimized",
+          "label": "assembly",
+          "stage": "assembly",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 5,
+          "captured": 1,
+          "missing": 4,
+          "min_ms": 11,
+          "max_ms": 11,
+          "over_10ms": 1,
+          "source": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json",
+          "pointer": "/cpu/1"
+        },
+        {
+          "trial": "optimized",
+          "label": "collector",
+          "stage": "collector",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 5,
+          "captured": 5,
+          "missing": 0,
+          "min_ms": 8,
+          "max_ms": 22,
+          "over_10ms": 3,
+          "source": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json",
+          "pointer": "/cpu/2"
+        },
+        {
+          "trial": "optimized",
+          "label": "glyphs",
+          "stage": "glyphs",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 70,
+          "captured": 43,
+          "missing": 27,
+          "min_ms": 2,
+          "max_ms": 13,
+          "over_10ms": 1,
+          "source": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json",
+          "pointer": "/cpu/3"
+        },
+        {
+          "trial": "optimized",
+          "label": "assembly",
+          "stage": "assembly",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 5,
+          "captured": 1,
+          "missing": 4,
+          "min_ms": 9,
+          "max_ms": 9,
+          "over_10ms": 0,
+          "source": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json",
+          "pointer": "/cpu/4"
+        },
+        {
+          "trial": "optimized",
+          "label": "collector",
+          "stage": "collector",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 5,
+          "captured": 5,
+          "missing": 0,
+          "min_ms": 6,
+          "max_ms": 27,
+          "over_10ms": 2,
+          "source": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json",
+          "pointer": "/cpu/5"
+        },
+        {
+          "trial": "lean",
+          "label": "glyphs",
+          "stage": "glyphs",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 36,
+          "captured": 0,
+          "missing": 36,
+          "min_ms": null,
+          "max_ms": null,
+          "over_10ms": 0,
+          "source": "AI_PNG_LEAN_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/0"
+        },
+        {
+          "trial": "lean",
+          "label": "assembly",
+          "stage": "assembly",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 5,
+          "captured": 5,
+          "missing": 0,
+          "min_ms": 6,
+          "max_ms": 19,
+          "over_10ms": 2,
+          "source": "AI_PNG_LEAN_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/1"
+        },
+        {
+          "trial": "lean",
+          "label": "collector",
+          "stage": "collector",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 5,
+          "captured": 5,
+          "missing": 0,
+          "min_ms": 6,
+          "max_ms": 9,
+          "over_10ms": 0,
+          "source": "AI_PNG_LEAN_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/2"
+        },
+        {
+          "trial": "lean",
+          "label": "glyphs",
+          "stage": "glyphs",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 36,
+          "captured": 0,
+          "missing": 36,
+          "min_ms": null,
+          "max_ms": null,
+          "over_10ms": 0,
+          "source": "AI_PNG_LEAN_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/3"
+        },
+        {
+          "trial": "lean",
+          "label": "assembly",
+          "stage": "assembly",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 5,
+          "captured": 5,
+          "missing": 0,
+          "min_ms": 5,
+          "max_ms": 30,
+          "over_10ms": 3,
+          "source": "AI_PNG_LEAN_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/4"
+        },
+        {
+          "trial": "lean",
+          "label": "collector",
+          "stage": "collector",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 5,
+          "captured": 5,
+          "missing": 0,
+          "min_ms": 4,
+          "max_ms": 15,
+          "over_10ms": 2,
+          "source": "AI_PNG_LEAN_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/5"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "glyphs",
+          "stage": "glyphs",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 52,
+          "captured": 26,
+          "missing": 26,
+          "min_ms": 2,
+          "max_ms": 10,
+          "over_10ms": 0,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/0"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "assembly",
+          "stage": "assembly",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 6,
+          "captured": 1,
+          "missing": 5,
+          "min_ms": 13,
+          "max_ms": 13,
+          "over_10ms": 1,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/1"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "collector",
+          "stage": "collector",
+          "size": 800,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 6,
+          "captured": 6,
+          "missing": 0,
+          "min_ms": 4,
+          "max_ms": 11,
+          "over_10ms": 1,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/2"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "glyphs",
+          "stage": "glyphs",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 52,
+          "captured": 48,
+          "missing": 4,
+          "min_ms": 2,
+          "max_ms": 18,
+          "over_10ms": 5,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/3"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "assembly",
+          "stage": "assembly",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 6,
+          "captured": 4,
+          "missing": 2,
+          "min_ms": 13,
+          "max_ms": 22,
+          "over_10ms": 4,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/4"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "collector",
+          "stage": "collector",
+          "size": 720,
+          "phase": "pipeline",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 6,
+          "captured": 6,
+          "missing": 0,
+          "min_ms": 7,
+          "max_ms": 15,
+          "over_10ms": 1,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/5"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "glyphs",
+          "stage": "glyphs",
+          "size": 800,
+          "phase": "single_glyph",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 36,
+          "captured": 34,
+          "missing": 2,
+          "min_ms": 1,
+          "max_ms": 18,
+          "over_10ms": 3,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/6"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "diagnostic_entry",
+          "stage": "diagnostic_entry",
+          "size": 800,
+          "phase": "single_glyph",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 36,
+          "captured": 36,
+          "missing": 0,
+          "min_ms": 0,
+          "max_ms": 1,
+          "over_10ms": 0,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/7"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "glyphs",
+          "stage": "glyphs",
+          "size": 720,
+          "phase": "single_glyph",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 36,
+          "captured": 36,
+          "missing": 0,
+          "min_ms": 1,
+          "max_ms": 12,
+          "over_10ms": 2,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/8"
+        },
+        {
+          "trial": "diagnostic",
+          "label": "diagnostic_entry",
+          "stage": "diagnostic_entry",
+          "size": 720,
+          "phase": "single_glyph",
+          "metric": "remote_invocation_cpu_ms",
+          "expected": 36,
+          "captured": 36,
+          "missing": 0,
+          "min_ms": 0,
+          "max_ms": 1,
+          "over_10ms": 0,
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json",
+          "pointer": "/cpu/9"
+        }
+      ],
+      "source": {
+        "kind": "local-files",
+        "label": "EN_Card 보존 실험 자료",
+        "executedAt": "2026-10-03T01:53:57.419Z",
+        "files": [
+          {
+            "path": "docs/evidence/AI_PNG_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_BANDS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_CHUNKS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_CHUNKS_LOCAL_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_CHUNKS_RESPONSES_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_LEAN_SUMMARY_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_COMPRESSION_RESEARCH_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_LEAN_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_BLIT_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_BLIT_CRC_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_ASSEMBLY_PROFILE_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_PAGE_LAYOUT_RESEARCH_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_PROFILE_2026-10-02.json"
+          }
+        ],
+        "caveats": [
+          "Remote CPU, local wall time, local process CPU, sampled profiles and calculated bytes are different metrics.",
+          "Missing samples are null, never zero or pass. Observed extrema are not confidence intervals or population maxima.",
+          "Do not compare trial-stage boundaries as an A/B effect. No numeric saving is predicted for proposals."
+        ],
+        "metricDefinitions": [
+          {
+            "label": "측정 범위",
+            "definition": "각 시험·단계·해상도별 수집 CPU의 최솟값/최댓값과 확보/기대 수. 누락 CPU는 null이며 단계별 범위가 다름."
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "원자료 → 재집계",
+            "detail": "scripts/build-automation-performance-data.mjs. history.json의 파일 SHA256과 source/pointer를 사용. 네트워크 재측정 없음."
+          }
+        ]
+      },
+      "methods": [
+        {
+          "language": "text",
+          "code": "각 시험·단계·해상도별 수집 CPU의 최솟값/최댓값과 확보/기대 수. 누락 CPU는 null이며 단계별 범위가 다름."
+        }
+      ]
+    },
+    "coverage": {
+      "rows": [
+        {
+          "id": "svg",
+          "label": "01 SVG·압축 대체",
+          "png": 24,
+          "expected": 48,
+          "captured": 48,
+          "missing": 0,
+          "note": "서로 다른 시점·구조의 시험. 단계 경계와 예제 구성이 달라 인과적 개선율을 계산하지 않음.",
+          "source": "AI_PNG_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "bands",
+          "label": "02 12구간 렌더",
+          "png": 8,
+          "expected": 104,
+          "captured": 63,
+          "missing": 41,
+          "note": "서로 다른 시점·구조의 시험. 단계 경계와 예제 구성이 달라 인과적 개선율을 계산하지 않음.",
+          "source": "AI_PNG_BANDS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "atlas",
+          "label": "03 사전 글자 조립",
+          "png": 8,
+          "expected": 16,
+          "captured": 16,
+          "missing": 0,
+          "note": "서로 다른 시점·구조의 시험. 단계 경계와 예제 구성이 달라 인과적 개선율을 계산하지 않음.",
+          "source": "AI_PNG_ATLAS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "chunks",
+          "label": "04 글자 준비 분리",
+          "png": 8,
+          "expected": 66,
+          "captured": 66,
+          "missing": 0,
+          "note": "서로 다른 시점·구조의 시험. 단계 경계와 예제 구성이 달라 인과적 개선율을 계산하지 않음.",
+          "source": "AI_PNG_ATLAS_CHUNKS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "pipeline",
+          "label": "05 수집·조립 분리",
+          "png": 8,
+          "expected": 100,
+          "captured": 69,
+          "missing": 31,
+          "note": "서로 다른 시점·구조의 시험. 단계 경계와 예제 구성이 달라 인과적 개선율을 계산하지 않음.",
+          "source": "AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "optimized",
+          "label": "06 작은 페이지·800/720·RLE",
+          "png": 10,
+          "expected": 160,
+          "captured": 100,
+          "missing": 60,
+          "note": "저장된 요약의 중복·비인증 제외 규칙을 사용.",
+          "source": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json"
+        },
+        {
+          "id": "lean",
+          "label": "07 요청·묶음 조정",
+          "png": 10,
+          "expected": 92,
+          "captured": 20,
+          "missing": 72,
+          "note": "저장된 요약의 중복·비인증 제외 규칙을 사용.",
+          "source": "AI_PNG_LEAN_SUMMARY_2026-10-03.json"
+        },
+        {
+          "id": "diagnostic",
+          "label": "08 최초 조립·준비 진단",
+          "png": 12,
+          "expected": 272,
+          "captured": 233,
+          "missing": 39,
+          "note": "전체 PNG12개 + 준비 단독72개. 진단 계측 오버헤드 포함.",
+          "source": "AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json"
+        }
+      ],
+      "source": {
+        "kind": "local-files",
+        "label": "EN_Card 보존 실험 자료",
+        "executedAt": "2026-10-03T01:53:57.419Z",
+        "files": [
+          {
+            "path": "docs/evidence/AI_PNG_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_BANDS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_CHUNKS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_CHUNKS_LOCAL_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_CHUNKS_RESPONSES_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_LEAN_SUMMARY_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_DIAGNOSTIC_SUMMARY_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_COMPRESSION_RESEARCH_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_LEAN_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_BLIT_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_BLIT_CRC_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_ATLAS_ASSEMBLY_PROFILE_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_PAGE_LAYOUT_RESEARCH_2026-10-02.json"
+          },
+          {
+            "path": "docs/evidence/AI_PNG_PROFILE_2026-10-02.json"
+          }
+        ],
+        "caveats": [
+          "Remote CPU, local wall time, local process CPU, sampled profiles and calculated bytes are different metrics.",
+          "Missing samples are null, never zero or pass. Observed extrema are not confidence intervals or population maxima.",
+          "Do not compare trial-stage boundaries as an A/B effect. No numeric saving is predicted for proposals."
+        ],
+        "metricDefinitions": [
+          {
+            "label": "측정 범위",
+            "definition": "기대 이벤트에서 확보 이벤트를 뺀 누락 수. 진단 시험은 단독 준비72개를 포함함."
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "원자료 → 재집계",
+            "detail": "scripts/build-automation-performance-data.mjs. history.json의 파일 SHA256과 source/pointer를 사용. 네트워크 재측정 없음."
+          }
+        ]
+      },
+      "methods": [
+        {
+          "language": "text",
+          "code": "기대 이벤트에서 확보 이벤트를 뺀 누락 수. 진단 시험은 단독 준비72개를 포함함."
+        }
+      ]
+    },
+    "optimized": {
+      "rows": [
+        {
+          "variant": "baseline",
+          "label": "기존1080",
+          "preparation_ms": 4.1543648000000015,
+          "assembly_ms": 2.9043388000000085,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "pages64",
+          "label": "64슬롯",
+          "preparation_ms": 3.9224547999999957,
+          "assembly_ms": 2.7689540000000235,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "pages32",
+          "label": "32슬롯",
+          "preparation_ms": 3.4554875999999894,
+          "assembly_ms": 2.528396800000013,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "compact",
+          "label": "본문 복사 감소",
+          "preparation_ms": 3.369298399999989,
+          "assembly_ms": 2.589217599999996,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "size800",
+          "label": "800 직접 생성",
+          "preparation_ms": 3.637614799999967,
+          "assembly_ms": 1.6730908000000273,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "size720",
+          "label": "720 직접 생성",
+          "preparation_ms": 3.2305195999999556,
+          "assembly_ms": 1.4127551999999888,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "rle",
+          "label": "RLE",
+          "preparation_ms": 3.703990399999988,
+          "assembly_ms": 2.348851200000019,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "combined800_64",
+          "label": "800 통합·64슬롯",
+          "preparation_ms": 3.105084800000019,
+          "assembly_ms": 1.4587239999999766,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "combined800_32",
+          "label": "800 통합·32슬롯",
+          "preparation_ms": 3.186227600000013,
+          "assembly_ms": 1.4540648000000036,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "combined720_64",
+          "label": "720 통합·64슬롯",
+          "preparation_ms": 2.933828000000012,
+          "assembly_ms": 1.2897620000000096,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "variant": "combined720_32",
+          "label": "720 통합·32슬롯",
+          "preparation_ms": 3.061037200000006,
+          "assembly_ms": 1.2860075999999827,
+          "fixtures": 5,
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        }
+      ],
+      "source": {
+        "kind": "local-files",
+        "label": "EN_Card 보존 실험 자료",
+        "executedAt": "2026-10-03T01:53:57.419Z",
+        "files": [
+          {
+            "path": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+          }
+        ],
+        "caveats": [
+          "Remote CPU, local wall time, local process CPU, sampled profiles and calculated bytes are different metrics.",
+          "Missing samples are null, never zero or pass. Observed extrema are not confidence intervals or population maxima.",
+          "Do not compare trial-stage boundaries as an A/B effect. No numeric saving is predicted for proposals."
+        ],
+        "metricDefinitions": [
+          {
+            "label": "측정 범위",
+            "definition": "같은 로컬 비교에서5예제의 예열 후 경과 시간 평균을 동일 가중 평균. 준비는 하위 호출 합계, 조립과 별도 측정이며 합산하지 않음."
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "원자료 → 재집계",
+            "detail": "scripts/build-automation-performance-data.mjs. history.json의 파일 SHA256과 source/pointer를 사용. 네트워크 재측정 없음."
+          }
+        ]
+      },
+      "methods": [
+        {
+          "language": "text",
+          "code": "같은 로컬 비교에서5예제의 예열 후 경과 시간 평균을 동일 가중 평균. 준비는 하위 호출 합계, 조립과 별도 측정이며 합산하지 않음."
+        }
+      ]
+    },
+    "lean": {
+      "rows": [
+        {
+          "variant": "optimized",
+          "label": "기존3개",
+          "wall_ms": 16.387765200000008,
+          "samples": 404,
+          "n": 250,
+          "source": "AI_PNG_LEAN_LOCAL_2026-10-03.json"
+        },
+        {
+          "variant": "lean3",
+          "label": "직접 경로·3개",
+          "wall_ms": 17.1750699999999,
+          "samples": 442,
+          "n": 250,
+          "source": "AI_PNG_LEAN_LOCAL_2026-10-03.json"
+        },
+        {
+          "variant": "lean4",
+          "label": "직접 경로·4개",
+          "wall_ms": 13.164460000000014,
+          "samples": 323,
+          "n": 250,
+          "source": "AI_PNG_LEAN_LOCAL_2026-10-03.json"
+        },
+        {
+          "variant": "lean6",
+          "label": "직접 경로·6개",
+          "wall_ms": 9.852159599999919,
+          "samples": 258,
+          "n": 250,
+          "source": "AI_PNG_LEAN_LOCAL_2026-10-03.json"
+        },
+        {
+          "variant": "lean8",
+          "label": "직접 경로·8개",
+          "wall_ms": 8.807895200000027,
+          "samples": 259,
+          "n": 250,
+          "source": "AI_PNG_LEAN_LOCAL_2026-10-03.json"
+        }
+      ],
+      "source": {
+        "kind": "local-files",
+        "label": "EN_Card 보존 실험 자료",
+        "executedAt": "2026-10-03T01:53:57.419Z",
+        "files": [
+          {
+            "path": "AI_PNG_LEAN_LOCAL_2026-10-03.json"
+          }
+        ],
+        "caveats": [
+          "Remote CPU, local wall time, local process CPU, sampled profiles and calculated bytes are different metrics.",
+          "Missing samples are null, never zero or pass. Observed extrema are not confidence intervals or population maxima.",
+          "Do not compare trial-stage boundaries as an A/B effect. No numeric saving is predicted for proposals."
+        ],
+        "metricDefinitions": [
+          {
+            "label": "측정 범위",
+            "definition": "모의 하위 바인딩 수집250회 평균 경과 시간. 네트워크·하위 Worker CPU 제외."
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "원자료 → 재집계",
+            "detail": "scripts/build-automation-performance-data.mjs. history.json의 파일 SHA256과 source/pointer를 사용. 네트워크 재측정 없음."
+          }
+        ]
+      },
+      "methods": [
+        {
+          "language": "text",
+          "code": "모의 하위 바인딩 수집250회 평균 경과 시간. 네트워크·하위 Worker CPU 제외."
+        }
+      ]
+    },
+    "blit": {
+      "rows": [
+        {
+          "experiment": "screening",
+          "variant": "scalar",
+          "label": "기존",
+          "first_median_ms": 13.233500000002095,
+          "warm_mean_ms": 4.2439714999999385,
+          "first_min_ms": 10.08770000000004,
+          "first_max_ms": 25.51089999999931,
+          "fresh_instances": 20,
+          "first_samples": 532,
+          "warm_samples": 1938,
+          "source": "AI_PNG_BLIT_LOCAL_2026-10-03.json"
+        },
+        {
+          "experiment": "screening",
+          "variant": "packed",
+          "label": "4픽셀 묶음",
+          "first_median_ms": 14.339200000000346,
+          "warm_mean_ms": 4.216738499999986,
+          "first_min_ms": 11.35570000000007,
+          "first_max_ms": 16.807300000000396,
+          "fresh_instances": 20,
+          "first_samples": 345,
+          "warm_samples": 1854,
+          "source": "AI_PNG_BLIT_LOCAL_2026-10-03.json"
+        },
+        {
+          "experiment": "screening",
+          "variant": "spans",
+          "label": "실행 중 구간 복사",
+          "first_median_ms": 15.174299999999675,
+          "warm_mean_ms": 4.555713249999933,
+          "first_min_ms": 11.688200000000506,
+          "first_max_ms": 17.57250000000022,
+          "fresh_instances": 20,
+          "first_samples": 367,
+          "warm_samples": 2307,
+          "source": "AI_PNG_BLIT_LOCAL_2026-10-03.json"
+        },
+        {
+          "experiment": "isolation",
+          "variant": "scalar",
+          "label": "기존",
+          "first_median_ms": 13.45835000000261,
+          "warm_mean_ms": 4.284566499999942,
+          "first_min_ms": 10.386300000005576,
+          "first_max_ms": 23.60819999999967,
+          "fresh_instances": 40,
+          "first_samples": 1110,
+          "warm_samples": 3726,
+          "source": "AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+        },
+        {
+          "experiment": "isolation",
+          "variant": "extracted",
+          "label": "함수 분리",
+          "first_median_ms": 13.381749999998647,
+          "warm_mean_ms": 4.264682749999895,
+          "first_min_ms": 10.301400000003923,
+          "first_max_ms": 17.358799999994517,
+          "fresh_instances": 40,
+          "first_samples": 610,
+          "warm_samples": 3801,
+          "source": "AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+        },
+        {
+          "experiment": "isolation",
+          "variant": "packed",
+          "label": "4픽셀 묶음",
+          "first_median_ms": 14.70089999999982,
+          "warm_mean_ms": 4.245075250000023,
+          "first_min_ms": 10.384200000000419,
+          "first_max_ms": 18.525699999998324,
+          "fresh_instances": 40,
+          "first_samples": 726,
+          "warm_samples": 3713,
+          "source": "AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+        },
+        {
+          "experiment": "crc",
+          "variant": "scalar",
+          "label": "기존",
+          "first_median_ms": 13.823099999997794,
+          "warm_mean_ms": 4.295476625000098,
+          "first_min_ms": 10.346599999997125,
+          "first_max_ms": 23.280499999999847,
+          "fresh_instances": 40,
+          "first_samples": 1181,
+          "warm_samples": 3974,
+          "source": "AI_PNG_BLIT_CRC_LOCAL_2026-10-03.json"
+        },
+        {
+          "experiment": "crc",
+          "variant": "extracted",
+          "label": "함수 분리",
+          "first_median_ms": 13.320449999997436,
+          "warm_mean_ms": 4.263458375000129,
+          "first_min_ms": 10.10000000000582,
+          "first_max_ms": 16.504000000000815,
+          "fresh_instances": 40,
+          "first_samples": 603,
+          "warm_samples": 3823,
+          "source": "AI_PNG_BLIT_CRC_LOCAL_2026-10-03.json"
+        },
+        {
+          "experiment": "crc",
+          "variant": "native",
+          "label": "함수 분리 + native CRC",
+          "first_median_ms": 12.740799999998671,
+          "warm_mean_ms": 4.288688874999935,
+          "first_min_ms": 9.66189999999915,
+          "first_max_ms": 16.016600000002654,
+          "fresh_instances": 40,
+          "first_samples": 562,
+          "warm_samples": 3123,
+          "source": "AI_PNG_BLIT_CRC_LOCAL_2026-10-03.json"
+        }
+      ],
+      "source": {
+        "kind": "local-files",
+        "label": "EN_Card 보존 실험 자료",
+        "executedAt": "2026-10-03T01:53:57.419Z",
+        "files": [
+          {
+            "path": "AI_PNG_BLIT_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "AI_PNG_BLIT_CRC_LOCAL_2026-10-03.json"
+          }
+        ],
+        "caveats": [
+          "Remote CPU, local wall time, local process CPU, sampled profiles and calculated bytes are different metrics.",
+          "Missing samples are null, never zero or pass. Observed extrema are not confidence intervals or population maxima.",
+          "Do not compare trial-stage boundaries as an A/B effect. No numeric saving is predicted for proposals."
+        ],
+        "metricDefinitions": [
+          {
+            "label": "측정 범위",
+            "definition": "각 독립 비교별 첫 조립 중앙값과 반복20회 평균. 첫 표본40/20개, 반복800/400개. 호스트 경과 시간이며 원격 CPU가 아님."
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "원자료 → 재집계",
+            "detail": "scripts/build-automation-performance-data.mjs. history.json의 파일 SHA256과 source/pointer를 사용. 네트워크 재측정 없음."
+          }
+        ]
+      },
+      "methods": [
+        {
+          "language": "text",
+          "code": "각 독립 비교별 첫 조립 중앙값과 반복20회 평균. 첫 표본40/20개, 반복800/400개. 호스트 경과 시간이며 원격 CPU가 아님."
+        }
+      ]
+    },
+    "attempts": {
+      "rows": [
+        {
+          "id": "A01",
+          "method": "SVG + Wasm 렌더",
+          "status": "원격 실패",
+          "result": "기본 비용 확인; SVG 생성은 제외한 하한 시험",
+          "source": "AI_PNG_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "A02",
+          "method": "CompressionStream 대체 압축",
+          "status": "원격 실패",
+          "result": "RGBA 보존. 기본 방식과 모두10ms 초과",
+          "source": "AI_PNG_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "A03",
+          "method": "zlib level1 압축",
+          "status": "로컬·후속 통합",
+          "result": "압축률을 낮춘 손실 없는 후보",
+          "source": "AI_PNG_PROFILE_2026-10-02.json"
+        },
+        {
+          "id": "A04",
+          "method": "12개 세로 구간 + 합성",
+          "status": "원격 실패",
+          "result": "일부 구간/합성 초과; 구간41개 로그 누락",
+          "source": "AI_PNG_BANDS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "A05",
+          "method": "Wasm 초기화 위치 이동",
+          "status": "구간 시험에 포함",
+          "result": "독립 효과를 분리 측정하지 않음",
+          "source": "AI_CARD_AUTOMATION_FEASIBILITY.md"
+        },
+        {
+          "id": "A06",
+          "method": "사전 글자 atlas + indexed PNG",
+          "status": "원격 실패",
+          "result": "폰트 path/raster 계산을 사전 처리로 이동",
+          "source": "AI_PNG_ATLAS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "A07",
+          "method": "글자 준비 Worker 분리",
+          "status": "원격 실패",
+          "result": "준비는 대부분10ms 이내; 수집·조립8회 모두 초과",
+          "source": "AI_PNG_ATLAS_CHUNKS_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "A08",
+          "method": "조립 배치 중복 계산 제거",
+          "status": "로컬 혼합",
+          "result": "5예제에서 일관된 속도 개선 없음",
+          "source": "AI_PNG_ATLAS_ASSEMBLY_PROFILE_2026-10-02.json"
+        },
+        {
+          "id": "A09",
+          "method": "수집·최종 조립 분리",
+          "status": "원격 실패",
+          "result": "확보한 조립3회 모두 초과;31개 생성 로그 누락",
+          "source": "AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl"
+        },
+        {
+          "id": "A10",
+          "method": "64/32슬롯 작은 글자 페이지",
+          "status": "로컬·원격 통합",
+          "result": "읽기 바이트 감소; 조회·묶음 변경이 함께 포함",
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "id": "A11",
+          "method": "본문 단일 청크 재사용·복사 감소",
+          "status": "로컬·원격 통합",
+          "result": "실제 바이트 상한 검증 유지",
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "id": "A12",
+          "method": "800×800 직접 생성",
+          "status": "로컬·원격 통합",
+          "result": "픽셀45.1% 감소는 계산값이며 CPU 감소율 아님",
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "id": "A13",
+          "method": "720×720 직접 생성",
+          "status": "로컬·원격 통합",
+          "result": "픽셀55.6% 감소; 실제 카카오 작은 글자 품질 미검증",
+          "source": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+        },
+        {
+          "id": "A14",
+          "method": "Z_RLE 압축 전략",
+          "status": "로컬 채택·원격 통합",
+          "result": "1080 압축 구간만0.025~0.154ms 감소",
+          "source": "AI_PNG_COMPRESSION_RESEARCH_2026-10-02.json"
+        },
+        {
+          "id": "A15",
+          "method": "Z_HUFFMAN_ONLY",
+          "status": "로컬 제외",
+          "result": "기존보다 느림",
+          "source": "AI_PNG_COMPRESSION_RESEARCH_2026-10-02.json"
+        },
+        {
+          "id": "A16",
+          "method": "Z_FIXED",
+          "status": "로컬 보류",
+          "result": "일관된 개선 없음",
+          "source": "AI_PNG_COMPRESSION_RESEARCH_2026-10-02.json"
+        },
+        {
+          "id": "A17",
+          "method": "memLevel9",
+          "status": "로컬 보류",
+          "result": "일관된 개선 없음",
+          "source": "AI_PNG_COMPRESSION_RESEARCH_2026-10-02.json"
+        },
+        {
+          "id": "A18",
+          "method": "level0 무압축",
+          "status": "로컬 제외",
+          "result": "1080 PNG1,168,304B로 앱1MiB 초과",
+          "source": "AI_PNG_COMPRESSION_RESEARCH_2026-10-02.json"
+        },
+        {
+          "id": "A19",
+          "method": "페이지·복사·해상도·RLE 통합",
+          "status": "원격 실패",
+          "result": "720 조립9ms 한 표본만으로 전체 통과 불가",
+          "source": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json"
+        },
+        {
+          "id": "A20",
+          "method": "요청 경로 중복 복사 제거",
+          "status": "개별 효과 미입증",
+          "result": "3개 묶음 대조에서 로컬 수집 시간이 길어짐",
+          "source": "AI_PNG_LEAN_LOCAL_2026-10-03.json"
+        },
+        {
+          "id": "A21",
+          "method": "준비 묶음3→4/6/8 비교",
+          "status": "6개 선택·원격 실패",
+          "result": "기대 실행160→92; 준비 작업량·CPU와 교환",
+          "source": "AI_PNG_LEAN_SUMMARY_2026-10-03.json"
+        },
+        {
+          "id": "A22",
+          "method": "4픽셀 묶음 쓰기",
+          "status": "로컬 제외",
+          "result": "함수 분리 대조보다 첫 경과 시간 길어짐",
+          "source": "AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+        },
+        {
+          "id": "A23",
+          "method": "실행 중 글자 구간 복사",
+          "status": "로컬 제외",
+          "result": "구간 준비·임시 할당 비용이 남음",
+          "source": "AI_PNG_BLIT_LOCAL_2026-10-03.json"
+        },
+        {
+          "id": "A24",
+          "method": "픽셀 반복 함수 분리",
+          "status": "로컬 후보",
+          "result": "작은 중앙값 차이; 표본 감소는 실제 CPU 감소율 아님",
+          "source": "AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+        },
+        {
+          "id": "A25",
+          "method": "native CRC + 함수 분리",
+          "status": "로컬 후보·원격 미검증",
+          "result": "같은 마지막 실험 첫 중앙값13.82→12.74; 반복 시간 거의 같음",
+          "source": "AI_PNG_BLIT_CRC_LOCAL_2026-10-03.json"
+        }
+      ],
+      "source": {
+        "kind": "local-files",
+        "label": "EN_Card 보존 실험 자료",
+        "executedAt": "2026-10-03T01:53:57.419Z",
+        "files": [
+          {
+            "path": "AI_PNG_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "AI_PNG_PROFILE_2026-10-02.json"
+          },
+          {
+            "path": "AI_PNG_BANDS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "AI_CARD_AUTOMATION_FEASIBILITY.md"
+          },
+          {
+            "path": "AI_PNG_ATLAS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "AI_PNG_ATLAS_CHUNKS_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "AI_PNG_ATLAS_ASSEMBLY_PROFILE_2026-10-02.json"
+          },
+          {
+            "path": "AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl"
+          },
+          {
+            "path": "AI_PNG_OPTIMIZED_2026-10-02_LOCAL.json"
+          },
+          {
+            "path": "AI_PNG_COMPRESSION_RESEARCH_2026-10-02.json"
+          },
+          {
+            "path": "AI_PNG_OPTIMIZED_SUMMARY_2026-10-02.json"
+          },
+          {
+            "path": "AI_PNG_LEAN_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "AI_PNG_LEAN_SUMMARY_2026-10-03.json"
+          },
+          {
+            "path": "AI_PNG_BLIT_ISOLATION_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "AI_PNG_BLIT_LOCAL_2026-10-03.json"
+          },
+          {
+            "path": "AI_PNG_BLIT_CRC_LOCAL_2026-10-03.json"
+          }
+        ],
+        "caveats": [
+          "Remote CPU, local wall time, local process CPU, sampled profiles and calculated bytes are different metrics.",
+          "Missing samples are null, never zero or pass. Observed extrema are not confidence intervals or population maxima.",
+          "Do not compare trial-stage boundaries as an A/B effect. No numeric saving is predicted for proposals."
+        ],
+        "metricDefinitions": [
+          {
+            "label": "측정 범위",
+            "definition": "시도25개를 기준·개별 후보·통합 변경으로 기록. 동일 원격 시험이 여러 변경에 연결되며 PNG 수를 중복 합산하지 않음."
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "원자료 → 재집계",
+            "detail": "scripts/build-automation-performance-data.mjs. history.json의 파일 SHA256과 source/pointer를 사용. 네트워크 재측정 없음."
+          }
+        ]
+      },
+      "methods": [
+        {
+          "language": "text",
+          "code": "시도25개를 기준·개별 후보·통합 변경으로 기록. 동일 원격 시험이 여러 변경에 연결되며 PNG 수를 중복 합산하지 않음."
+        }
+      ]
+    },
+    "proposals": {
+      "rows": [
+        {
+          "id": "N1",
+          "priority": 1,
+          "title": "내부 fetch/Response를 바이너리 RPC로 비교",
+          "target": "수집",
+          "novelty": "요청 복사만 제거했던 A20과 달리 HTTP 메시지·본문 스트림 경계를 없애는 후보",
+          "mechanism": "WorkerEntrypoint의 제한된 메서드로 프레임 ArrayBuffer를 반환하고 수집한다. 직접 바이너리 반환과 기존 fetch를 같은 묶음 수로 대조한다.",
+          "evidence": "수집 프로파일에서 fetch·readCompactBody·read·Request가 큰 비중. atlas-pipeline.ts의 fetch/본문 읽기 경계가 남아 있음.",
+          "risk": "RPC 직렬화·복사 비용이 생길 수 있다. 무복사나 CPU 한도 우회를 가정하지 않는다. 공개 메서드·Service Binding 권한과 버퍼4MiB 상한 유지.",
+          "test": "같은72개 준비 묶음·10카드로 첫/반복 수집 비교. 전송형 오류·초과·누락 거부, byte parity, 전체 호출 수 확인.",
+          "code": "experiments/automation-png/atlas-pipeline.ts",
+          "reference": "https://developers.cloudflare.com/workers/runtime-apis/rpc/",
+          "estimated_ms": null,
+          "status": "미구현 가설"
+        },
+        {
+          "id": "N2",
+          "priority": 2,
+          "title": "ATC 메타데이터를 고정 길이 바이너리 레코드로",
+          "target": "준비·조립",
+          "novelty": "ATG 페이지는 이미 바이너리다. 새 대상은 JSON을 쓰는 ATC 전송 프레임과 문자열 글자 키다.",
+          "mechanism": "weight/size/codepoint를 정수 ID로 나타내고 offset·width·height·advance를 버전 있는 레코드로 저장해 TextEncoder/Decoder·JSON.parse/stringify를 줄인다. key.split 감소는 정수 ID를 ATG 요청·배치 경로까지 전달할 때의 추가 효과다.",
+          "evidence": "atlas-chunks.ts의 packAtlasChunk/unpackAtlasChunk가 JSON을 왕복하고 각 레코드를 검증한다.",
+          "risk": "레코드 범위·중복 ID·버전·픽셀0..31 검사를 그대로 해야 한다. endian·배열 byteOffset 오류 주의.",
+          "test": "동적 한글·7색·비정렬 배열·중복/누락/잘린 레코드 거부, PNG byte parity. 첫 조립 포함 대조.",
+          "code": "experiments/automation-png/atlas-chunks.ts",
+          "reference": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView",
+          "estimated_ms": null,
+          "status": "미구현 가설"
+        },
+        {
+          "id": "N3",
+          "priority": 3,
+          "title": "여러 글자의 압축 해제를 작은 블록으로 묶기",
+          "target": "글자 준비",
+          "novelty": "페이지 슬롯·Worker 호출 묶음 조정과 달리 글자별 zlib 스트림의 압축 단위를 바꾼다.",
+          "mechanism": "페이지 안의4/8개 글자 픽셀을 하나의 압축 블록에 묶고 요청된 블록을 요청당 한 번만 해제한다. 블록별 오프셋으로 필요한 글자만 선택한다.",
+          "evidence": "decodeAtlasPage는 필요한 key마다 inflateSync를 새로 호출하고 픽셀을 다시 합친다.",
+          "risk": "필요 없는 글자도 해제하므로 총 출력 바이트가 증가할 수 있다. 네이티브 호출 감소가 총 CPU 감소를 보장하지 않는다.",
+          "test": "단일글자·밀집한글·드문한글을 분리 비교; inflate 횟수·입출력 바이트·cold CPU·메모리 상한 및 손상 블록 거부.",
+          "code": "experiments/automation-png/atlas-pages.ts",
+          "reference": "https://nodejs.org/api/zlib.html#zlibinflatesyncbuffer-options",
+          "estimated_ms": null,
+          "status": "미구현 가설"
+        },
+        {
+          "id": "N4",
+          "priority": 4,
+          "title": "글자 그리기만 작은 Wasm SIMD 함수로",
+          "target": "조립 그리기",
+          "novelty": "전체 SVG를 처리하던 resvg나 JS4픽셀 연산과 달리 검증된 glyph 복사·팔레트 합성만 옮긴다.",
+          "mechanism": "검증된 좌표와 알파 배열을 한 번 넘기고16바이트 SIMD 마스크로 투명값을 보존하며 합성한다. 압축·PNG 검증은 기존 경로 유지.",
+          "evidence": "첫 조립 paintText 표본 비중이 높았고 JS packed는 시간 개선 실패. Workers는 Wasm SIMD를 지원한다.",
+          "risk": "Wasm 시작·메모리 복사로 이득이 사라질 수 있다. 캐시 적중만으로 합격하지 않으며 새 isolate의 모듈 시작·인스턴스 생성 비용과 각 요청의 입력/출력 복사 비용을 구분해 측정한다.",
+          "test": "첫 인스턴스의 모듈 시작·복사 포함 경과/CPU, 모든 픽셀 일치·겹침·경계. 같은800/720·전체호출 비교.",
+          "code": "experiments/automation-png/atlas-blit.ts",
+          "reference": "https://developers.cloudflare.com/workers/runtime-apis/webassembly/#simd",
+          "estimated_ms": null,
+          "status": "미구현 가설"
+        },
+        {
+          "id": "N5",
+          "priority": 5,
+          "title": "동일한 연속 행에만 PNG Up 필터 비교",
+          "target": "최종 압축",
+          "novelty": "압축 level/strategy를 비교한 A14~18과 달리 압축 전 scanline 표현을 바꾸는 후보",
+          "mechanism": "동일 행에만 필터2(Up)를 써 차분을0으로 만들고 나머지는 기존None을 유지한다. 모든 필터 탐색을 수행하지 않는다.",
+          "evidence": "현재 scanline은 필터None을 사용한다. PNG 규격은 행별 필터 선택을 허용하나 indexed-color에는 보통None을 권한다.",
+          "risk": "여백은 이미0이며 추가 이득이 작을 수 있다. 행 비교 비용이 압축 절감보다 크면 즉시 제외한다. 손실 없는 픽셀 동일성 기준.",
+          "test": "filter+deflate+pack 합계를 기존None과 대조; PNG 전체 바이트가 아닌 decoded 픽셀 일치. 동적 예제·decode 오류 검사.",
+          "code": "experiments/automation-png/atlas.ts",
+          "reference": "https://www.w3.org/TR/png-3/#12Filter-selection",
+          "estimated_ms": null,
+          "status": "미구현 가설"
+        }
+      ],
+      "source": {
+        "kind": "local-files",
+        "label": "EN_Card 보존 실험 자료",
+        "executedAt": "2026-10-03T01:53:57.419Z",
+        "files": [
+          {
+            "path": "experiments/automation-png/atlas-pipeline.ts"
+          },
+          {
+            "path": "experiments/automation-png/atlas-chunks.ts"
+          },
+          {
+            "path": "experiments/automation-png/atlas-pages.ts"
+          },
+          {
+            "path": "experiments/automation-png/atlas-blit.ts"
+          },
+          {
+            "path": "experiments/automation-png/atlas.ts"
+          }
+        ],
+        "caveats": [
+          "Remote CPU, local wall time, local process CPU, sampled profiles and calculated bytes are different metrics.",
+          "Missing samples are null, never zero or pass. Observed extrema are not confidence intervals or population maxima.",
+          "Do not compare trial-stage boundaries as an A/B effect. No numeric saving is predicted for proposals."
+        ],
+        "metricDefinitions": [
+          {
+            "label": "측정 범위",
+            "definition": "제안5개는 현재 코드와 공식 API/규격에서 도출한 미구현 가설. 예상 절감 ms는 모두 null."
+          }
+        ],
+        "evidenceFlow": [
+          {
+            "title": "원자료 → 재집계",
+            "detail": "scripts/build-automation-performance-data.mjs. history.json의 파일 SHA256과 source/pointer를 사용. 네트워크 재측정 없음."
+          }
+        ]
+      },
+      "methods": [
+        {
+          "language": "text",
+          "code": "제안5개는 현재 코드와 공식 API/규격에서 도출한 미구현 가설. 예상 절감 ms는 모두 null."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "measured_at_utc": "2026-10-02T10:52:41.289Z",
+  "environment": {
+    "runtime": "v22.22.2",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12400F"
+  },
+  "scope": "Local card validation, dynamic layout, sprite blit, indexed PNG, PNG validation. Build and atlas loading excluded. Example character subset only; not full alphabet coverage or Cloudflare CPU.",
+  "qualification": "not_qualified",
+  "raster_difference": "Same fonts/layout. Independent character advances, integer positions and 31 alpha levels; no kerning/ligatures. Needs visual assessment and broader charset/storage validation.",
+  "atlas": {
+    "styles": 34,
+    "glyphs": 4114,
+    "pixels_bytes": 5621414,
+    "compressed_pixels_bytes": 553428,
+    "metadata_bytes": 396262,
+    "build_ms": 724.1152
+  },
+  "rows": [
+    {
+      "fixture": "expression",
+      "iterations": 100,
+      "process_cpu_ms": 2.35,
+      "thread_cpu_ms": 1.73,
+      "wall_ms": 1.8759680000000003,
+      "bytes": 25223
+    },
+    {
+      "fixture": "comparison",
+      "iterations": 100,
+      "process_cpu_ms": 1.87,
+      "thread_cpu_ms": 1.72,
+      "wall_ms": 1.7136210000000005,
+      "bytes": 23041
+    },
+    {
+      "fixture": "long",
+      "iterations": 100,
+      "process_cpu_ms": 2.34,
+      "thread_cpu_ms": 2.18,
+      "wall_ms": 2.4123329999999985,
+      "bytes": 38211
+    },
+    {
+      "fixture": "long_comparison",
+      "iterations": 100,
+      "process_cpu_ms": 2.5,
+      "thread_cpu_ms": 2.35,
+      "wall_ms": 2.433336999999999,
+      "bytes": 38677
+    }
+  ]
+}

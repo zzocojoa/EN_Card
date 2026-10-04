@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "en-card-automation",
+  "main": "src/automation/worker.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": ".automation-fonts",
+    "binding": "FONT_ASSETS",
+    "run_worker_first": true,
+  },
+  "durable_objects": { "bindings": [{ "name": "AUTOMATION", "class_name": "CardAutomation" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["CardAutomation"] }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "en-card",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "kv_namespaces": [{ "binding": "CARD_IMAGES", "id": "00000000000000000000000000000000" }],
+  "vars": {
+    "APP_ORIGIN": "https://en-card.YOUR-SUBDOMAIN.workers.dev",
+    "COST_MODE": "free_only",
+    "SEND_MODE": "dry_run",
+    "AUTOMATION_MODE": "off",
+    "AI_FREE_CONFIRMED": "unconfirmed",
+  },
+  "observability": { "enabled": false },
+}

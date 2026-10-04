@@ -1,0 +1,2202 @@
+{
+  "measured_at_utc": "2026-10-02T14:27:36.953Z",
+  "qualification": "not_qualified",
+  "scope": "Local Node warm phase measurements, not remote CPU. All cases prewarmed; 5 counterbalanced rounds of 10 repetitions. Pre-read assets wrapped in local Response streams; startup and network excluded. Preparation includes all glyph chunks, assembly receives prepared bundle. Mean phases are not request percentiles. pages-only variants also require changing the chunk size to stay inside invocation limits.",
+  "results": [
+    {
+      "variant": "baseline",
+      "fixture": "expression",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 22,
+      "invocations": 13,
+      "fetched_bytes": 5110786,
+      "bundle_bytes": 42520,
+      "png_bytes": 25223,
+      "sha256": "806591fcb51be7ea1473f4f088fff8358ccc8e5fcf73a1dd62f830740f428019",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 3.9617799999999987,
+        "thread_cpu_ms": 3.44,
+        "batch_wall_ms": [
+          5.415509999999995,
+          3.8208599999999935,
+          4.16877999999997,
+          2.909990000000107,
+          3.4937599999999294
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.340488000000014,
+        "thread_cpu_ms": 2.16,
+        "batch_wall_ms": [
+          2.8421899999999822,
+          1.8605499999999666,
+          2.8941100000000004,
+          1.9817000000000917,
+          2.1238900000000287
+        ]
+      }
+    },
+    {
+      "variant": "baseline",
+      "fixture": "comparison",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 3418978,
+      "bundle_bytes": 28627,
+      "png_bytes": 23041,
+      "sha256": "da6798f9c90b0f32c933f4a6db20d46e4c5f17e6c3206a0c06ccfdfd8d24dfba",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.512440000000042,
+        "thread_cpu_ms": 2.18,
+        "batch_wall_ms": [
+          2.891010000000006,
+          3.0679300000001604,
+          2.856130000000121,
+          1.7415999999999259,
+          2.005529999999999
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.209999999999991,
+        "thread_cpu_ms": 1.8800000000000001,
+        "batch_wall_ms": [
+          3.2403200000000196,
+          2.1262399999999615,
+          2.033190000000104,
+          1.8745599999998377,
+          1.7756900000000315
+        ]
+      }
+    },
+    {
+      "variant": "baseline",
+      "fixture": "long",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 3465708,
+      "bundle_bytes": 50276,
+      "png_bytes": 38211,
+      "sha256": "4164f4a1deaaccea62979681516f5487c2ba3f1c65705ab69a2b10f4ddf919f9",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.974073999999992,
+        "thread_cpu_ms": 3.12,
+        "batch_wall_ms": [
+          3.875829999999996,
+          2.665720000000056,
+          2.412119999999959,
+          2.740639999999985,
+          3.1760599999999615
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.938102000000017,
+        "thread_cpu_ms": 2.8400000000000003,
+        "batch_wall_ms": [
+          3.7768100000000233,
+          2.597780000000057,
+          2.615430000000015,
+          3.048630000000048,
+          2.6518599999999424
+        ]
+      }
+    },
+    {
+      "variant": "baseline",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 13,
+      "invocations": 9,
+      "fetched_bytes": 3282532,
+      "bundle_bytes": 49525,
+      "png_bytes": 38677,
+      "sha256": "2d49884c68a7df91e931fd1fcbe2e83aa153f03c83e330b26cdf82c76d70f03e",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 3.009508000000005,
+        "thread_cpu_ms": 2.8,
+        "batch_wall_ms": [
+          4.764059999999972,
+          2.624380000000019,
+          2.811239999999998,
+          2.3241299999999683,
+          2.523730000000069
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.823994000000002,
+        "thread_cpu_ms": 2.82,
+        "batch_wall_ms": [
+          3.6137200000000123,
+          2.648739999999998,
+          2.666240000000107,
+          2.6585399999999937,
+          2.5327299999999013
+        ]
+      }
+    },
+    {
+      "variant": "baseline",
+      "fixture": "coverage",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 33,
+      "invocations": 19,
+      "fetched_bytes": 7614150,
+      "bundle_bytes": 89329,
+      "png_bytes": 38493,
+      "sha256": "d01d67b5178d3505fb393089e5ad0b9aa9aa1755469836d7008b7865f14037ff",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 8.31402199999997,
+        "thread_cpu_ms": 8.44,
+        "batch_wall_ms": [
+          13.34444000000003,
+          8.24364999999998,
+          6.688139999999839,
+          6.512119999999959,
+          6.781760000000031
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 4.209110000000019,
+        "thread_cpu_ms": 3.4200000000000004,
+        "batch_wall_ms": [
+          9.026429999999982,
+          3.382480000000032,
+          2.8593899999999848,
+          2.777549999999974,
+          2.9997000000001206
+        ]
+      }
+    },
+    {
+      "variant": "pages64",
+      "fixture": "expression",
+      "options": {
+        "size": 1080,
+        "slots": 64,
+        "chunkSize": 3
+      },
+      "pages": 39,
+      "invocations": 15,
+      "fetched_bytes": 526235,
+      "bundle_bytes": 42545,
+      "png_bytes": 25223,
+      "sha256": "806591fcb51be7ea1473f4f088fff8358ccc8e5fcf73a1dd62f830740f428019",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 3.6727820000000064,
+        "thread_cpu_ms": 3.4200000000000004,
+        "batch_wall_ms": [
+          8.469959999999991,
+          2.8740999999999985,
+          2.2428600000001095,
+          2.2019100000001344,
+          2.575079999999798
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.355609999999978,
+        "thread_cpu_ms": 2.54,
+        "batch_wall_ms": [
+          3.997029999999995,
+          2.1506099999999604,
+          1.8843399999999746,
+          1.8727500000000874,
+          1.873319999999876
+        ]
+      }
+    },
+    {
+      "variant": "pages64",
+      "fixture": "comparison",
+      "options": {
+        "size": 1080,
+        "slots": 64,
+        "chunkSize": 3
+      },
+      "pages": 24,
+      "invocations": 10,
+      "fetched_bytes": 345670,
+      "bundle_bytes": 28639,
+      "png_bytes": 23041,
+      "sha256": "da6798f9c90b0f32c933f4a6db20d46e4c5f17e6c3206a0c06ccfdfd8d24dfba",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.4229499999999642,
+        "thread_cpu_ms": 1.22,
+        "batch_wall_ms": [
+          2.1322100000000317,
+          1.547689999999966,
+          1.164890000000014,
+          1.229860000000008,
+          1.0400999999998022
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.199888000000028,
+        "thread_cpu_ms": 1.92,
+        "batch_wall_ms": [
+          3.6174599999999373,
+          1.8966699999999945,
+          1.8076999999999317,
+          1.7608000000000175,
+          1.9168100000002597
+        ]
+      }
+    },
+    {
+      "variant": "pages64",
+      "fixture": "long",
+      "options": {
+        "size": 1080,
+        "slots": 64,
+        "chunkSize": 3
+      },
+      "pages": 34,
+      "invocations": 14,
+      "fetched_bytes": 527303,
+      "bundle_bytes": 50344,
+      "png_bytes": 38211,
+      "sha256": "4164f4a1deaaccea62979681516f5487c2ba3f1c65705ab69a2b10f4ddf919f9",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 3.3110779999999793,
+        "thread_cpu_ms": 3.4,
+        "batch_wall_ms": [
+          6.074470000000019,
+          2.8032000000000155,
+          2.461419999999998,
+          2.650840000000062,
+          2.5654599999998027
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 3.117634000000053,
+        "thread_cpu_ms": 3.12,
+        "batch_wall_ms": [
+          4.789990000000034,
+          2.9516899999999624,
+          2.5174800000000688,
+          2.7383200000000216,
+          2.590690000000177
+        ]
+      }
+    },
+    {
+      "variant": "pages64",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 1080,
+        "slots": 64,
+        "chunkSize": 3
+      },
+      "pages": 36,
+      "invocations": 14,
+      "fetched_bytes": 570368,
+      "bundle_bytes": 49589,
+      "png_bytes": 38677,
+      "sha256": "2d49884c68a7df91e931fd1fcbe2e83aa153f03c83e330b26cdf82c76d70f03e",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 3.1400200000000225,
+        "thread_cpu_ms": 2.82,
+        "batch_wall_ms": [
+          4.155130000000009,
+          3.3808100000000194,
+          2.5493800000000193,
+          2.9766799999999423,
+          2.6381000000001222
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.9381020000000535,
+        "thread_cpu_ms": 2.82,
+        "batch_wall_ms": [
+          3.182980000000043,
+          3.0491799999999785,
+          2.5805299999999987,
+          3.2954400000000534,
+          2.5823800000001937
+        ]
+      }
+    },
+    {
+      "variant": "pages64",
+      "fixture": "coverage",
+      "options": {
+        "size": 1080,
+        "slots": 64,
+        "chunkSize": 3
+      },
+      "pages": 73,
+      "invocations": 27,
+      "fetched_bytes": 1022767,
+      "bundle_bytes": 89434,
+      "png_bytes": 38493,
+      "sha256": "d01d67b5178d3505fb393089e5ad0b9aa9aa1755469836d7008b7865f14037ff",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 8.065444000000006,
+        "thread_cpu_ms": 7.800000000000002,
+        "batch_wall_ms": [
+          10.158979999999975,
+          9.448419999999988,
+          6.872630000000027,
+          7.099759999999878,
+          6.7474300000001675
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 3.2335360000000035,
+        "thread_cpu_ms": 3.4200000000000004,
+        "batch_wall_ms": [
+          3.5039199999999253,
+          3.5428100000000087,
+          3.064300000000003,
+          2.9612199999999573,
+          3.095430000000124
+        ]
+      }
+    },
+    {
+      "variant": "pages32",
+      "fixture": "expression",
+      "options": {
+        "size": 1080,
+        "slots": 32,
+        "chunkSize": 3
+      },
+      "pages": 40,
+      "invocations": 16,
+      "fetched_bytes": 275066,
+      "bundle_bytes": 42559,
+      "png_bytes": 25223,
+      "sha256": "806591fcb51be7ea1473f4f088fff8358ccc8e5fcf73a1dd62f830740f428019",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.640443999999989,
+        "thread_cpu_ms": 2.5200000000000005,
+        "batch_wall_ms": [
+          3.7032999999999445,
+          2.5505699999999707,
+          2.2366799999999785,
+          2.193710000000101,
+          2.517959999999948
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.1034040000000096,
+        "thread_cpu_ms": 2.2,
+        "batch_wall_ms": [
+          2.597360000000026,
+          2.027359999999953,
+          2.1600599999999757,
+          1.8271899999999732,
+          1.9050500000001194
+        ]
+      }
+    },
+    {
+      "variant": "pages32",
+      "fixture": "comparison",
+      "options": {
+        "size": 1080,
+        "slots": 32,
+        "chunkSize": 3
+      },
+      "pages": 24,
+      "invocations": 10,
+      "fetched_bytes": 177835,
+      "bundle_bytes": 28639,
+      "png_bytes": 23041,
+      "sha256": "da6798f9c90b0f32c933f4a6db20d46e4c5f17e6c3206a0c06ccfdfd8d24dfba",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.3020799999999872,
+        "thread_cpu_ms": 1.6,
+        "batch_wall_ms": [
+          1.7932200000000194,
+          1.338130000000001,
+          1.1779999999998836,
+          1.0234599999999774,
+          1.1775900000000548
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.9227780000000347,
+        "thread_cpu_ms": 1.8399999999999999,
+        "batch_wall_ms": [
+          2.2724199999999657,
+          2.0515000000000327,
+          1.6549800000000687,
+          1.7291900000000169,
+          1.9058000000000903
+        ]
+      }
+    },
+    {
+      "variant": "pages32",
+      "fixture": "long",
+      "options": {
+        "size": 1080,
+        "slots": 32,
+        "chunkSize": 3
+      },
+      "pages": 38,
+      "invocations": 15,
+      "fetched_bytes": 292361,
+      "bundle_bytes": 50356,
+      "png_bytes": 38211,
+      "sha256": "4164f4a1deaaccea62979681516f5487c2ba3f1c65705ab69a2b10f4ddf919f9",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.9351619999999636,
+        "thread_cpu_ms": 3.12,
+        "batch_wall_ms": [
+          3.8390800000000125,
+          2.8855499999999665,
+          2.3940200000000913,
+          3.0319900000000417,
+          2.525169999999707
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.8392020000000953,
+        "thread_cpu_ms": 2.5,
+        "batch_wall_ms": [
+          3.5034300000000256,
+          2.9686900000000604,
+          2.519700000000012,
+          2.613130000000092,
+          2.591060000000289
+        ]
+      }
+    },
+    {
+      "variant": "pages32",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 1080,
+        "slots": 32,
+        "chunkSize": 3
+      },
+      "pages": 38,
+      "invocations": 15,
+      "fetched_bytes": 300124,
+      "bundle_bytes": 49602,
+      "png_bytes": 38677,
+      "sha256": "2d49884c68a7df91e931fd1fcbe2e83aa153f03c83e330b26cdf82c76d70f03e",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 3.0449319999999895,
+        "thread_cpu_ms": 2.8200000000000003,
+        "batch_wall_ms": [
+          3.8259399999999912,
+          2.75052999999989,
+          2.821520000000055,
+          2.853009999999995,
+          2.973660000000018
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.796331999999911,
+        "thread_cpu_ms": 3.1399999999999997,
+        "batch_wall_ms": [
+          3.307310000000052,
+          2.5315499999998794,
+          2.580629999999837,
+          2.9767699999998514,
+          2.585399999999936
+        ]
+      }
+    },
+    {
+      "variant": "pages32",
+      "fixture": "coverage",
+      "options": {
+        "size": 1080,
+        "slots": 32,
+        "chunkSize": 3
+      },
+      "pages": 74,
+      "invocations": 27,
+      "fetched_bytes": 520804,
+      "bundle_bytes": 89432,
+      "png_bytes": 38493,
+      "sha256": "d01d67b5178d3505fb393089e5ad0b9aa9aa1755469836d7008b7865f14037ff",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 7.354820000000018,
+        "thread_cpu_ms": 6.540000000000001,
+        "batch_wall_ms": [
+          9.107080000000042,
+          6.711620000000039,
+          6.747059999999874,
+          7.182870000000003,
+          7.025470000000132
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.9802680000000144,
+        "thread_cpu_ms": 3.16,
+        "batch_wall_ms": [
+          3.4900300000000244,
+          2.7389600000000427,
+          2.8412500000000365,
+          2.8672700000000986,
+          2.963829999999871
+        ]
+      }
+    },
+    {
+      "variant": "compact",
+      "fixture": "expression",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "compactRead": true
+      },
+      "pages": 22,
+      "invocations": 13,
+      "fetched_bytes": 5110786,
+      "bundle_bytes": 42520,
+      "png_bytes": 25223,
+      "sha256": "806591fcb51be7ea1473f4f088fff8358ccc8e5fcf73a1dd62f830740f428019",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.9640839999999664,
+        "thread_cpu_ms": 2.78,
+        "batch_wall_ms": [
+          4.574129999999968,
+          2.370000000000073,
+          2.5301699999999983,
+          2.6829200000000126,
+          2.6631999999997786
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.110649999999969,
+        "thread_cpu_ms": 2.18,
+        "batch_wall_ms": [
+          2.738829999999962,
+          1.899109999999928,
+          1.978060000000005,
+          2.0559599999998683,
+          1.881290000000081
+        ]
+      }
+    },
+    {
+      "variant": "compact",
+      "fixture": "comparison",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "compactRead": true
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 3418978,
+      "bundle_bytes": 28627,
+      "png_bytes": 23041,
+      "sha256": "da6798f9c90b0f32c933f4a6db20d46e4c5f17e6c3206a0c06ccfdfd8d24dfba",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.6826339999999618,
+        "thread_cpu_ms": 1.92,
+        "batch_wall_ms": [
+          2.191719999999987,
+          1.3462499999999635,
+          1.50716999999986,
+          1.9031999999999243,
+          1.4648300000000745
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.909989999999998,
+        "thread_cpu_ms": 1.52,
+        "batch_wall_ms": [
+          2.287119999999959,
+          1.7372400000000199,
+          1.9727100000000064,
+          1.8796500000000378,
+          1.673229999999967
+        ]
+      }
+    },
+    {
+      "variant": "compact",
+      "fixture": "long",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "compactRead": true
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 3465708,
+      "bundle_bytes": 50276,
+      "png_bytes": 38211,
+      "sha256": "4164f4a1deaaccea62979681516f5487c2ba3f1c65705ab69a2b10f4ddf919f9",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.2804939999999623,
+        "thread_cpu_ms": 2.2199999999999998,
+        "batch_wall_ms": [
+          2.6162500000000364,
+          2.0444299999999203,
+          2.0070200000000114,
+          2.799959999999919,
+          1.9348099999999249
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.740155999999988,
+        "thread_cpu_ms": 3.1,
+        "batch_wall_ms": [
+          2.9951199999999516,
+          2.5957599999999728,
+          2.600170000000071,
+          2.995629999999983,
+          2.5140999999999623
+        ]
+      }
+    },
+    {
+      "variant": "compact",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "compactRead": true
+      },
+      "pages": 13,
+      "invocations": 9,
+      "fetched_bytes": 3282532,
+      "bundle_bytes": 49525,
+      "png_bytes": 38677,
+      "sha256": "2d49884c68a7df91e931fd1fcbe2e83aa153f03c83e330b26cdf82c76d70f03e",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.4847219999999837,
+        "thread_cpu_ms": 1.8599999999999999,
+        "batch_wall_ms": [
+          3.5240600000000084,
+          2.611700000000019,
+          2.018579999999929,
+          2.327590000000055,
+          1.9416799999999057
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.760262000000039,
+        "thread_cpu_ms": 3.12,
+        "batch_wall_ms": [
+          3.0012000000000625,
+          2.5673799999998663,
+          2.5019099999999526,
+          3.213230000000112,
+          2.5175900000002
+        ]
+      }
+    },
+    {
+      "variant": "compact",
+      "fixture": "coverage",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "compactRead": true
+      },
+      "pages": 33,
+      "invocations": 19,
+      "fetched_bytes": 7614150,
+      "bundle_bytes": 89329,
+      "png_bytes": 38493,
+      "sha256": "d01d67b5178d3505fb393089e5ad0b9aa9aa1755469836d7008b7865f14037ff",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 7.434558000000071,
+        "thread_cpu_ms": 7.159999999999999,
+        "batch_wall_ms": [
+          8.38628000000008,
+          5.785570000000007,
+          9.710110000000167,
+          6.354640000000108,
+          6.936189999999987
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 3.4250299999999876,
+        "thread_cpu_ms": 3.5,
+        "batch_wall_ms": [
+          3.4926899999999477,
+          2.8729999999999563,
+          4.985909999999967,
+          2.850160000000142,
+          2.9233899999999267
+        ]
+      }
+    },
+    {
+      "variant": "size800",
+      "fixture": "expression",
+      "options": {
+        "size": 800,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 22,
+      "invocations": 13,
+      "fetched_bytes": 4223732,
+      "bundle_bytes": 27125,
+      "png_bytes": 17013,
+      "sha256": "bf6518bd03325f03379b64de890abccdb7c5b31c2beb5ff3d4c91d187419c31b",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 3.541961999999949,
+        "thread_cpu_ms": 3.72,
+        "batch_wall_ms": [
+          3.5228399999999964,
+          2.706369999999879,
+          4.819059999999991,
+          3.0836500000001252,
+          3.577889999999752
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.4595920000000295,
+        "thread_cpu_ms": 1.56,
+        "batch_wall_ms": [
+          1.4404199999999947,
+          1.1354200000001584,
+          1.7381499999999506,
+          1.2752300000000105,
+          1.7087400000000343
+        ]
+      }
+    },
+    {
+      "variant": "size800",
+      "fixture": "comparison",
+      "options": {
+        "size": 800,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 2839238,
+      "bundle_bytes": 18004,
+      "png_bytes": 15308,
+      "sha256": "347baac67ff0e9f584e20ec939b41dea2420a24b64734cbb515086b544e4c591",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.9816359999999804,
+        "thread_cpu_ms": 1.8800000000000001,
+        "batch_wall_ms": [
+          2.2372599999999694,
+          1.5413900000001377,
+          2.2832200000000737,
+          1.4700799999998708,
+          2.3762299999998504
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.1988559999999961,
+        "thread_cpu_ms": 1.58,
+        "batch_wall_ms": [
+          1.3247299999999995,
+          1.0127000000000408,
+          1.4543299999999362,
+          1.0300100000000385,
+          1.1725099999999657
+        ]
+      }
+    },
+    {
+      "variant": "size800",
+      "fixture": "long",
+      "options": {
+        "size": 800,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 2878344,
+      "bundle_bytes": 31514,
+      "png_bytes": 25858,
+      "sha256": "519534f5bff895657e3b4d09850d8d9a7fb600575d77f688ebf84b4028e6f5d5",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.5761400000000507,
+        "thread_cpu_ms": 2.2199999999999998,
+        "batch_wall_ms": [
+          3.267360000000008,
+          2.041280000000006,
+          2.640089999999873,
+          2.175040000000081,
+          2.756930000000284
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.7502080000000024,
+        "thread_cpu_ms": 1.8399999999999999,
+        "batch_wall_ms": [
+          2.065030000000024,
+          1.5460900000000037,
+          1.9386099999999715,
+          1.525879999999961,
+          1.6754300000000513
+        ]
+      }
+    },
+    {
+      "variant": "size800",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 800,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 13,
+      "invocations": 9,
+      "fetched_bytes": 2716979,
+      "bundle_bytes": 30972,
+      "png_bytes": 26029,
+      "sha256": "874d551e54d1d4e6466996dc1c67ac722e128b27166a1ceb2c9e327408fd9f2b",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.5864719999999033,
+        "thread_cpu_ms": 2.5,
+        "batch_wall_ms": [
+          3.485400000000027,
+          2.1174699999999573,
+          2.724829999999929,
+          2.2563199999998687,
+          2.3483399999997348
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.8175940000000448,
+        "thread_cpu_ms": 1.8800000000000001,
+        "batch_wall_ms": [
+          1.7176300000000082,
+          1.592699999999968,
+          2.3171400000001086,
+          1.6423600000000078,
+          1.8181400000001304
+        ]
+      }
+    },
+    {
+      "variant": "size800",
+      "fixture": "coverage",
+      "options": {
+        "size": 800,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 33,
+      "invocations": 19,
+      "fetched_bytes": 6321193,
+      "bundle_bytes": 56566,
+      "png_bytes": 26242,
+      "sha256": "2f47bee514e03a4229adc8872a2f23ff83978447ded2f3a267250c12715ca1ea",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 7.50186399999995,
+        "thread_cpu_ms": 7.82,
+        "batch_wall_ms": [
+          9.565660000000026,
+          6.4359399999999365,
+          7.573029999999926,
+          5.880079999999907,
+          8.054609999999958
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.1392040000000634,
+        "thread_cpu_ms": 1.5399999999999998,
+        "batch_wall_ms": [
+          2.6179000000000086,
+          2.1869400000001407,
+          1.871730000000025,
+          1.9127599999999803,
+          2.1066900000001625
+        ]
+      }
+    },
+    {
+      "variant": "size720",
+      "fixture": "expression",
+      "options": {
+        "size": 720,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 22,
+      "invocations": 13,
+      "fetched_bytes": 3962710,
+      "bundle_bytes": 23241,
+      "png_bytes": 14973,
+      "sha256": "9deb2977baf20a3f22148f587fca759d8bdada6fc66f7d5ce82eca8a13f9283d",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.974617999999973,
+        "thread_cpu_ms": 3.4800000000000004,
+        "batch_wall_ms": [
+          3.6385099999999513,
+          2.5654500000000553,
+          2.6041199999999662,
+          2.7648700000001556,
+          3.3001399999997374
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.1121620000000074,
+        "thread_cpu_ms": 0.9199999999999999,
+        "batch_wall_ms": [
+          1.4096800000000258,
+          1.0283799999999246,
+          1.0757200000000011,
+          0.9817800000000716,
+          1.0652500000000145
+        ]
+      }
+    },
+    {
+      "variant": "size720",
+      "fixture": "comparison",
+      "options": {
+        "size": 720,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 2631777,
+      "bundle_bytes": 15341,
+      "png_bytes": 13374,
+      "sha256": "a0d5f6199621f64950a54df9af7efa4eddd385d9f6fb31ab50e4e62558a0b2bc",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.6603019999999193,
+        "thread_cpu_ms": 1.5399999999999998,
+        "batch_wall_ms": [
+          2.208010000000013,
+          1.4683699999999589,
+          1.4703799999999319,
+          1.641519999999946,
+          1.5132299999997485
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 0.9940459999999802,
+        "thread_cpu_ms": 0.62,
+        "batch_wall_ms": [
+          1.217699999999968,
+          1.0131899999998495,
+          0.8499799999999595,
+          0.9019099999999526,
+          0.9874500000001717
+        ]
+      }
+    },
+    {
+      "variant": "size720",
+      "fixture": "long",
+      "options": {
+        "size": 720,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 2674898,
+      "bundle_bytes": 26552,
+      "png_bytes": 22472,
+      "sha256": "6dafef55e642f6d1818247480b5cb0163cb8894f0c81ed9d5fd372c19a8df378",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.4238379999999413,
+        "thread_cpu_ms": 2.5,
+        "batch_wall_ms": [
+          2.728639999999996,
+          1.895550000000003,
+          2.064469999999892,
+          2.319290000000001,
+          3.111239999999816
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.5849019999999474,
+        "thread_cpu_ms": 1.58,
+        "batch_wall_ms": [
+          1.9969500000000153,
+          1.500010000000111,
+          1.347809999999845,
+          1.402640000000065,
+          1.6770999999997003
+        ]
+      }
+    },
+    {
+      "variant": "size720",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 720,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 13,
+      "invocations": 9,
+      "fetched_bytes": 2523146,
+      "bundle_bytes": 26164,
+      "png_bytes": 22454,
+      "sha256": "d221806a3334f9f3420d350f6ed628bcb3b2571bc6a7ee9c4e6481654b5ce59d",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.37422399999994,
+        "thread_cpu_ms": 2.18,
+        "batch_wall_ms": [
+          2.697159999999985,
+          2.4801799999999274,
+          2.1056200000000898,
+          2.236309999999867,
+          2.351849999999831
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.5563639999999943,
+        "thread_cpu_ms": 1.5599999999999998,
+        "batch_wall_ms": [
+          1.8095699999999852,
+          1.5105400000000373,
+          1.4183899999999994,
+          1.3933899999999995,
+          1.6499299999999493
+        ]
+      }
+    },
+    {
+      "variant": "size720",
+      "fixture": "coverage",
+      "options": {
+        "size": 720,
+        "slots": 1024,
+        "chunkSize": 2
+      },
+      "pages": 33,
+      "invocations": 19,
+      "fetched_bytes": 5929399,
+      "bundle_bytes": 48316,
+      "png_bytes": 22918,
+      "sha256": "3f61a18d955c7c2a0fe2a86c1828f48b9db816cc13a89c049e8790d04d1a32cc",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 6.719616000000005,
+        "thread_cpu_ms": 6.56,
+        "batch_wall_ms": [
+          7.700600000000032,
+          6.329939999999988,
+          6.266300000000046,
+          5.897839999999997,
+          7.403399999999965
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.816302000000014,
+        "thread_cpu_ms": 1.5399999999999998,
+        "batch_wall_ms": [
+          2.0153999999999543,
+          1.7317000000000917,
+          1.7661600000001272,
+          1.6712299999999232,
+          1.897019999999975
+        ]
+      }
+    },
+    {
+      "variant": "rle",
+      "fixture": "expression",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "rle": true
+      },
+      "pages": 22,
+      "invocations": 13,
+      "fetched_bytes": 5110786,
+      "bundle_bytes": 42520,
+      "png_bytes": 23077,
+      "sha256": "cfe8fc46f387b5e1ae0270506664805bfbd76ace262be976e0606683b96309f5",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 3.649453999999969,
+        "thread_cpu_ms": 3.7600000000000002,
+        "batch_wall_ms": [
+          4.4907499999999345,
+          3.9687700000000405,
+          2.9715399999999135,
+          3.1374799999999596,
+          3.678729999999996
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.9354619999999705,
+        "thread_cpu_ms": 1.8800000000000001,
+        "batch_wall_ms": [
+          2.1074899999999617,
+          1.8513600000000223,
+          1.9008700000000318,
+          1.7448300000000017,
+          2.0727599999998345
+        ]
+      }
+    },
+    {
+      "variant": "rle",
+      "fixture": "comparison",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "rle": true
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 3418978,
+      "bundle_bytes": 28627,
+      "png_bytes": 20888,
+      "sha256": "6e606423a650f4f1a7967e6ea1e4ef5a363eb54a2baacae1022c2388641b6857",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.9720579999999246,
+        "thread_cpu_ms": 1.9,
+        "batch_wall_ms": [
+          2.4818199999999706,
+          2.041689999999835,
+          1.8537199999998848,
+          1.7043400000000475,
+          1.7787199999998848
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.695143999999964,
+        "thread_cpu_ms": 1.56,
+        "batch_wall_ms": [
+          1.8866799999999784,
+          1.7743200000000798,
+          1.5821900000000824,
+          1.55637999999999,
+          1.6761499999996885
+        ]
+      }
+    },
+    {
+      "variant": "rle",
+      "fixture": "long",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "rle": true
+      },
+      "pages": 14,
+      "invocations": 9,
+      "fetched_bytes": 3465708,
+      "bundle_bytes": 50276,
+      "png_bytes": 35396,
+      "sha256": "c00390820b3038d2c685e47cb17f29dd27dd55a7b00dbb51578c2ab6edc407b1",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.640426000000061,
+        "thread_cpu_ms": 2.4799999999999995,
+        "batch_wall_ms": [
+          2.995300000000043,
+          2.4663000000000466,
+          2.532999999999993,
+          2.4224700000000667,
+          2.7850600000001577
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.5983440000001066,
+        "thread_cpu_ms": 2.8,
+        "batch_wall_ms": [
+          2.9100000000000366,
+          2.292760000000089,
+          2.7739600000000793,
+          2.4208700000001047,
+          2.5941300000002228
+        ]
+      }
+    },
+    {
+      "variant": "rle",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "rle": true
+      },
+      "pages": 13,
+      "invocations": 9,
+      "fetched_bytes": 3282532,
+      "bundle_bytes": 49525,
+      "png_bytes": 37159,
+      "sha256": "8ddce3d7f4f32c242c97be22847b136f70898a1e29cee957501fa92c1a325fb3",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.7758959999999937,
+        "thread_cpu_ms": 2.52,
+        "batch_wall_ms": [
+          2.9975500000000466,
+          2.3986299999998666,
+          3.3182699999999388,
+          2.4024000000001253,
+          2.76262999999999
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.7016900000000894,
+        "thread_cpu_ms": 2.82,
+        "batch_wall_ms": [
+          2.9171000000000276,
+          2.3993100000001504,
+          2.688080000000082,
+          2.8487200000001396,
+          2.655240000000049
+        ]
+      }
+    },
+    {
+      "variant": "rle",
+      "fixture": "coverage",
+      "options": {
+        "size": 1080,
+        "slots": 1024,
+        "chunkSize": 2,
+        "rle": true
+      },
+      "pages": 33,
+      "invocations": 19,
+      "fetched_bytes": 7614150,
+      "bundle_bytes": 89329,
+      "png_bytes": 37503,
+      "sha256": "d84b1b4bd56cf2e9c5d604794ac234aa3aa4b3ea6b0bb8fce56338da0eb60a35",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 7.482117999999991,
+        "thread_cpu_ms": 7.18,
+        "batch_wall_ms": [
+          8.236459999999989,
+          6.8199499999998805,
+          8.158250000000043,
+          7.146539999999914,
+          7.04939000000013
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 2.813615999999965,
+        "thread_cpu_ms": 2.84,
+        "batch_wall_ms": [
+          2.9055599999999684,
+          2.667330000000038,
+          2.802849999999853,
+          2.711869999999908,
+          2.9804700000000595
+        ]
+      }
+    },
+    {
+      "variant": "combined800_64",
+      "fixture": "expression",
+      "options": {
+        "size": 800,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 39,
+      "invocations": 15,
+      "fetched_bytes": 435400,
+      "bundle_bytes": 27149,
+      "png_bytes": 16304,
+      "sha256": "7164b1cbe611d82ba606c738520b2335b6b01e87e480037b88b2980407feb0db",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.1493220000000473,
+        "thread_cpu_ms": 1.56,
+        "batch_wall_ms": [
+          2.472280000000046,
+          1.9974200000000564,
+          2.002520000000004,
+          2.1630799999999,
+          2.1113100000002305
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.1918539999999849,
+        "thread_cpu_ms": 1.56,
+        "batch_wall_ms": [
+          1.2968899999999848,
+          1.1022100000000137,
+          1.2145300000000134,
+          1.2720900000000257,
+          1.0735499999998865
+        ]
+      }
+    },
+    {
+      "variant": "combined800_64",
+      "fixture": "comparison",
+      "options": {
+        "size": 800,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 24,
+      "invocations": 10,
+      "fetched_bytes": 287177,
+      "bundle_bytes": 18017,
+      "png_bytes": 14764,
+      "sha256": "9ccbd96ca452319c418a803b5bd2c094da987167e909084f6281db368f0553f9",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.026710000000039,
+        "thread_cpu_ms": 1.22,
+        "batch_wall_ms": [
+          1.032420000000002,
+          1.0048600000000079,
+          1.0561900000000606,
+          1.101969999999892,
+          0.9381100000002334
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.0022800000000096,
+        "thread_cpu_ms": 0.9199999999999999,
+        "batch_wall_ms": [
+          1.046770000000015,
+          0.965520000000106,
+          0.9953799999999319,
+          1.047019999999975,
+          0.9567100000000209
+        ]
+      }
+    },
+    {
+      "variant": "combined800_64",
+      "fixture": "long",
+      "options": {
+        "size": 800,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 34,
+      "invocations": 14,
+      "fetched_bytes": 435362,
+      "bundle_bytes": 31579,
+      "png_bytes": 25133,
+      "sha256": "44a9d8404d80608c696f4f4c1b68f25ae1264430c3c5e46a3f108e2e3c56265f",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.452337999999982,
+        "thread_cpu_ms": 2.5,
+        "batch_wall_ms": [
+          2.7430500000000393,
+          2.4262300000000323,
+          2.410219999999936,
+          2.2744699999999285,
+          2.407719999999972
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.6330779999999865,
+        "thread_cpu_ms": 1.56,
+        "batch_wall_ms": [
+          1.6335800000000744,
+          1.741820000000007,
+          1.708899999999994,
+          1.5201500000001034,
+          1.5609399999997549
+        ]
+      }
+    },
+    {
+      "variant": "combined800_64",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 800,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 36,
+      "invocations": 14,
+      "fetched_bytes": 467543,
+      "bundle_bytes": 31037,
+      "png_bytes": 26126,
+      "sha256": "9d049d792f2279aadceed06a15bd8a1ea003b3215b90a8caf868665f5b035f60",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.8547899999999755,
+        "thread_cpu_ms": 2.82,
+        "batch_wall_ms": [
+          3.459379999999965,
+          2.5929799999999887,
+          3.2274199999999835,
+          2.601499999999942,
+          2.392669999999998
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.5849199999999475,
+        "thread_cpu_ms": 1.9,
+        "batch_wall_ms": [
+          1.6629699999999503,
+          1.6294499999999972,
+          1.6433600000000297,
+          1.5039899999999762,
+          1.4848299999997834
+        ]
+      }
+    },
+    {
+      "variant": "combined800_64",
+      "fixture": "coverage",
+      "options": {
+        "size": 800,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 73,
+      "invocations": 27,
+      "fetched_bytes": 844869,
+      "bundle_bytes": 56667,
+      "png_bytes": 27314,
+      "sha256": "815cbf982e3c5ffb9cd833b395fc4a9117a8b14a0713d03e2c991d8dd3d82e28",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 7.042264000000051,
+        "thread_cpu_ms": 6.859999999999999,
+        "batch_wall_ms": [
+          7.465520000000015,
+          6.603249999999934,
+          7.375439999999981,
+          6.267220000000089,
+          7.499890000000232
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.881487999999954,
+        "thread_cpu_ms": 1.9,
+        "batch_wall_ms": [
+          2.0527099999999336,
+          1.8606700000000274,
+          1.9278299999999944,
+          1.6720899999998438,
+          1.8941399999999704
+        ]
+      }
+    },
+    {
+      "variant": "combined800_32",
+      "fixture": "expression",
+      "options": {
+        "size": 800,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 40,
+      "invocations": 16,
+      "fetched_bytes": 226839,
+      "bundle_bytes": 27164,
+      "png_bytes": 16304,
+      "sha256": "7164b1cbe611d82ba606c738520b2335b6b01e87e480037b88b2980407feb0db",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.163277999999991,
+        "thread_cpu_ms": 2.1799999999999997,
+        "batch_wall_ms": [
+          2.287670000000071,
+          2.007970000000023,
+          2.4655300000000353,
+          2.015780000000086,
+          2.0394399999997406
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.1626060000000327,
+        "thread_cpu_ms": 0.9600000000000002,
+        "batch_wall_ms": [
+          1.2751699999999802,
+          1.119300000000112,
+          1.1854800000000978,
+          1.0689500000000407,
+          1.164129999999932
+        ]
+      }
+    },
+    {
+      "variant": "combined800_32",
+      "fixture": "comparison",
+      "options": {
+        "size": 800,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 24,
+      "invocations": 10,
+      "fetched_bytes": 147320,
+      "bundle_bytes": 18017,
+      "png_bytes": 14764,
+      "sha256": "9ccbd96ca452319c418a803b5bd2c094da987167e909084f6281db368f0553f9",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.0091399999999884,
+        "thread_cpu_ms": 1.54,
+        "batch_wall_ms": [
+          1.1096800000000258,
+          0.9584100000000035,
+          0.9685100000000603,
+          0.9554399999999077,
+          1.0536599999999452
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.02252199999999,
+        "thread_cpu_ms": 0.62,
+        "batch_wall_ms": [
+          1.1302999999999883,
+          1.0212700000000041,
+          1.0605499999999666,
+          0.9414600000000064,
+          0.9590299999999843
+        ]
+      }
+    },
+    {
+      "variant": "combined800_32",
+      "fixture": "long",
+      "options": {
+        "size": 800,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 38,
+      "invocations": 15,
+      "fetched_bytes": 241123,
+      "bundle_bytes": 31592,
+      "png_bytes": 25133,
+      "sha256": "44a9d8404d80608c696f4f4c1b68f25ae1264430c3c5e46a3f108e2e3c56265f",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.7148079999999934,
+        "thread_cpu_ms": 2.5,
+        "batch_wall_ms": [
+          3.1258899999999814,
+          2.399910000000091,
+          2.835099999999875,
+          2.920010000000002,
+          2.293130000000019
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.5574019999999291,
+        "thread_cpu_ms": 1.5399999999999998,
+        "batch_wall_ms": [
+          1.719709999999941,
+          1.455329999999958,
+          1.5790100000000167,
+          1.5297699999999168,
+          1.503189999999813
+        ]
+      }
+    },
+    {
+      "variant": "combined800_32",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 800,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 38,
+      "invocations": 15,
+      "fetched_bytes": 246268,
+      "bundle_bytes": 31049,
+      "png_bytes": 26126,
+      "sha256": "9d049d792f2279aadceed06a15bd8a1ea003b3215b90a8caf868665f5b035f60",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.9280960000000413,
+        "thread_cpu_ms": 3.1399999999999997,
+        "batch_wall_ms": [
+          2.952980000000025,
+          2.4759500000000116,
+          3.214049999999952,
+          3.1311799999999494,
+          2.866320000000269
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.6483340000000133,
+        "thread_cpu_ms": 1.5599999999999998,
+        "batch_wall_ms": [
+          1.6229700000000775,
+          1.4959899999999835,
+          1.8577500000001237,
+          1.6107200000000375,
+          1.6542399999998452
+        ]
+      }
+    },
+    {
+      "variant": "combined800_32",
+      "fixture": "coverage",
+      "options": {
+        "size": 800,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 74,
+      "invocations": 27,
+      "fetched_bytes": 429963,
+      "bundle_bytes": 56665,
+      "png_bytes": 27314,
+      "sha256": "815cbf982e3c5ffb9cd833b395fc4a9117a8b14a0713d03e2c991d8dd3d82e28",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 7.115816000000049,
+        "thread_cpu_ms": 7.480000000000001,
+        "batch_wall_ms": [
+          8.005349999999998,
+          6.460360000000037,
+          7.046340000000055,
+          7.76166000000012,
+          6.305370000000039
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.8794600000000536,
+        "thread_cpu_ms": 1.6,
+        "batch_wall_ms": [
+          1.9055199999999786,
+          1.7756499999999504,
+          1.8881100000000515,
+          1.8999799999999596,
+          1.9280400000003284
+        ]
+      }
+    },
+    {
+      "variant": "combined720_64",
+      "fixture": "expression",
+      "options": {
+        "size": 720,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 39,
+      "invocations": 15,
+      "fetched_bytes": 410218,
+      "bundle_bytes": 23262,
+      "png_bytes": 14398,
+      "sha256": "8d2ab90ca7b2aeb1f8ab42b862718946024f96a793c9722a655d4d7cd0aff042",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.106364000000012,
+        "thread_cpu_ms": 1.86,
+        "batch_wall_ms": [
+          2.2831199999999625,
+          2.0003099999999905,
+          2.0060900000000403,
+          2.1786799999999857,
+          2.063620000000083
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.0149419999999918,
+        "thread_cpu_ms": 1.2399999999999998,
+        "batch_wall_ms": [
+          0.9746799999999893,
+          1.1618900000001304,
+          0.9969200000001365,
+          0.9392799999999625,
+          1.0019399999997405
+        ]
+      }
+    },
+    {
+      "variant": "combined720_64",
+      "fixture": "comparison",
+      "options": {
+        "size": 720,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 24,
+      "invocations": 10,
+      "fetched_bytes": 266818,
+      "bundle_bytes": 15352,
+      "png_bytes": 13022,
+      "sha256": "68d50582c4a7817eedf5d0325e5fa184ad0ba2158dc7128900494c116da85478",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.0558600000000298,
+        "thread_cpu_ms": 0.9600000000000002,
+        "batch_wall_ms": [
+          1.1066100000000005,
+          1.0124400000000606,
+          1.0284999999999855,
+          1.0900900000000546,
+          1.041660000000047
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 0.852090000000062,
+        "thread_cpu_ms": 0.64,
+        "batch_wall_ms": [
+          0.9230999999999767,
+          0.8791199999999663,
+          0.7981100000000879,
+          0.8263600000000224,
+          0.8337600000002567
+        ]
+      }
+    },
+    {
+      "variant": "combined720_64",
+      "fixture": "long",
+      "options": {
+        "size": 720,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 34,
+      "invocations": 14,
+      "fetched_bytes": 404470,
+      "bundle_bytes": 26616,
+      "png_bytes": 22357,
+      "sha256": "fbfeedca7984b8ed5a453da952d762000cc5a126736dd182c9ea51359e036cb2",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.191682000000037,
+        "thread_cpu_ms": 2.8,
+        "batch_wall_ms": [
+          2.3200000000000727,
+          2.157080000000133,
+          2.247099999999955,
+          2.147220000000016,
+          2.087010000000009
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.4340459999999986,
+        "thread_cpu_ms": 1.58,
+        "batch_wall_ms": [
+          1.6727700000000367,
+          1.360109999999986,
+          1.3927200000000084,
+          1.4575300000000424,
+          1.2870999999999184
+        ]
+      }
+    },
+    {
+      "variant": "combined720_64",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 720,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 36,
+      "invocations": 14,
+      "fetched_bytes": 432945,
+      "bundle_bytes": 26224,
+      "png_bytes": 23700,
+      "sha256": "0a2bde5ff31c87ec232d9f2fdf2e1145acc33a3c9a680f373203504b61dec282",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.4361579999999776,
+        "thread_cpu_ms": 1.8399999999999999,
+        "batch_wall_ms": [
+          2.635099999999966,
+          2.321479999999974,
+          2.352349999999933,
+          2.4326600000000327,
+          2.4391999999999827
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.5165140000000246,
+        "thread_cpu_ms": 1.9,
+        "batch_wall_ms": [
+          1.770889999999963,
+          1.655450000000019,
+          1.308259999999973,
+          1.5215799999999944,
+          1.326390000000174
+        ]
+      }
+    },
+    {
+      "variant": "combined720_64",
+      "fixture": "coverage",
+      "options": {
+        "size": 720,
+        "slots": 64,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 73,
+      "invocations": 27,
+      "fetched_bytes": 791964,
+      "bundle_bytes": 48413,
+      "png_bytes": 24198,
+      "sha256": "2ba542ec638a161c3648353a9aab306087b61dd22f495ea37bf6ef1ef8347e1e",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 6.879076000000005,
+        "thread_cpu_ms": 6.56,
+        "batch_wall_ms": [
+          7.839490000000024,
+          6.411799999999857,
+          6.885080000000016,
+          6.563190000000032,
+          6.6958200000000945
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.6312179999999716,
+        "thread_cpu_ms": 1.86,
+        "batch_wall_ms": [
+          1.64354000000003,
+          1.5823599999999716,
+          1.8718799999998736,
+          1.57471000000005,
+          1.483599999999933
+        ]
+      }
+    },
+    {
+      "variant": "combined720_32",
+      "fixture": "expression",
+      "options": {
+        "size": 720,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 40,
+      "invocations": 16,
+      "fetched_bytes": 213839,
+      "bundle_bytes": 23276,
+      "png_bytes": 14398,
+      "sha256": "8d2ab90ca7b2aeb1f8ab42b862718946024f96a793c9722a655d4d7cd0aff042",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.3961539999999877,
+        "thread_cpu_ms": 1.8399999999999999,
+        "batch_wall_ms": [
+          2.6376000000000204,
+          2.046520000000055,
+          2.835649999999987,
+          2.063719999999921,
+          2.397279999999955
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.059224000000013,
+        "thread_cpu_ms": 1.28,
+        "batch_wall_ms": [
+          1.2469500000000153,
+          1.0887899999999717,
+          1.0457800000000135,
+          0.9815200000000914,
+          0.9330799999999726
+        ]
+      }
+    },
+    {
+      "variant": "combined720_32",
+      "fixture": "comparison",
+      "options": {
+        "size": 720,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 24,
+      "invocations": 10,
+      "fetched_bytes": 137135,
+      "bundle_bytes": 15352,
+      "png_bytes": 13022,
+      "sha256": "68d50582c4a7817eedf5d0325e5fa184ad0ba2158dc7128900494c116da85478",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 1.065336000000043,
+        "thread_cpu_ms": 1.2600000000000002,
+        "batch_wall_ms": [
+          1.3141000000000531,
+          0.9273999999999433,
+          0.9994300000000294,
+          1.1584999999999126,
+          0.9272500000002765
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 0.8788799999999538,
+        "thread_cpu_ms": 0.64,
+        "batch_wall_ms": [
+          0.8929799999999887,
+          0.8663399999999456,
+          0.8780399999999645,
+          0.9392499999999927,
+          0.8177899999998772
+        ]
+      }
+    },
+    {
+      "variant": "combined720_32",
+      "fixture": "long",
+      "options": {
+        "size": 720,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 38,
+      "invocations": 15,
+      "fetched_bytes": 223918,
+      "bundle_bytes": 26627,
+      "png_bytes": 22357,
+      "sha256": "fbfeedca7984b8ed5a453da952d762000cc5a126736dd182c9ea51359e036cb2",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.4191639999999826,
+        "thread_cpu_ms": 3.1,
+        "batch_wall_ms": [
+          2.669599999999991,
+          2.5187700000000404,
+          2.3170500000000174,
+          2.3264799999999015,
+          2.263919999999962
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.334023999999936,
+        "thread_cpu_ms": 1.2600000000000002,
+        "batch_wall_ms": [
+          1.3817599999999401,
+          1.3258899999998903,
+          1.3009999999998398,
+          1.3194800000001123,
+          1.341989999999896
+        ]
+      }
+    },
+    {
+      "variant": "combined720_32",
+      "fixture": "long_comparison",
+      "options": {
+        "size": 720,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 38,
+      "invocations": 15,
+      "fetched_bytes": 228201,
+      "bundle_bytes": 26237,
+      "png_bytes": 23700,
+      "sha256": "0a2bde5ff31c87ec232d9f2fdf2e1145acc33a3c9a680f373203504b61dec282",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 2.8149260000000504,
+        "thread_cpu_ms": 2.4999999999999996,
+        "batch_wall_ms": [
+          3.0720400000000154,
+          2.583020000000033,
+          3.0672599999999877,
+          2.7657000000001064,
+          2.5866100000001095
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.4419020000000273,
+        "thread_cpu_ms": 1.2600000000000002,
+        "batch_wall_ms": [
+          1.5491100000000189,
+          1.408970000000045,
+          1.4273800000000847,
+          1.4845100000000457,
+          1.3395399999999427
+        ]
+      }
+    },
+    {
+      "variant": "combined720_32",
+      "fixture": "coverage",
+      "options": {
+        "size": 720,
+        "slots": 32,
+        "chunkSize": 3,
+        "compactRead": true,
+        "rle": true
+      },
+      "pages": 74,
+      "invocations": 27,
+      "fetched_bytes": 403973,
+      "bundle_bytes": 48411,
+      "png_bytes": 24198,
+      "sha256": "2ba542ec638a161c3648353a9aab306087b61dd22f495ea37bf6ef1ef8347e1e",
+      "preparation_total": {
+        "count": 50,
+        "wall_ms": 6.609605999999967,
+        "thread_cpu_ms": 6.860000000000001,
+        "batch_wall_ms": [
+          7.045359999999983,
+          6.760640000000057,
+          6.417029999999977,
+          6.4047499999998765,
+          6.420249999999942
+        ]
+      },
+      "assembly": {
+        "count": 50,
+        "wall_ms": 1.7160079999999833,
+        "thread_cpu_ms": 1.8800000000000001,
+        "batch_wall_ms": [
+          1.94983000000002,
+          1.6864999999999781,
+          1.5379600000000209,
+          1.7653899999999338,
+          1.6403599999999643
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "recordedAt": "2026-10-04T05:57:27.325Z",
+  "authorization": "다음 자동 제작 활성으로 진행",
+  "action": "Existing authenticated Site UI automatic start",
+  "status": "enabled_waiting_for_future_creation",
+  "settings": {
+    "topic": "영화 대사",
+    "base_expression": "",
+    "level": "초급",
+    "template": "expression",
+    "start_date": "2026-10-05",
+    "end_date": "2026-10-05",
+    "time": "08:00"
+  },
+  "settingsVersion": 6,
+  "nextCreationKst": "2026-10-05 07:00",
+  "nextDeliveryKst": "2026-10-05 08:00",
+  "nextDeliveryUtc": "2026-10-04T23:00:00.000Z",
+  "scope": "One daily card on October 5; existing end_date retained",
+  "verification": {
+    "ui": "자동 제작을 시작했습니다. / 실행 중 / 다음 제작 2026. 10. 5. 오전 7:00 · 발송 2026. 10. 5. 오전 8:00",
+    "database": "enabled=1, version=6, next_due_at=1791154800000",
+    "settingsPreserved": true,
+    "credentialStatus": "connected",
+    "credentialVersion": 13,
+    "additionalAiCalls": 0,
+    "additionalMessages": 0,
+    "codeOrDeploymentChanges": false,
+    "screenshot": "backups/automation-enable-20261004/enabled.png"
+  },
+  "before": {
+    "at": "2026-10-04T05:54:39.459Z",
+    "settings": {
+      "singleton": 1,
+      "settings": {
+        "topic": "영화 대사",
+        "base_expression": "",
+        "level": "초급",
+        "template": "expression",
+        "start_date": "2026-10-05",
+        "end_date": "2026-10-05",
+        "time": "08:00"
+      },
+      "version": 5,
+      "enabled": 0,
+      "reason": "complete",
+      "next_due_at": null,
+      "updated_at": 1791090098362
+    },
+    "credentials": {
+      "status": "connected",
+      "version": 13,
+      "expires_at": 1791114335200,
+      "refresh_failure": null
+    },
+    "counts": {
+      "runs": 2,
+      "ai_attempts": 4,
+      "delivery_attempts": 19,
+      "active_schedules": 0,
+      "unresolved": 0
+    }
+  },
+  "after": {
+    "at": "2026-10-04T05:56:02.833Z",
+    "settings": {
+      "singleton": 1,
+      "settings": {
+        "topic": "영화 대사",
+        "base_expression": "",
+        "level": "초급",
+        "template": "expression",
+        "start_date": "2026-10-05",
+        "end_date": "2026-10-05",
+        "time": "08:00"
+      },
+      "version": 6,
+      "enabled": 1,
+      "reason": null,
+      "next_due_at": 1791154800000,
+      "updated_at": 1791093327383
+    },
+    "credentials": {
+      "status": "connected",
+      "version": 13,
+      "expires_at": 1791114335200,
+      "refresh_failure": null
+    },
+    "counts": {
+      "runs": 2,
+      "ai_attempts": 4,
+      "delivery_attempts": 19,
+      "active_schedules": 0,
+      "unresolved": 0
+    }
+  },
+  "remaining": "Future creation and delivery have not occurred yet. PC/browser/Codex may be closed; cloud Cron executes the schedule."
+}

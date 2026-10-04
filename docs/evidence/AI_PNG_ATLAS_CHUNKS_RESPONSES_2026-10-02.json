@@ -1,0 +1,74 @@
+[
+  {
+    "sha256": "806591fcb51be7ea1473f4f088fff8358ccc8e5fcf73a1dd62f830740f428019",
+    "status": 200,
+    "bytes": 25223,
+    "iteration": 0,
+    "fixture": "expression",
+    "at": 1790944371794,
+    "encoder": "atlas_chunks"
+  },
+  {
+    "sha256": "806591fcb51be7ea1473f4f088fff8358ccc8e5fcf73a1dd62f830740f428019",
+    "status": 200,
+    "bytes": 25223,
+    "iteration": 1,
+    "fixture": "expression",
+    "at": 1790944377246,
+    "encoder": "atlas_chunks"
+  },
+  {
+    "sha256": "da6798f9c90b0f32c933f4a6db20d46e4c5f17e6c3206a0c06ccfdfd8d24dfba",
+    "status": 200,
+    "bytes": 23041,
+    "iteration": 0,
+    "fixture": "comparison",
+    "at": 1790944378036,
+    "encoder": "atlas_chunks"
+  },
+  {
+    "sha256": "4164f4a1deaaccea62979681516f5487c2ba3f1c65705ab69a2b10f4ddf919f9",
+    "status": 200,
+    "bytes": 38211,
+    "iteration": 0,
+    "fixture": "long",
+    "at": 1790944381294,
+    "encoder": "atlas_chunks"
+  },
+  {
+    "sha256": "2d49884c68a7df91e931fd1fcbe2e83aa153f03c83e330b26cdf82c76d70f03e",
+    "status": 200,
+    "bytes": 38677,
+    "iteration": 0,
+    "fixture": "long_comparison",
+    "at": 1790944396059,
+    "encoder": "atlas_chunks"
+  },
+  {
+    "sha256": "2d49884c68a7df91e931fd1fcbe2e83aa153f03c83e330b26cdf82c76d70f03e",
+    "status": 200,
+    "bytes": 38677,
+    "iteration": 1,
+    "fixture": "long_comparison",
+    "at": 1790944396624,
+    "encoder": "atlas_chunks"
+  },
+  {
+    "sha256": "d01d67b5178d3505fb393089e5ad0b9aa9aa1755469836d7008b7865f14037ff",
+    "status": 200,
+    "bytes": 38493,
+    "iteration": 0,
+    "fixture": "coverage",
+    "at": 1790944410977,
+    "encoder": "atlas_chunks"
+  },
+  {
+    "sha256": "d01d67b5178d3505fb393089e5ad0b9aa9aa1755469836d7008b7865f14037ff",
+    "status": 200,
+    "bytes": 38493,
+    "iteration": 1,
+    "fixture": "coverage",
+    "at": 1790944412575,
+    "encoder": "atlas_chunks"
+  }
+]

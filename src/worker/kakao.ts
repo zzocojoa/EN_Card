@@ -171,7 +171,7 @@ export async function sendKakao(
 }
 export async function requestTokens(
   params: URLSearchParams,
-  env: Env,
+  env: Pick<Env, 'KAKAO_REST_API_KEY' | 'KAKAO_CLIENT_SECRET'>,
   transport: Transport,
 ): Promise<TokenResponse> {
   if (!env.KAKAO_REST_API_KEY || !env.KAKAO_CLIENT_SECRET)

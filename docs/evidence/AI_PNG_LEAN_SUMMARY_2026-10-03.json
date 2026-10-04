@@ -1,0 +1,356 @@
+{
+  "measured_at_utc": "2026-10-02T15:21:17.538Z",
+  "qualification": "not_qualified",
+  "scope": "10 approved Cloudflare Free PNG generations; current trial only. Full renderer and server-filtered POST tails deduplicated by script/version/timestamp/path with identical CPU/outcome checks. Missing events are not passes. Local data are not remote CPU.",
+  "remote_png": 10,
+  "cumulative_remote_png": 76,
+  "expected_generation_invocations": 92,
+  "captured_generation_invocations": 20,
+  "captured_channel_events": 30,
+  "deduplicated_events": 10,
+  "excluded_events": 1,
+  "missing_invocations": [
+    "/lean/800/pipeline/glyphs/expression/0",
+    "/lean/800/pipeline/glyphs/expression/1",
+    "/lean/800/pipeline/glyphs/expression/2",
+    "/lean/800/pipeline/glyphs/expression/3",
+    "/lean/800/pipeline/glyphs/expression/4",
+    "/lean/800/pipeline/glyphs/expression/5",
+    "/lean/800/pipeline/glyphs/expression/6",
+    "/lean/800/pipeline/glyphs/comparison/0",
+    "/lean/800/pipeline/glyphs/comparison/1",
+    "/lean/800/pipeline/glyphs/comparison/2",
+    "/lean/800/pipeline/glyphs/comparison/3",
+    "/lean/800/pipeline/glyphs/long/0",
+    "/lean/800/pipeline/glyphs/long/1",
+    "/lean/800/pipeline/glyphs/long/2",
+    "/lean/800/pipeline/glyphs/long/3",
+    "/lean/800/pipeline/glyphs/long/4",
+    "/lean/800/pipeline/glyphs/long/5",
+    "/lean/800/pipeline/glyphs/long_comparison/0",
+    "/lean/800/pipeline/glyphs/long_comparison/1",
+    "/lean/800/pipeline/glyphs/long_comparison/2",
+    "/lean/800/pipeline/glyphs/long_comparison/3",
+    "/lean/800/pipeline/glyphs/long_comparison/4",
+    "/lean/800/pipeline/glyphs/long_comparison/5",
+    "/lean/800/pipeline/glyphs/coverage/0",
+    "/lean/800/pipeline/glyphs/coverage/1",
+    "/lean/800/pipeline/glyphs/coverage/2",
+    "/lean/800/pipeline/glyphs/coverage/3",
+    "/lean/800/pipeline/glyphs/coverage/4",
+    "/lean/800/pipeline/glyphs/coverage/5",
+    "/lean/800/pipeline/glyphs/coverage/6",
+    "/lean/800/pipeline/glyphs/coverage/7",
+    "/lean/800/pipeline/glyphs/coverage/8",
+    "/lean/800/pipeline/glyphs/coverage/9",
+    "/lean/800/pipeline/glyphs/coverage/10",
+    "/lean/800/pipeline/glyphs/coverage/11",
+    "/lean/800/pipeline/glyphs/coverage/12",
+    "/lean/720/pipeline/glyphs/expression/0",
+    "/lean/720/pipeline/glyphs/expression/1",
+    "/lean/720/pipeline/glyphs/expression/2",
+    "/lean/720/pipeline/glyphs/expression/3",
+    "/lean/720/pipeline/glyphs/expression/4",
+    "/lean/720/pipeline/glyphs/expression/5",
+    "/lean/720/pipeline/glyphs/expression/6",
+    "/lean/720/pipeline/glyphs/comparison/0",
+    "/lean/720/pipeline/glyphs/comparison/1",
+    "/lean/720/pipeline/glyphs/comparison/2",
+    "/lean/720/pipeline/glyphs/comparison/3",
+    "/lean/720/pipeline/glyphs/long/0",
+    "/lean/720/pipeline/glyphs/long/1",
+    "/lean/720/pipeline/glyphs/long/2",
+    "/lean/720/pipeline/glyphs/long/3",
+    "/lean/720/pipeline/glyphs/long/4",
+    "/lean/720/pipeline/glyphs/long/5",
+    "/lean/720/pipeline/glyphs/long_comparison/0",
+    "/lean/720/pipeline/glyphs/long_comparison/1",
+    "/lean/720/pipeline/glyphs/long_comparison/2",
+    "/lean/720/pipeline/glyphs/long_comparison/3",
+    "/lean/720/pipeline/glyphs/long_comparison/4",
+    "/lean/720/pipeline/glyphs/long_comparison/5",
+    "/lean/720/pipeline/glyphs/coverage/0",
+    "/lean/720/pipeline/glyphs/coverage/1",
+    "/lean/720/pipeline/glyphs/coverage/2",
+    "/lean/720/pipeline/glyphs/coverage/3",
+    "/lean/720/pipeline/glyphs/coverage/4",
+    "/lean/720/pipeline/glyphs/coverage/5",
+    "/lean/720/pipeline/glyphs/coverage/6",
+    "/lean/720/pipeline/glyphs/coverage/7",
+    "/lean/720/pipeline/glyphs/coverage/8",
+    "/lean/720/pipeline/glyphs/coverage/9",
+    "/lean/720/pipeline/glyphs/coverage/10",
+    "/lean/720/pipeline/glyphs/coverage/11",
+    "/lean/720/pipeline/glyphs/coverage/12"
+  ],
+  "versions": [
+    "7b3f64cb-937e-47e2-84c1-c4ef2bf0b71a",
+    "2e9ef706-91ce-423c-8713-739f83e40776"
+  ],
+  "cpu": [
+    {
+      "size": 800,
+      "stage": "glyphs",
+      "expected": 36,
+      "captured": 0,
+      "min_ms": null,
+      "max_ms": null,
+      "over_10ms": 0,
+      "samples": []
+    },
+    {
+      "size": 800,
+      "stage": "assembly",
+      "expected": 5,
+      "captured": 5,
+      "min_ms": 6,
+      "max_ms": 19,
+      "over_10ms": 2,
+      "samples": [
+        {
+          "path": "/lean/800/pipeline/assemble/expression",
+          "cpu_ms": 15,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        },
+        {
+          "path": "/lean/800/pipeline/assemble/comparison",
+          "cpu_ms": 8,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        },
+        {
+          "path": "/lean/800/pipeline/assemble/long",
+          "cpu_ms": 19,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        },
+        {
+          "path": "/lean/800/pipeline/assemble/long_comparison",
+          "cpu_ms": 6,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        },
+        {
+          "path": "/lean/800/pipeline/assemble/coverage",
+          "cpu_ms": 8,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 800,
+      "stage": "collector",
+      "expected": 5,
+      "captured": 5,
+      "min_ms": 6,
+      "max_ms": 9,
+      "over_10ms": 0,
+      "samples": [
+        {
+          "path": "/probe/expression/atlas_lean800",
+          "cpu_ms": 9,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        },
+        {
+          "path": "/probe/comparison/atlas_lean800",
+          "cpu_ms": 8,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        },
+        {
+          "path": "/probe/long/atlas_lean800",
+          "cpu_ms": 9,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        },
+        {
+          "path": "/probe/long_comparison/atlas_lean800",
+          "cpu_ms": 6,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        },
+        {
+          "path": "/probe/coverage/atlas_lean800",
+          "cpu_ms": 7,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 720,
+      "stage": "glyphs",
+      "expected": 36,
+      "captured": 0,
+      "min_ms": null,
+      "max_ms": null,
+      "over_10ms": 0,
+      "samples": []
+    },
+    {
+      "size": 720,
+      "stage": "assembly",
+      "expected": 5,
+      "captured": 5,
+      "min_ms": 5,
+      "max_ms": 30,
+      "over_10ms": 3,
+      "samples": [
+        {
+          "path": "/lean/720/pipeline/assemble/expression",
+          "cpu_ms": 17,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        },
+        {
+          "path": "/lean/720/pipeline/assemble/comparison",
+          "cpu_ms": 5,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        },
+        {
+          "path": "/lean/720/pipeline/assemble/long",
+          "cpu_ms": 30,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        },
+        {
+          "path": "/lean/720/pipeline/assemble/long_comparison",
+          "cpu_ms": 7,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        },
+        {
+          "path": "/lean/720/pipeline/assemble/coverage",
+          "cpu_ms": 24,
+          "channels": [
+            "en-card-png-feasibility-POST",
+            "en-card-png-feasibility"
+          ]
+        }
+      ]
+    },
+    {
+      "size": 720,
+      "stage": "collector",
+      "expected": 5,
+      "captured": 5,
+      "min_ms": 4,
+      "max_ms": 15,
+      "over_10ms": 2,
+      "samples": [
+        {
+          "path": "/probe/expression/atlas_lean720",
+          "cpu_ms": 9,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        },
+        {
+          "path": "/probe/comparison/atlas_lean720",
+          "cpu_ms": 4,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        },
+        {
+          "path": "/probe/long/atlas_lean720",
+          "cpu_ms": 15,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        },
+        {
+          "path": "/probe/long_comparison/atlas_lean720",
+          "cpu_ms": 4,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        },
+        {
+          "path": "/probe/coverage/atlas_lean720",
+          "cpu_ms": 14,
+          "channels": [
+            "en-card-png-probe"
+          ]
+        }
+      ]
+    }
+  ],
+  "assembly_channel_counts": {
+    "en-card-png-feasibility": 10,
+    "en-card-png-feasibility-POST": 10
+  },
+  "all_captured_outcomes_ok": true,
+  "tail_diagnostics": {
+    "updated_at_utc": "2026-10-02T15:20:40.950Z",
+    "scope": "Sanitized local tail process counters. Zero local drops does not prove provider delivered every invocation.",
+    "targets": {
+      "en-card-png-feasibility": {
+        "stdout_bytes": 7234,
+        "stderr_bytes": 0,
+        "parsed_events": 10,
+        "invalid_json": 0,
+        "buffer_discards": 0,
+        "discarded_characters": 0,
+        "warning_chunks": 0,
+        "sampling_notice_chunks": 0,
+        "connected": true,
+        "process_error": false,
+        "exit_code": null
+      },
+      "en-card-png-probe": {
+        "stdout_bytes": 50358,
+        "stderr_bytes": 0,
+        "parsed_events": 11,
+        "invalid_json": 0,
+        "buffer_discards": 0,
+        "discarded_characters": 0,
+        "warning_chunks": 0,
+        "sampling_notice_chunks": 0,
+        "connected": true,
+        "process_error": false,
+        "exit_code": null
+      },
+      "en-card-png-feasibility-POST": {
+        "stdout_bytes": 7234,
+        "stderr_bytes": 0,
+        "parsed_events": 10,
+        "invalid_json": 0,
+        "buffer_discards": 0,
+        "discarded_characters": 0,
+        "warning_chunks": 0,
+        "sampling_notice_chunks": 0,
+        "connected": true,
+        "process_error": false,
+        "exit_code": null
+      }
+    }
+  }
+}

@@ -1,5 +1,142 @@
 # 검증 근거
 
+**2026-10-04 16:19 KST review 수정본 커밋·운영 반영:** `e088d61`을 커밋하고 DO→발송→주 Worker 및 하루단어 Site v113(소스 `22c2da2`)에 반영했다. 실제 live 설정의 세 Worker dry-run/무료 구성, Site 연동15개·타입·빌드, 공개 PNG/원본200·동일 해시·비인증 자동화401을 확인했다. 운영14개 주요 테이블의 행 수·해시, Secret 이름/바인딩/Cron, Site 공개 범위·환경 revision59를 보존했다. 화면도 **실행 중·10월5일07:00 제작·08:00 발송·당일 종료**를 확인했다. 추가 AI/카카오 시도·새 자원·마이그레이션0이다. 무료 계정 확인은 기존 기록을 유지하며 오늘 구독 API403·웹 로그인 만료로 재확인하지 못했다. 이 단계에서 새 코드의 실제 제작/발송 CPU나 내일 수신은 검증하지 않았다. [배포·보존 근거](evidence/AI_AUTOMATION_REVIEW_DEPLOY_2026-10-04.json). 아래 기록은 각 시점의 상태다.
+
+**2026-10-04 15:52 KST review 후속(로컬):** 초기 전체 Vitest576개 후 변경부 제품/구성58개·인증/경합115개·복구/갱신/RPC67개를 재검증했고 최종 Playwright54/54가 통과했다. 각 집합은 중복되어 합산하지 않는다. 연결 해제/재연결과 늦은 AI 응답, 오래된 화면 조회, 운영 설정 인수 누락을 실패 테스트로 확인한 뒤 수정했다. 빌드/타입/무료 구성과 독립 fixture Site export는 통과했다. 실제 AI·카카오·운영 배포·미래 예약은 변경하지 않았다. 초기 E2E1건의 시간 초과, 잘못 준비한 인증 fixture3건, 동일 저장소 반복의 중복 제목2건은 [리뷰 기록](AI_CARD_AUTOMATION_REVIEW.md)에 실패와 재검증을 구분했다. CLI는 모델/설치 버전 불일치로 실행 실패했으므로 교차 모델 gate 통과가 아니다.
+
+**2026-10-04 14:56 KST 다음 자동 제작 활성화:** 사용자 요청에 따라 저장된 영화 대사·초급·표현형·10월5일 하루 설정을 그대로 시작했다. 화면의 실행 중/다음 시각과 D1 enabled1·version6을 확인했다. **2026-10-05 07:00 KST부터 제작, 08:00 KST 발송 예정**이며 종료일은10월5일이다. 추가 AI/발송은 아직0회, 코드/배포 변경은 없다. 다음 제작·수신은 미래 작업으로 미실행이다. [활성화 근거](evidence/AI_AUTOMATION_NEXT_2026-10-05.json). 아래 비활성 표시는 이전 시점 상태다.
+
+**2026-10-04 14:48 KST 남은 실제 토큰 갱신 검증 완료:** 기존 비공개 DO에서 카카오 토큰을 실제 갱신했고 version12→13·연결 정상·오류/잠금0을 확인했다. CPU는 실제 운영 갱신 DO **6.054ms**, 별도 검증용 주 Worker **2.250ms**다. 검증용 수치는 정상 예약 엔진 전체 갱신 회차의 CPU가 아니다. 기존 운영 버전/바인딩/Secret 이름/Cron을 복원·대조하고 인증 외18개 테이블의 행 수·해시를 보존했다. 추가 AI·카카오 메시지0회, 신규 유료 구성0개다. 관련59검증·타입·dry-run·무료 구성·review 후속 검증을 통과했다. 현재 자동 제작은 비활성이며 아래 미검증 표시는 각 이전 시점 기록이다. [실제 갱신·CPU·복원 근거](evidence/AI_TOKEN_REFRESH_VERIFICATION_2026-10-04.json).
+
+**2026-10-04 14:14 KST 무인 제작·수신 확인:** 사용자가 PC·브라우저·Codex 종료 후 새 카드 제작과 휴대전화 이미지·원본 링크 확인 요청에 “정상 통과했다.”고 응답했다. 사용자 수행 확인으로 기록하며 기기 종료나 휴대전화를 에이전트가 직접 관찰한 것은 아니다. 서버에서 Gemini 작성13:46:20.914 → Groq 검토13:47:20.939 → 1080 PNG13:48:21.785 → 예약13:50:36.557 → live 발송1회·접수14:01:12.578을 대조했다. 카드 `What happens next?`, AI2회·재시도0·PNG64,621바이트이며14:01:38.362에 자동 종료됐다. 활성예약/미해결/FK0, 기존 기록·저장된 일일 설정·배포/Secret/무료 구성은 보존됐다. 다음 자동 제작은 비활성이다. 실제 발송 CPU는 주 Worker4.269ms·발송 Worker3.787ms·유효 토큰 DO RPC3.487ms, DO 이미지 생성404.606ms다. 이번 관측 구간 일반 Worker 표본은10ms 미만이지만 미래 최댓값 보장은 아니다. **새 RPC의 실제 토큰 갱신 CPU만 별도 미검증**이며 credential version12가 유지되어 이번에는 갱신이 없었다. [사용자·서버·CPU 근거](evidence/AI_AUTOMATION_TRIAL_2026-10-04.json). 아래 기록은 이전 시점 상태다.
+
+
+**2026-10-04 추가 한 장 시험 등록:** 사용자의 오늘 새 카드 시험 요청에 따라 기존 하루 한 장과 별도인 KST 하루 한 번 시험을 구현·배포했다. 기존 데이터 보존·암호화 백업·0015·DO/주 Worker·Site v112 적용을 확인했다. 저장된 일일 설정은 유지하며 시험만 영화 대사/초급/표현형으로 2026-10-04 13:46 KST 제작 시작, 2026-10-04 14:01 KST 발송 예정이다. 새 run은 draft·내용 null·AI 시도0이며 미래 일일 제작 next_due_at=null이다. 기존 카드15·이미지6·정규 AI1건·발송 이력은 그대로다. 제품35·런타임/구성44·Site15·브라우저2개와 타입/빌드/무료구성/review를 통과했다. 실제 새 AI/카카오 호출과 PC 종료 검증은 아직 완료가 아니다. [등록·보존 근거](evidence/AI_AUTOMATION_TRIAL_2026-10-04.json). 아래 기록은 이전 시점 상태다.
+
+
+## 갱신 CPU 사후 확인·DO 분리 반영 — 2026-10-04 12:50 KST
+
+- 첫 시험의 발송 구간을 Cloudflare `workersInvocationsAdaptive`로 읽었다. API introspection으로 CPU 단위가 microseconds임을 확인하고 1,000으로 나눴다. 기존 주 Worker 버전의 10:45:25 갱신 tick은 요청1개·sampleInterval1·P50/P99 **14.004ms**, success였다. 10:46:25 발송 tick은4.776ms다. 발송 Worker의 같은 초 요청2개는P50 1.376/P99 4.890ms이며 개별 호출 최대값으로 해석하지 않는다. 수신 성공과 CPU 한도 적합성을 분리한다. [사후 원자료를 추가한 첫 시험 근거](evidence/AI_AUTOMATION_LIVE_2026-10-04.json).
+- 인증 조회/갱신을 기존 비공개 SQLite DO `credentials` RPC로 옮겼다. 기존 D1 잠금/버전/오류 분류·갱신 후 다음 Cron 발송을 재사용하고 RPC 실패 후 로컬 갱신 우회를 금지했다. 입력/모드 차단, 오류 속성 복원, 응답 유실 전후 복구, 갱신 중 취소, 중복 실행, AI off에서도 수동 발송, 토큰 회전을 검증했다. 실제 workerd RPC 경계를 사용하는 테스트의 제공사 응답은 **모의**다.
+- 검증: 인증/복구/자동화/실제 RPC 6파일116개, 입력 차단9개, 구성14개로 **8파일139개 통과**. `npm run build`의 타입·웹·주/발송/DO dry-run, 기본 및 실제 운영파일의 `check:free`, diff 검사를 통과했다. 독립 리뷰의 입력 차단 테스트 누락과 AI off/발송 모드 충돌을 수정했다. [리뷰 기록](AI_CARD_AUTOMATION_REVIEW.md#인증-cpu-분리-후속--2026-10-04).
+- 실제 배포: DO `74a8c2ea-4bd7-49a7-9bf2-6c0a4769f24b` 먼저, 주 Worker `0dbb9b9b-c617-47ac-bb78-2e4022f624b2` 다음. 관리 API로 각각100% 적용을 확인했다. 발송 Worker 버전·D1/KV·Secrets 이름·일반 설정·Cron1개를 보존했다. 카드15·ready이미지6·AI시도2·활성예약0·미해결0·FK0·인증version12·당일발송1회가 그대로다. 이번 단계의 새 실제 AI/카카오 호출0회, D1 마이그레이션0회다.
+- 배포 후 공개화면200, 기존 PNG200/image/png·48,869바이트·기존 해시 일치, 비인증 자동화 API401을 확인했다. 토큰 RPC는 HTTP 경로가 아니며 로컬 실제 DO/public worker HTTP 검증은404였다. 주 Worker의 임의 비API 경로는 기존 SPA HTML fallback을 반환한다. 새 버전의12:47~12:49 대기 Cron3개는success·CPU1.453~1.906ms, 발송 Worker 준비2개는1.478/2.371ms다. **이는 실제 인증 갱신/발송 CPU 재검증이 아니다.**
+- 무료 구성은 기존 확인된 Workers/SQLite DO/D1/KV 및 Google/Groq Free를 유지했다. 마지막 계정 화면 확인은 Workers10월3일20:19전후, Google/Groq10월4일02:24전후다. 이번 구독 API 조회는403으로 계정 요금제를 새로 확인하지 못했다. 유료 상품·새Secret·로그 수집 상품은 추가하지 않았다.
+- 다음 승인 시험 후보는10월5일07:00새제작·08:00본인발송·시작/종료일10월5일·1장이다. 그러나 브라우저 inventory가 비었고 Chrome/IAB 생성도 불가해 **예약/자동화 설정은 아직 변경하지 않았다.** 사용자가 연결된 Chrome을 열기를 요청했다. PC 종료부터 새 제작, 새 버전 실제 갱신/발송 CPU는 미완료다. [이번 변경·배포·보존 근거](evidence/AI_TOKEN_RPC_2026-10-04.json).
+
+로컬 재현: `npx vitest run tests/refresh-cpu.test.ts tests/token-rpc-runtime.test.mjs tests/token-rpc-guards.test.ts tests/token-recovery.test.ts tests/auth.test.ts tests/automation-product.test.ts tests/automation-product-do.test.mjs tests/free-config.test.ts`, `npm run build`, `npm run check:free`. 추가 배포는 필요 없으며 다음은 브라우저에서 시험을 설정하는 단계다. CPU 해석은 [Workers GraphQL 예시](https://developers.cloudflare.com/analytics/graphql-api/tutorials/querying-workers-metrics/)와 [Workers 샘플링 설명](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/), RPC/DO 실행 환경은 [DO 메서드](https://developers.cloudflare.com/durable-objects/api/base/)와 [DO 제한](https://developers.cloudflare.com/durable-objects/platform/limits/)을 확인했다.
+
+## 1장 실제 수신·시험 종료 확인 — 2026-10-04 10:53 KST
+
+- 사용자는 직전의 PC·브라우저·Codex 종료 후 휴대전화 이미지와 원본 링크 확인 요청을 선택해 **“정상 동작 확인했다.”**고 답했다. PC 종료 상태의 카카오 수신·휴대전화 이미지·원본 링크 정상 동작을 **사용자 수행 확인**으로 기록한다.
+- 10:53:32 읽기 전용 D1 대조: 해당 예약의 발송 1개가 `mode=live,state=sent,attempts=1`이며 실제 호출 이력도 1개·outcome=sent다. 예정 10:45:00 KST, 실제 호출 10:46:25.761·접수 저장 10:46:26.900 KST다. 자동 재시도·추가 메시지는 없었다.
+- 1회 예약은 `enabled=0,reason=completed,cursor=1,next_run_at_utc=null`, 자동화는 10:47:25.198에 `enabled=0,reason=complete,next_due_at=null`로 종료됐다. 전체 활성 예약 0·처리 중/미해결 unknown 0·FK 오류 0. 카드 15·ready 이미지 6·AI 시도 2·일일 업로드 1·발송 시도 1·저장량 451,155바이트다. 기존 과거 blocked 이력은 변경하지 않았다.
+- 주/발송/DO 버전·설정·Secret 이름·Cron 1개는 시험 전과 같고 free_only·확인된 Google/Groq Free 구성을 유지했다. 이 단계에서는 계정 요금 화면을 다시 확인하거나 새 배포·AI·카카오 호출·예약 변경을 수행하지 않았다. 최초 관리 조회 401은 기존 Wrangler OAuth 갱신 완료 후 복구했다.
+- [실제 근거](evidence/AI_AUTOMATION_LIVE_2026-10-04.json)에 서버 발송/자동 종료 스냅샷과 사용자 확인의 출처·범위를 분리했다. 기록 생성기의 1회 발송·sent·기간 종료·배포 불변·PNG/교차 검토/CPU assertion을 통과했다. 제품 코드 변경이 없어 기존 단위/E2E는 반복하지 않았다.
+- **검증 경계:** PC 종료 중 예약 발송은 확인됐지만 이 카드의 AI 제작은 PC가 켜져 있을 때 수행했다. PC 종료부터 새 AI 제작·검토·PNG까지의 별도 시험은 미실시다. 이번 카카오 발송 구간의 CPU 로그도 수집하지 않았으며, 기존 제작 4단계의 8개 로그로 대체하지 않는다. 새 실제 시험/반복 운영은 시작하지 않았다.
+- 다음 서버 상태 읽기: `node backups/automation-live-20261004/progress.mjs`. 이번 확인을 위한 추가 배포 명령·설정 입력은 없다.
+
+## 실제 1장 제작·검토·예약 — 2026-10-04 09:54 KST
+
+- 사용자 승인 범위: 초급 일상 회화 표현형1장, 당일 종료, 본인 카카오 시험. 사이트에서 시작/종료일 `2026-10-04`·시각 `10:45`를 저장하고 시작을 한 번 실행했다. 설정version2이며 날짜별 실행1개, 예약1개다.
+- 09:45 Gemini `gemini-3.1-flash-lite` 작성1회 성공,09:46 Groq `openai/gpt-oss-120b` 검토1회 성공. 표현 `How's it going?`, 의미·문법·번역 등을 포함한6항목true·issues0, 수정본1의 내용/승인 해시 일치. 모의 응답이 아니며 수정/역할 전환/재시도는 발생하지 않았다.
+- 09:47 비공개DO에서1080×1080 PNG48,869바이트를 생성·KV 저장했다. 실제 공개 이미지 HTTP200·image/png, 한영 글자/여백을 직접 열어 확인했다. SHA256 `65e6d5135365564fc8a2259759376969ff97c795a2e0e27f4f580446425432ab`. 사이트의 PNG 다운로드 버튼도 같은 파일을 저장했다. 브라우저 도구의 download 이벤트 대기는 시간 초과했으나09:48:12에 저장된 `AI-2026-10-04.png`의 크기·해시가 원본과 같음을 파일로 확인했다.
+- 이미지 저장179초 뒤09:50:25에 기존 예약 엔진의1회·1장 예약을 만들었다. `10:45 Asia/Seoul`과 `2026-10-04T01:45:00Z`가 일치한다. 화면 새로고침 후 활성1·예약 중·남은 목록1장을 확인했다. 자동화 종료일10월4일 및next_due_at=null이므로 다음 날 생성하지 않는다. 현재 설정enabled1은 이번 예약의 발송을 허용하기 위해 유지된다.
+
+| 실제 단계 | 주 Worker CPU | SQLite DO CPU |
+| --- | ---: | ---: |
+| 작성 | 2ms | 11ms |
+| 교차 검토 | 2ms | 7ms |
+| PNG·저장 | 2ms | 505ms |
+| 예약 등록 | 2ms | 4ms |
+
+- 위8이벤트를 모두 확보했고ok·예외0·예상 버전 일치다. DO CPU와 일반 Worker10ms 한도를 구별한다. PNG DO의wall2219ms는CPU505ms와 다른 값이다. 사용자 화면/API·Site·향후 카카오 발송의 전체 CPU를 이8개로 증명하지 않는다. Site 최근20분 오류 조회는0건이었다.
+- 09:51:40 사후 읽기: 카드15·ready이미지6·활성 예약1·미해결0·자동화 설정1/작업1/AI시도2/표현1·FK0. 일일 업로드1·발송 시도0, 전체 저장량451,155바이트. 주/발송/DO 버전·Secret 이름·기존Cron1개는 사전과 같다. 새 배포·유료 구성 변경·추가 AI 호출은 없다. 수집기는09:53 KST에 명시적으로 종료했고 해당 프로세스 종료를 확인했다.
+- [검증 데이터와 CPU 원자료](evidence/AI_AUTOMATION_LIVE_2026-10-04.json). Git 제외`backups/automation-live-20261004/`에 사전/사후 조회·단계별 스냅샷·PNG·시작/예약 화면을 보존했다. 기록 생성기의 날짜/1장/교차 검토/PNG/버전/CPU 대조 assertion을 통과했다. 제품 코드를 수정하지 않았으므로 기존 단위/E2E 테스트는 반복하지 않았다.
+- **남음:**10:45 이후 카카오API 접수·휴대전화의 이미지/원본·PC 종료 상태 수신 확인. 이번 제작 중PC가 켜져 있었으므로 PC 종료 상태의새 AI 제작은 별도 미검증이다. 첫1장 수신 확인 전에 다음 실제 시험을 임의로 추가하지 않는다. 조회 재현: `node backups/automation-live-20261004/progress.mjs`(읽기 전용). 추가 배포 명령은 필요 없다.
+
+## 무료 키 확인 후 서버 활성 구성 — 2026-10-04 02:54 KST
+
+- 사용자 “두 개가 맞다.”는 직전 질문의 Google `TESLA-TePilot`·Groq `하루영어`가 기존 Site Secret이라는 동일성 확인이다. 제공사 Free 화면 확인과 사용자 진술을 각각 근거로 기록했으며 키 원문은 조회·복사하지 않았다.
+- 초기 Cloudflare 관리 조회401은 `wrangler whoami`의 기존 OAuth 갱신 뒤 성공했다. 추가 권한이나 새 Secret을 만들지 않았다. 사전 DB 조회에서 자동화4테이블·활성 예약·전송 중/미해결0을 확인한 뒤 DO만 배포했다.
+- Git 제외 `wrangler.automation.live.jsonc`의 `SEND_MODE=live`, `AUTOMATION_MODE=live`, `AI_FREE_CONFIRMED=google_groq_free`를 설정했다. 이전 off 설정은 `backups/automation-activation-20261004/wrangler.automation.off.jsonc`에 보존했다. 추적되는 기본 설정의 off/dry_run/unconfirmed는 유지한다.
+- `npm run check:free -- --config wrangler.live.jsonc --delivery-config wrangler.delivery.deploy.jsonc --mode live --automation-config wrangler.automation.live.jsonc --automation-active` 및 DO deploy dry-run 통과. 실제 DO `9b97ba69-b7f3-4bb5-bcc4-251b86956e7f`100%, private·추가Cron0. startup76ms는 호출 CPU가 아니다.
+- 실제 상태 조회에서 `configured:true, available:true`, DO CPU6ms·wall5105ms·ok·예외0을 확보했다. 사이트 화면의 무료 설정 미준비 문구가 사라졌다. 저장된 자동화 설정이 없어서 시작 버튼은 아직 비활성이며 설정 저장 후 사용할 수 있다. 이는 제공사 생성 성공이 아닌 연결·설정 준비 검증이다.
+- 02:53 KST 사후 조회: 카드14·준비 이미지5·활성 예약0·미해결0·자동화4테이블0행·FK0. 주/발송 Worker 버전·주 Cron1개·Secret 이름은 사전과 같다. AI/카카오 호출0, Site 재게시0, 제품 코드 변경0이므로 기존 코드 테스트는 재실행하지 않았다. 실제 시험1장 범위는 사용자 선택 대기다.
+- [활성 구성·실측 근거](evidence/AI_AUTOMATION_ACTIVATION_2026-10-04.json): 운영 설정 해시·버전·DB 집계·실제 준비 응답. 02:55 KST 수집기를 정상 종료했다.
+
+## 실제 무료 API 계정 확인 — 2026-10-04 02:27 KST
+
+- 사용자 `확인 진행` 요청으로 로그인된 제공사 계정 화면을 읽었다. Google AI Studio API 키 목록에서 `TESLA-TePilot`이 `Default Gemini Project` (`gen-lang-client-0890699099`)의 **무료 등급** 행에 속한다. 키 표시/복사 버튼은 누르지 않았다.
+- Groq API Keys에서 `하루영어`가 `Personal / Default Project`에 속하는 것을 확인하고 같은 조직의 Billing → Plans에서 **Free / $0 / Current Plan**을 확인했다. Upgrade·계정 설정·키 생성/변경은 수행하지 않았다.
+- Sites 환경 메타데이터 revision59의 `google_api`·`groq_api` Secret 등록과 `google_ai_enabled=true`를 확인했다. Secret 값은 가려져 있어 제공사에서 본 두 키와 동일한지는 확인하지 못했다. 사용자에게 이름을 대조한 동일성 질문을 남겼으며 진행 승인 자체를 무료 키 소속 확인으로 해석하지 않았다.
+- 코드/원격 설정/배포 변경0, AI 생성·카카오 호출0. 문서만 갱신하여 테스트 재실행은 하지 않았다. 자동 제작은 off/unconfirmed이며 실제 키 유효성·전체 제작·수신은 미검증이다. [기계 판독 근거](evidence/AI_API_FREE_ACCOUNT_2026-10-04.json).
+
+## 실제 Site 연결 사전 점검 — 2026-10-03 22:15 KST
+
+- `src/automation/relay-client.ts`, `worker.ts`: off 상태에서도 AI 호출·DB 쓰기 없는 signed status를 실행하며 자동 시작 차단은 유지한다. 로그에는 고정 이벤트/오류 코드·HTTP 상태·boolean만 남긴다.
+- 최초 운영 연결 실패는 `httpStatus:null, code:unavailable`였다. 새로운 `tests/automation-relay-runtime.test.mjs`에서 실제 workerd가 `redirect: 'error'`를 거부함을 재현했다. Node 모의 fetch에서는 드러나지 않았다. relay와 Google/Groq provider를 `manual`로 바꾸고 3xx를 따라가지 않도록 했다.
+- `npx vitest run tests/automation-relay-runtime.test.mjs tests/automation-relay.test.ts tests/automation-product.test.ts`: **3파일48개, 84.02초 통과**. 상태 확인 off/AI0/nonce0·비밀 로그 비노출·실제 Workers fetch의 Site/Google/Groq200 성공과302 거부를 포함한다. 외부 응답은 모의이며 실제 AI 요청이 아니다.
+- EN_Card와 하루단어 타입 검사, 실제 ID의 비활성 `check:free` 통과. 하루단어 최신 원격 `5328253`의 보안 수정을 보존했고 `npm run install:ci` 후 Next16.3.6을 확인했다. 생성 번들/프록시/기존 braces 가드 **23개**와 새 잠금 파일 기준 build를 통과했다. 의존성 동기화 전 임시 빌드는 게시에 사용하지 않았다.
+- DO `33eaf35a-75c8-4131-b818-1037ebc9bc85`에서 `configured:true, available:false`, CPU6ms·wall5099ms·outcome ok·예외0을 관측했다. 실제 HMAC 연결·Site 키 설정·nonce 테이블 조회 성공이며 AI 키 유효성/무료 계정 소속/생성 CPU를 입증하지 않는다. 중간 요청1건은 이벤트만 있고 세부 로그가 없어 성공으로 집계하지 않는다.
+- Site v111 `d6b8f6654e1edce872c1134abe60b34a927e15ac`, 배포 `appgdep_6ac0ffede154819183920c4d1ee05d26`는22:15:44.489 KST succeeded. 기존public·환경59를 유지했고 이번 Site 소스 변경은 생성 서버 번들과 해시2파일이다. UI·DB 스키마·기존 설정은 변경하지 않았다.
+- 같은 모델의 독립 review 문맥에서 수정·로그·리다이렉트 거부를 재검토해 NO FINDINGS. 교차 모델 검증은 아니다. 자동화 off/dry_run/unconfirmed, 실제 AI/카카오 호출0. 무료 키 소속 답변과 전체 무인 제작·수신 검증은 미완료다.
+- 22:20 KST 최종 읽기 전용 조회에서 카드14·준비 이미지5·활성 예약0·전송 중/미해결0·자동화4테이블0행·FK 오류0을 재확인했다. 주/발송 Worker 버전·주 Cron1개·기존 Secret 이름은 그대로이며 DO만 새 버전100%다. 관리용 집계 SQL은 compound SELECT 제한 오류 뒤 개별 SELECT 묶음으로 바꿔 성공했다. DB 쓰기는 없다. 수집기는 모두 종료했다. v111 게시 후 재조회 시도의 tail 이벤트는 확보되지 않았으며 앞의 연결 성공 표본은 게시 전 v110 시점이다.
+- [기계 판독 근거](evidence/AI_AUTOMATION_PREFLIGHT_2026-10-03.json): 배포 버전·설정·DB 집계·수집된4이벤트·변경6파일 SHA256. 로컬 재현 workerd 버전은1.20260926.1이다.
+
+## 비활성 운영 반영 — 2026-10-03 21:40 KST
+
+- EN_Card SQL94,432바이트를 제한 ACL·Windows DPAPI CurrentUser로 암호화하고 복호화 해시를 대조한 뒤 평문을 제거했다.0014 적용 전후 기존15테이블의 기존 열/행 해시는 이력 테이블 외 동일했다. 카드14·이미지5·활성 예약0·미해결0·FK 오류0, 자동화4테이블0행이다.
+- DO `c8591f31-41b2-40bc-ba1f-1c872e7bf98f` off/dry_run/unconfirmed, 발송 `c20e9a02-b54a-40f3-bce6-6af5603c4c05`, 주 `00bb067b-4d23-459d-8eef-26c17941b5e2` 각100% 적용. 매분 Cron1개 복원, 기존D1/KV·Secret 이름 유지, 자식 공개/preview URL 비활성이다. boot200/live·비인증 자동화401을 확인했다.
+- 비활성 Cron 실측5건1/4/1/2/3ms, 모두ok·예외0. 제품 AI/렌더 전체 CPU 표본이 아니며 수집기를 종료했다.
+- Site v109·소스 `42eb484844bc3b78619ee392a162eb51365e5a31`·배포 `appgdep_6ac0f7a7df4081918072458cfb3fda5e`는21:40:27.796 KST succeeded다. 기존public·환경59를 유지했고 새 nonce0004와 서버 번들·UI를 포함했다. Native 결과로 게시 성공을 확인했으며 운영 학습 데이터를 QA로 수정하지 않았다.
+- 첫 source-only 원격 빌드는 npm lockfile 불일치를 보고했다. 로컬 `npm ci --ignore-scripts --dry-run`은 통과했으며 오류 원인은 확정하지 않았다. 로컬 Node22 포장 도구의 접근 위반은 bundledNode24.19.0·Git Bash·TAR_OPTIONS=--force-local로 해결했다. 검증한 같은 소스를 공식 workflow로 포장/저장해 게시했고 의존성·잠금 파일은 바꾸지 않았다.
+- 실제 AI/카카오 호출0, 자동 제작 비활성. 키의 무료 프로젝트 연결과 실제 제작·수신·PC 종료는 미검증이다. 관련relay16개·하루단어 번들/proxy15개·양쪽 타입/빌드·무료 구성·lint0오류/기존13경고·diff/서식을 통과했다. 일부 집계는 겹치며 합산하지 않는다.
+
+## 기존 Site AI Secret 재사용 — 2026-10-03
+
+- 기존 Site 환경 revision59에서 `google_api`, `groq_api` Secret 이름을 확인했다. 값은 조회·추출·복사·출력하지 않았다. 사이트 v108의 기존 소스 위에 서버 전용 relay를 추가했다.
+- 기존 bridge Secret과 소유자 ID로 파생한 HMAC 키, 고정 출처/경로, 60초 서명, 5초/64KiB 본문, D1 UNIQUE nonce 소비를 적용했다. nonce 테이블이 없으면 준비 완료로 표시하지 않는다.
+- 변경 영향 Vitest4파일53개 통과(89.77초, 최종 nonce/시각 수정 전), 이후 최종 relay16개 통과(0.50초). 하루단어 생성 번들+proxy15개와 타입 검사 통과. 두 집계는 중복되며 실제 AI 호출은 없다.
+- 동시 서명 요청5회 중 제공사 모의 호출1회, 만료·위조·61초 지연·중단 본문·DB 실패·테이블 누락 차단을 검증했다. 보안 검토자가 별도 생성 번들에서 동시2회→200/409·호출1회와 지연본문403을 재현했다. 데이터 검토에서 Site0004는 기존 테이블 변경0·추가 테이블1/인덱스1임을 확인했다.
+- EN_Card 타입·Vite·세 Worker dry-run·실제 ID의 off 구성 check:free를 통과했다. 별도 Claude/교차 모델 검증, 제품 원격 CPU·실제 AI/카카오 호출·수신은 이 결과에 포함하지 않는다.
+
+아래 Secret 연결 대기 문구는 이전 설계의 기록이다. 현재는 키 재등록 없이 사이트의 Secret을 사용한다. 무료 계정과 해당 키의 연결은 별도 확인 대상이다.
+
+## AI 자동 제작 제품 연결 — 2026-10-03
+
+브랜치: 두 저장소 모두 `codex/ai-card-automation`. EN_Card 기준 HEAD `ad875e8`, 하루단어 기준 HEAD `2b00a8d325c54b3520b760a2d1580e0f78e1e984` 위의 작업 변경으로 검증했다. 이전 PNG 실험 수치를 제품 전체 검증으로 합산하지 않는다.
+
+| 실행 | 확인 결과와 범위 |
+| --- | --- |
+| EN_Card 전체 `npm test` | 35파일·497개 통과, 1142.10초. 일부 후속 리뷰 수정 전의 전체 회귀 기준이다. |
+| 이후 변경 영향 검증 | `automation-product`, `automation-product-do`, `free-config` 3파일·41개 통과, 91.84초. 실제 로컬 SQLite D1/KV·Wasm·124개 폰트로 1080 PNG 생성 포함. |
+| 마지막 자동 예약 수정 보호 회귀 | `automation-product.test.ts -t "final schedule"` 선택한 1개 통과. 앞의 전체 집계에 더하지 않는다. |
+| 브라우저 | 전체 Chromium 38개 통과. 새 자동 제작 흐름은 Chromium·WebKit 2개 통과(Chromium은 앞 집계와 중복). 390px 화면, 잘못된 검토 표시, 설정 초안 보존, 시작·중단 확인. |
+| 하루단어 | 프록시 11개·전체 테스트·타입·빌드 통과. 기존 본인/Origin 검증과 경로·본문 크기 제한 확인. |
+| 빌드·비용 구성 | 타입·Vite·주/발송/자동 제작 Worker dry-run·`check:free` 통과. SQLite DO의 비공개 접근과 기본 off/dry_run/unconfirmed 확인. |
+| `review` | 데이터·보안/API·테스트·유지보수/성능·적대적 검토 및 수정 후 재검토. 별도 Claude CLI 교차 모델 검증은 미실시. |
+
+AI 응답·카카오 발송은 모의 어댑터이며 실제 제공사 호출 0회다. 제품 DO 통합 테스트는 외부 AI/카카오 호출이 발생하면 실패하게 구성했다. 로컬 경과 시간은 원격 CPU 사용량의 증거가 아니다. 전체 497개와 후속 41개를 더해 최신 전체 통과 개수로 표현하지 않는다.
+
+무료 계정은 20:19 KST 전후 로그인된 공식 대시보드에서 직접 확인했다. Cloudflare 계정의 Workers Free·US$0, Google **Default Gemini Project**의 무료 등급, Groq **Personal**의 Free $0가 대상이다. 다른 Google 프로젝트/결제 계정까지 무료라고 판단하지 않는다. 읽을 수 없는 기존 Sites Secret을 확인된 새 Worker Secret으로 간주하지 않으며 키가 어느 프로젝트에 속하는지 연결 확인이 남았다. 계정/구독/운영 DB·Worker·발송은 변경하지 않았다.
+
+실제 제품 배포, AI 작성/교차 검토, 원격 CPU, 자동 예약 카드의 모바일 수신·원본 링크·PC 종료 제작은 미검증이다. 구현·운영 적용 절차·리뷰 수정 내역은 [제품 연결 문서](AI_CARD_AUTOMATION_IMPLEMENTATION.md)를 따른다. 아래는 이전 단계 검증 기록이다.
+
+**20:38 KST 운영 사전 조회:** 같은 운영 D1에서 마이그레이션0001~0013 총13개, 활성 예약0·준비 이미지5·FK 오류0·저장 인증 상태connected/version11을 확인했다. 넓은 대기/보류 조회1건은 비활성 예약의 blocked/needs_reconnect 기록이며 sending/미해결unknown은0이다. 최초 API7403 오류 후 목록과 개별 쿼리 재시도는 성공했다. 후속 분류 조회의 잘못된 열 이름은 로컬 스키마와 맞춘 뒤 재실행했다. 성공한 쿼리는 모두 rows_written0·changed_db=false다. 토큰 유효성을 실제 카카오 API로 시험한 결과가 아니며 AI Secret 연결 대기는 유지한다.
+
+최신 **중간 픽셀 복사 제거 — 2026-10-03**: [보고서](AI_CARD_AUTOMATION_REFERENCE.md). 관련5파일73테스트와 검증기1파일6회귀, 실제 로컬 workerd320개 새 측정 환경+별도4개 smoke에서 PNG4,200개 일치·거부32건을 확인했다. 원시320행·8집계·4짝비교·순서 균형·19소스/247자산 해시를 독립 재검증했다. 타입·제품 빌드/2개 dry-run·시험1개 dry-run·무료 구성 검사 통과. 리뷰의 빈/누락 해시 명세 통과 결함을 수정한 후 재검토했다. native 조립 반복4.707→4.271ms, 전체 반복40.055→41.534ms라 기본 미적용이다. 모두 로컬 경과 시간이며 원격 CPU·계정·AI/카카오 신규 검증이 아니다. 원격 PNG 누적88개·기존 CPU 초과와 로그 누락을 유지한다. 아래는 이전 단계 기록이다.
+
+최신 **N3 작은 압축 블록 — 2026-10-03**: [결과 보고서](AI_CARD_AUTOMATION_BLOCKS.md). 관련5파일61테스트와 전체12,580원본페이지·글자780,504개/후보 대조를 통과했다. 실제 로컬 workerd의234개 새 측정 인스턴스와 별도21개 smoke에서 PNG1,200개·준비 프레임8,640개·페이지 해독 응답720개 일치, 거부51건을 확인했다.180개 경로/54개 페이지 측정행·15집계·소스23개 해시를 재대조했다. 타입·Vite·제품2개/시험4개 dry-run·무료 구성·리뷰를 통과했다. 전체 반복38.080→37.994/38.801ms로 일관된 개선이 없어 두 후보를 기본값에 채택하지 않는다. [시간 원자료](evidence/AI_PNG_BLOCK_LOCAL_2026-10-03.json), [작업량·연동](evidence/AI_PNG_BLOCK_WORKER_2026-10-03.json), [전체 글자 변환](evidence/AI_PNG_BLOCK_BUILD_2026-10-03.json). 원격 CPU·계정·실제 AI/카카오 신규 검증이 아니며 원격 PNG 누적88개는 유지한다.
+
+이전 **N2 ATC 바이너리화 — 2026-10-03**: [로컬 비교](AI_CARD_AUTOMATION_BINARY.md)에서 관련 Vitest4파일53개, 타입·Vite·제품2개/시험2개 Worker dry-run, 무료 구성·변경 코드 서식 검사를 통과했다. 120개 새 측정 인스턴스와 별도 smoke에서 실제 계산 PNG1,080개·준비 프레임3,888개 일치, 잘못된 요청14건 거부를 확인했다. 120행·6집계·소스18개 해시를 대조했다. 메타데이터는67.9% 줄었지만 첫 조립17.432→21.581ms, 전체 반복41.110→44.076ms로 기본값에 채택하지 않았다. [원자료](evidence/AI_PNG_BINARY_LOCAL_2026-10-03.json), [실제 로컬 연동](evidence/AI_PNG_BINARY_WORKER_2026-10-03.json). 로컬 경과 시간이며 원격 CPU·계정·AI/카카오 신규 검증이 아니다. 원격 PNG 누적88개와 기존 제약은 유지한다.
+
+이전 **N1 바이너리 RPC — 2026-10-03**: [로컬 비교](AI_CARD_AUTOMATION_RPC.md)에서 관련 Vitest48개, 타입·Vite·제품2개/시험2개 Worker dry-run, 무료 구성 검사 통과. 실제 로컬 바인딩20PNG·거부12건 및 두 모집단×두 방식×20새인스턴스의 첫/안정화/반복 응답을 검증했다. 최종 실행 합계1,060건 중 실제계산540·사전응답520건으로 모두 PNG 바이트가 같았다. 수집 분리 반복3.643→3.242ms와 달리 전체 생성39.659→42.064ms라 기본 경로에 채택하지 않았다. [원자료·소스 해시](evidence/AI_PNG_RPC_LOCAL_2026-10-03.json), [로컬 실제 연동](evidence/AI_PNG_RPC_WORKER_2026-10-03.json). 원격 CPU·계정·AI/카카오 신규 검증이 아니며 원격 PNG 누적88개는 그대로다. 아래는 이전 시점 기록이다.
+
+최신 **조사 자료 검증 — 2026-10-03 11:13 KST**: [기존 25시도·추가 5후보](AI_CARD_AUTOMATION_PERFORMANCE.md)의 데이터 생성·공유 React 시각화 빌드·오프라인 HTML 내보내기를 완료했다. 원자료 19개 SHA256, 원격 34집계(기대858·확보615·누락243), 로컬785행, CSV 4개·snapshot 7질의를 대조했다. 5개 차트의 실제 SVG/막대·필터·검색·원자료 보기를 Chromium으로 확인했고, 1280px/390px에서 페이지 가로 넘침은 없었다. 단일 HTML은 HTTP 요청 없이 차트와 필터가 동작했다. 기록되지 않은 CPU는 null로 남겼으며 새 후보의 절감 ms도 미측정이다. [기계 판독 검증 결과·산출물 해시](performance/verification.json). 이번에는 새 벤치마크·원격 호출·계정 조회·AI/카카오 연동이 없었고 기존 제품 전체 테스트를 다시 실행하지 않았다.
+
+최신 AI 실험은 **2026-10-03** [조립 함수 분리·native CRC 로컬 비교](AI_CARD_AUTOMATION_BLIT.md)다. 세 비교에서 새 로컬 workerd300개·PNG7,500개가 기준과 일치했다. 관련 Vitest3파일38개·타입/제품 빌드/두dry-run·무료 구성·새 시험 dry-run을 통과했다. 마지막 비교의 첫 중앙값13.82→12.74ms는 로컬 경과 시간이며 원격 CPU가 아니다. 반복 평균은4.30→4.29ms로 거의 같다. 이번 원격 호출은0이며 누적88 PNG, 기존 첫 조립13~22ms·준비/수집 초과·233/272로그와 누락39개는 [직전 실제 진단](AI_CARD_AUTOMATION_DIAGNOSTIC.md)을 따른다. 새 후보의 Free 적합성·전체 자동화2~5단계는 미완료다. 전체 Vitest/E2E·AI/카카오 연동 신규 검증은 아니다. 아래 기존 제품 검증은 해당 날짜 기록이다.
+
 최신 검증: **2026-10-02 (KST)**. `ee229e6`의 전체 Vitest 334개·Chromium 22개와 0013 운영 반영·5장 실제 발송/CPU·사용자 수신·무료 계정 사용량을 문서 끝에 기록했습니다. PR #1은 09:33:26 KST에 `a26c81c`로 병합됐으며 두 제품 파일 트리가 같습니다. 이어 같은 `ee229e6`의 깨끗한 checkout에서 전체 Chromium E2E **22개·95.14초·종료 0**을 다시 확인했습니다. 개별 결과·환경·해시는 [보존 결과](evidence/E2E_2026-10-02_ee229e6.json), 실행·보존 절차는 마지막 절을 따릅니다.
 
 아래 첫 표와 macOS 환경은 **2026-09-29의 과거 실행 기록**입니다. 이후 날짜별 실패·성공·미측정 기록을 보존하며 현재 결과와 섞거나 통과 개수를 합산하지 않습니다.
@@ -973,3 +1110,146 @@ E2E 실행 시 개발 서버를 종료해 8787 포트를 비운다. 배포 dry-r
 - 해당 회차 안전 tail: 메인 Cron CPU5ms/wall3783ms, delivery prepare3ms/wall712ms, send4ms/wall2487ms, 모두 ok/예외0/기대 버전 일치. 인증connected/version11·카드14·이미지5·402286바이트 유지. 기록은 `final-send-cpu-en-card.jsonl`, `final-send-cpu-en-card-delivery.jsonl`, `test-send-latest.json`이다.
 - 후속 실제 기기 결과: 사용자가 **“로그인·미리보기·파일 앱 저장 모두 정상”**이라고 iPhone Safari 검사 결과를 확인했다. 자동 WebKit 결과와 구분한 사용자 수동 검증이다. 키보드/날짜/VoiceOver 모든 조작이나 새 카카오 재연결을 완료한 뜻은 아니다.
 - EN_Card PR #5 `cd56013`·하루단어 PR #13 `06fbd83` 병합 완료. EN 병합 트리는 로컬 검증한 `d03648f`와 동일하고 Site main의 카드 파일도 검증 HEAD와 동일하다. 최신 운영 화면을 새로고침해 `하루단어 홈` 접근성 이름과 실제 발송 기록을 확인했다. CPU 수집기는 정상 종료했다.
+
+## AI 자동화 PNG 무료 실행 검증 — 2026-10-02
+
+브랜치 `codex/ai-card-automation`, 기준 `8e4bf67`. 전체 자동화 구현 완료 검사가 아니라 [계획](AI_CARD_AUTOMATION_PLAN.md) 3절의 선행 실험이다. 기존 사용자 문서 변경을 보존했다.
+
+### 로컬 구현·검증
+
+| 명령·검사                                                                                                                                    | 결과                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `npm run bench:automation:png`                                                                                                               | 네 예제의 SVG·1080 PNG, Wasm/native 압축 생성·CPU/메모리 스냅샷 기록 |
+| `npm run bench:automation:worker:dry-run`                                                                                                    | 비공개 시험 렌더러 패키징 통과                                       |
+| `npm run bench:automation:probe:dry-run`                                                                                                     | 인증 시험 입구 패키징 통과                                           |
+| `npm run bench:automation:worker` 후 `npm run check:automation:worker`                                                                       | 로컬 workerd PNG 8건·거부 5건 통과. 서버 종료                        |
+| `npx vitest run tests/core.test.ts tests/automation-png.test.ts tests/automation-probe.test.ts tests/free-config.test.ts --reporter verbose` | 4개 파일·68개 통과, 5.82초                                           |
+| `npx vitest run tests/catalog.test.ts --reporter verbose`                                                                                    | 기존 조회 3개 통과, 26.74초                                          |
+| `npm run typecheck`, `npm run build`                                                                                                         | 타입·Vite·기존 두 운영 Worker 배포 dry-run 통과                      |
+| `npm run check:free`                                                                                                                         | 기존 운영 설정의 무료 구성 검사 통과. 계정 청구·시험 CPU 검사는 아님 |
+
+PNG 자동 검사에는 기본/대체 압축의 RGBA 픽셀 일치, 구조·CRC·규격·용량, 넘치는 내용·누락 글리프 거부와 사용자 태그의 비실행이 포함된다. 입구 검사는 Secret 미설정·길이가 다른/같은 오인증·잘못된 방법/경로 거부와 하위 호출 없음, 고정 정상 경로 전달을 확인한다. 보안/테스트 리뷰 후 새 테스트 8개를 다시 실행해 통과했다. 네 예제 이미지를 열어 한글·영문·줄바꿈·하단 여백을 확인했다.
+
+전체 `npm test`는 약 14분간 완료되지 않아 중단했다. 전체 통과로 보고하지 않는다. 조회 테스트의 진단용 `--testTimeout 10000 --hookTimeout 10000`에서는 2건이 시간 초과했으나, 설정을 바꾸지 않은 기본 30초 제한 재실행에서 3건 모두 통과했다. 제품 코드가 변경되지 않았다는 이유만으로 중단 원인을 확정하지 않는다. 이번에 E2E나 기존 전체 테스트 통과를 새로 확보한 것은 아니다.
+
+### 승인된 임시 Cloudflare 시험
+
+사용자가 시험 Worker 두 개의 임시 무료 배포·예제 최대 40회 생성·측정·정리를 허용했다. 18:31 KST 전후 Dashboard에서 현재 Workers **무료 / US$0**, 요청 **1,333/100,000**, 기존 Worker 3개와 이름 충돌 없음을 확인했다. 이 사용량은 확인 당시 집계다.
+
+- `en-card-png-feasibility`: 비공개 렌더러, 버전 `fd639f9b-690d-4183-a14e-235c0e692968`.
+- `en-card-png-probe`: Secret 인증 입구, 측정 버전 `b9627b49-4098-4ac9-94b3-62a7354f311d`.
+- 서버 바인딩은 입구→시험 렌더러 하나다. D1·KV·Cron·AI·카카오 연결이 없다. 인증 없는 요청은 401, 렌더러 공개 주소는 404였다.
+- 18:34 KST에 실제 PNG를 **24회** 생성했다. HTTP 200·outcome ok·예외 0이고 SHA-256은 각 인코더의 로컬 workerd PNG와 24개 모두 같다.
+- 렌더러 CPU: Wasm **49~258ms**, native 압축 **35~142ms**, **10ms 이내 0/24회**. 입구 CPU 0~1ms와 혼동하지 않는다. 실제 PNG 생성은 성공했지만 무료 실행 적합성은 실패다.
+- SVG 생성·KV 저장·예약 연결 이전 경로가 이미 초과해 해당 전체 경로와 원격 최고 메모리는 미검증으로 남겼다. 반복 요청의 isolate 동일성도 확인하지 않았다.
+
+원자료: [로컬 Node](evidence/AI_PNG_LOCAL_2026-10-02.json), [로컬 workerd](evidence/AI_PNG_WORKER_2026-10-02.json), [원격 invocation](evidence/AI_PNG_REMOTE_2026-10-02.jsonl), [원격 응답·해시](evidence/AI_PNG_REMOTE_RESPONSES_2026-10-02.json). 원격 이벤트는 24개 렌더러·25개 입구(비인증 1개 포함), 합계 49개다. 당시 입구의 encoder 메타데이터 오류와 클라이언트/제공사 시계 차이는 [실측 보고서](AI_CARD_AUTOMATION_FEASIBILITY.md)에 설명했다. 원자료를 수정해 성공으로 보이게 만들지 않았다.
+
+측정 후 두 임시 Worker를 삭제하고 Dashboard에서 원래 세 Worker만 남았음을 확인했다. 로컬 DPAPI 시험 Secret 파일과 임시 실행 세션도 정리했다. 운영 코드·DB·KV·Cron·예약·기존 Secret은 변경하지 않았으며 실제 AI 호출·카카오 발송은 수행하지 않았다.
+
+### 무료 조건·리뷰·다음 단계
+
+[Workers 한도](https://developers.cloudflare.com/workers/platform/limits/#cpu-time)의 Free CPU 10ms와 일시 초과 유연성을 확인했다. HTTP 200만으로 CPU 기준 통과를 주장하지 않는다. Google/Groq 모델·무료 tier·구조화 출력은 공식 문서를 확인했지만 실제 사용자 AI 계정 자격과 공유 예산은 미확인이다. 새 의존성은 실험용 devDependencies이며 운영 소스에서 import하지 않는다. 유료 전환은 없다.
+
+`review`로 계획 대조·테스트/유지보수/성능/보안 전문 검토·독립 adversarial 검토를 수행했다. 코드 결함과 단계 미완료를 구별한 [리뷰 기록](AI_CARD_AUTOMATION_REVIEW.md)을 남겼다. 별도 Codex CLI는 모델 미지원으로 실패했고 Claude 검토는 실행할 수 없어 교차 모델/CLI gate 통과로 보고하지 않는다.
+
+**판정: 전체 자동화 미완료.** 압축 방식을 바꾼 뒤에도 무료 기준을 넘었다. 계획에 따라 2~5단계와 무인 활성화를 보류한다. 다음은 무료 PNG 경로 재설계·재검증이며 기존 브라우저 선제작은 매일 무인 생성의 대체 완료로 처리하지 않는다.
+
+### 19:30 KST 후속: 저압축·구간 분리
+
+- `npm run bench:automation:png -- --profile`로 압축·래스터·복사·구간·합성의 로컬 50회 평균을 분리했다. 원래 벤치마크로 SVG를 먼저 생성한다. [단계별 증거](evidence/AI_PNG_PROFILE_2026-10-02.json)는 전체 Cloudflare 요청 CPU가 아니다.
+- `npx vitest run tests/automation-png.test.ts tests/automation-probe.test.ts --reporter verbose`: **17개 통과**, 최종 2.56초. 초기 새 테스트의 callback·Buffer 타입 오류와 viewport 이동 픽셀 차이를 수정한 뒤의 결과다. 원본 픽셀 비교 조건을 완화하지 않았다.
+- 두 로컬 Wrangler 서버(8792·8793)와 `node scripts/check-automation-bands.mjs`: 저압축·분할 **8개 PNG의 전체 픽셀 일치**, 비인증 401. [결과](evidence/AI_PNG_BANDS_WORKER_2026-10-02.json).
+- `npm run build`, `npm run check:free`, 두 시험 Worker dry-run 통과. esbuild의 JS/binary 불일치를 `0.28.1` 고정으로 해결했고 `npm ls esbuild`에서 루트·Vite·Wrangler의 일치를 확인했다. 기존 npm 잠금 파일 정리 경고 때문에 사용자의 프로세스를 종료하지 않았다.
+- 실제 계정 Free·US$0, 요청 집계 1,483/100,000을 재확인하고 기존 승인 범위에서 같은 두 시험 이름을 사용했다. 추가 PNG **8장**, 누적 **32/40장**이다. 이미지당 12개 구간이므로 내부 구간 요청은 96회다. 8/8 HTTP 200·해시 일치.
+- 렌더 버전 `b4694cf9-298c-4a58-822e-de8c28ed9c47`, 인증·합성 버전 `4e12410e-2400-4abb-a607-d5299d1a1da8`. 수집된 구간 55회 중 **41회가 10ms 초과(6~72ms)**, 합성 8회 중 **6회가 초과(6~17ms)**했다. startup 20ms/13ms는 별도 지표다. 구간 이벤트 41개를 확보하지 못한 원인은 확정하지 않았으며 전체 CPU 검증이라고 보고하지 않는다.
+- [원격 구간 원자료](evidence/AI_PNG_BANDS_REMOTE_2026-10-02.jsonl)와 [응답·해시](evidence/AI_PNG_BANDS_RESPONSES_2026-10-02.json)를 보존했다. 두 Worker·DPAPI Secret·수집기·로컬 서버를 다시 정리하고 기존 세 Worker만 확인했다.
+- 테스트·성능·보안 후속 리뷰에서 구체적 코드 결함은 발견되지 않았다. 전체 자동화와 무료 CPU 기준은 계속 미완료다. 운영 DB·KV·예약·Cron·기존 Secret·AI·카카오 변경은 없다.
+
+### 독립 리뷰 수정의 오프라인 검증 — 2026-10-02
+
+`pwsh -File scripts/check-automation-trial-ledger.ps1` **5개 시나리오 통과**: 첫 요청 응답 유실, 응답 이후 로컬 파일 실패, 진행 중 두 번째 실행, 빈 중단 표식, 이전 결과 파일. 실제 runner 복사본에 모의 네트워크 함수를 적용했다. 요청 전에 `started`가 파일에서 읽히고, 실패는 한 번만 호출한 뒤 `unknown`을 보존하며, 재실행은 네트워크에 도달하지 않음을 확인했다. 정상 모의 실행은 8번의 시작/완료 기록을 남겼다. 오류 원문과 인증값을 출력·시도 기록에 넣지 않도록 확인했다. 추가 Cloudflare·AI·카카오 호출은 없다.
+
+검증 중 테스트 자체의 PowerShell 스코프 카운터 오류를 공유 상태 객체로 수정한 뒤 다시 통과했다. 기존 원격 수집 자료는 그대로 유지한다. 55개 관측 구간은 표현형 0~10 두 묶음과 나머지 세 예제 0~10 각 한 묶음이며 11번이 전부 없는 비균일한 표본이다. 누락 원인을 확정하거나 누락 호출을 무료 기준 통과로 집계하지 않는다.
+
+### 글자 조립·준비 분리 후속 검증 — 2026-10-02 20:40 KST
+
+- full atlas 자료 11,478자·34스타일·476페이지 및 라이선스 파일을 빌드했다. 예제 문자만 준비한 subset 검사는 원격 적합성 근거로 사용하지 않는다. 공통 글자 번들 도입으로 유효한 비교형의 50페이지 제한 실패를 수정했다.
+- 실제 Workers Free·US$0 확인 후 마지막 승인분 8 PNG를 생성했다. 모두 HTTP 200·로컬 해시 일치, renderer CPU 17~54ms·10ms 이내 0/8회. 누적 40장. renderer 8·입구 9 이벤트를 확보했다. Worker 두 개와 DPAPI Secret·수집기를 정리하고 원래 자원 3개만 확인했다. [원격 CPU](evidence/AI_PNG_ATLAS_REMOTE_2026-10-02.jsonl), [응답](evidence/AI_PNG_ATLAS_RESPONSES_2026-10-02.json), [시도 기록](evidence/AI_PNG_ATLAS_ATTEMPTS_2026-10-02.jsonl).
+- 새 분리 후보: `npx vitest run tests/automation-atlas.test.ts tests/automation-png.test.ts tests/automation-probe.test.ts` **32개 통과**. indexed PNG 구조·31단계 투명도 오차·동적 내용/번호·누락 문자·범위 오류·5예제 조립 결과·프로토콜 순서/키/잘린 프레임·중복·상한 거부를 포함한다. 테스트 전문 리뷰에서 atlas 15개를 별도 재실행해 통과했다.
+- `pwsh -File scripts/check-automation-trial-ledger.ps1` **7개 시나리오 통과**. 기존 실패·동시 실행 방어 5개와 atlas/atlas_chunks 각각 5예제·8회 제한을 모의 네트워크로 검사했다. 원격 호출은 없다.
+- `node scripts/check-automation-atlas.mjs --chunks`: 로컬 5 PNG가 단일 atlas 결과와 전체 바이트 일치. 비인증 401·글자 파일 경로 404. [결과](evidence/AI_PNG_ATLAS_CHUNKS_WORKER_2026-10-02.json).
+- `npm run typecheck`, `npx wrangler deploy --config experiments/automation-png/wrangler.atlas.jsonc --dry-run --outdir .automation-png/atlas-worker-build`, `npx wrangler deploy --config experiments/automation-png/wrangler.atlas-probe.jsonc --dry-run --outdir .automation-png/atlas-probe-build` 통과. gzip 각각 약 1,227KiB. 원격 배포 명령이 아니다.
+- 로컬 분리 비용 평균은 준비 0~0.64ms·조립 2.18~3.44ms. 사전 파일 읽기·startup·I/O 제외 및 Windows CPU 해상도 한계를 명시했다. [자료](evidence/AI_PNG_ATLAS_CHUNKS_LOCAL_2026-10-02.json). 무료 통과로 판정하지 않는다.
+- 추가 원격 PNG 8장 시험은 새 승인 대기다. 전체 Vitest·E2E·실제 AI·자동 예약·PC 종료 검증은 이번 변경에서 새로 완료하지 않았다.
+- 20:42 KST 최종 재검증: 관련 Vitest **32/32, 5.63초**, `npm run build`(타입·웹·두 운영 Worker dry-run), `npm run check:free`, `git diff --check` 통과. 정적 무료 검사는 실제 계정·원격 CPU를 대신하지 않는다. 기존 웹 산출물 파일명은 `index-C9LanUcB.js`로 유지됐다.
+
+### 기존 하루단어 통합 기반 병합 후 — 2026-10-02 20:50 KST
+
+- `git fetch origin master` 후 현재 브랜치를 `ad875e8`까지 fast-forward했다. 기존 통합을 포함하는 기준 갱신이며 새 제품 기능을 배포하지 않았다. 실험 시작 기준 `8e4bf67`의 과거 검증 기록은 그대로 유지한다.
+- autostash 복원 시 `docs/PROGRESS.md`, `docs/VERIFICATION.md`의 추가 부분이 충돌했다. 두 기록을 모두 남겼으며, 백업한 기존 문서의 모든 줄이 순서대로 보존되는지 검사했다. README·package.json·잠금 파일·tsconfig 내용은 CRLF/LF 차이를 제외하고 동일하다. 복구용 autostash `76da6b5`와 `.automation-png/before-base-refresh/`를 남겼다.
+- `npx vitest run tests/studio-bridge.test.ts tests/automation-atlas.test.ts tests/automation-png.test.ts tests/automation-probe.test.ts`: **4파일 37개, 11.06초 통과**. `npm run build`, `npm run check:free`, `git diff --check` 통과. 기본 웹 산출물은 통합 코드가 포함된 `index-Ct3MJjK9.js`다. 통합 export나 운영 게시를 수행한 결과가 아니다.
+- `git diff --name-only origin/master -- src migrations wrangler.jsonc`는 비어 있다. 새 변경은 실험·검증·문서·개발 의존성 범위다. 하루단어 저장소 HEAD `939f9149`의 작업 트리도 읽기 전용 확인 전후 깨끗하다.
+- 학습 시도 카운터가 제공자별 공유 무료 잔량을 증명하지 못함을 코드로 확인했다. 실제 Google/Groq 계정의 무료 조건·현재 잔량은 미검증이며, 별도 원격 AI 호출이나 기존 키 복사는 없다. 추가 PNG 승인 대기와 2~5단계 미완료 상태를 유지한다.
+- 하루단어 저장소에서 `node --experimental-strip-types --test tests/card-studio.test.mjs` **10/10, 187ms** 통과. 로그인·본인 확인·서버 헤더 교체·출처·허용 경로·본문 상한·불명 쓰기 무재시도·redirect 거부를 모의 transport로 검사했다. 실행 뒤 해당 저장소의 `git status --porcelain`은 비어 있다.
+
+### 승인 후 atlas_chunks 실제 검증 — 2026-10-02 21:34 KST
+
+- 사용자 추가8장 승인을 받고 Free·US$0·요청1,858/100,000·기존자원3개를 확인했다. 준비renderer 버전 `14f4e893-2329-4826-bc64-f7c73ce55e24`, Secret 설정 후 probe버전 `d3f0aa9c-08e1-449b-84e3-84466a4bd3d5`를 시험했다.
+- `pwsh -File experiments/automation-png/run-remote.ps1 -Mode atlas_chunks`: 정확히8회, HTTP200·로컬5예제별SHA256 모두일치. 원장17행(run_started1,started8,completed8),unknown0. 응답 유실이나 자동 재호출은 없다.
+- tail 생성경로66행: 글자준비58회1~11ms(10ms초과1),조립8회13~28ms(전부초과). 비인증 요청은 HTTP401로 확인했으나 tail에는 수집되지 않았다. private공개경로404. 원격PNG성공이며 무료실행검증은 실패다.
+- 두별도config로 정확한시험이름을 지정해삭제했고 DPAPI Secret도삭제했다. tail세션은종료했고 Dashboard의원래세Worker를 확인했다. 누적48장이며 추가 원격호출을 승인한 기록은 없다. [CPU](evidence/AI_PNG_ATLAS_CHUNKS_REMOTE_2026-10-02.jsonl),[응답](evidence/AI_PNG_ATLAS_CHUNKS_RESPONSES_2026-10-02.json),[원장](evidence/AI_PNG_ATLAS_CHUNKS_ATTEMPTS_2026-10-02.jsonl).
+
+### 조립 계획 재사용·로컬 비용 진단 — 2026-10-02 21:50 KST
+
+- `npm run typecheck`: 통과. `npx vitest run tests/automation-atlas.test.ts tests/automation-png.test.ts tests/automation-probe.test.ts tests/studio-bridge.test.ts`: **4파일 37개, 11.48초 통과**. 계획 재사용의 5예제 PNG 및 동적 문장·번호의 동일성 assertion을 포함한다.
+- `node scripts/benchmark-automation-png.mjs --atlas-assembly-profile`: 5예제 모두 수정 전후 PNG 바이트 일치. 각 단계 5회 준비 후 100회 평균, 자산·startup·네트워크 제외. 중복 포함 대비 재사용 CPU가 3예제 증가·2예제 감소했다. 원격 무료 적합성 근거로 사용하지 않는다. [프로파일 원자료](evidence/AI_PNG_ATLAS_ASSEMBLY_PROFILE_2026-10-02.json).
+- 변경된 시험 입구 `npx wrangler deploy --config experiments/automation-png/wrangler.atlas-probe.jsonc --dry-run --outdir .automation-png/atlas-probe-build`: 통과, gzip 1,227.07KiB. `npm run check:free`: 통과. 두 명령 모두 원격 배포·실측이 아니다.
+- 성능 전문 재리뷰는 구체적 결함 없음. 새 원격 요청은 없고 누적 48장으로 유지한다. 전체 Vitest·E2E·실제 AI·자동 예약·PC 종료 수신을 이번 변경에서 완료하지 않았다.
+
+### pipeline 로컬·실제 Free 검증 — 2026-10-02 22:12 KST
+
+- `npx vitest run tests/automation-atlas.test.ts tests/automation-png.test.ts tests/automation-probe.test.ts tests/studio-bridge.test.ts`: **4파일 45개, 15.50초 통과**. 신규 8개는 별도 테스트 전문 리뷰에서도 **8/8, 2.24초** 통과했다. 프레임 크기·순서·손상 픽셀 거부, 하위 오류 무재시도, 두 페이지 호출 상한, PNG 동일성을 포함한다.
+- `pwsh -File scripts/check-automation-trial-ledger.ps1`: 네트워크 모의 **8시나리오 통과**. 새 `atlas_pipeline`도 5예제·정확히 8회 시작/완료를 기록하고 반복 실행을 막는다.
+- `node scripts/benchmark-automation-png.mjs --atlas-pipeline`: 5예제 해시 일치. 로컬 평균 조립 프로세스 CPU 2.50~6.24ms, 수집 0.62~2.18ms. 준비된 자산·모의 transport를 사용해 원격 적합성 판단에는 쓰지 않는다. 초기 벤치마크 `frames` 타입 누락은 명시적 배열 타입으로 수정했고 이후 `npm run typecheck`가 통과했다.
+- 두 `wrangler.atlas-pipeline*.jsonc` deploy dry-run 통과, gzip 각각 1,228.35/1,225.17KiB. 로컬 8792/8793의 실제 service binding으로 `node scripts/check-automation-atlas.mjs --pipeline` **5 PNG 바이트 일치·401·404** 통과. 서버는 종료했다. `npm run check:free`, `git diff --check` 통과.
+- 실제 Free·US$0·요청 2,008/100,000 확인 후 두 시험 Worker만 배포했다. 준비/조립 버전 `2679aecc-b0cc-49f7-8ab7-fc1fa14f832f`, Secret 설정 후 입구 `11b218da-4429-4c9b-90e8-f28cae3b4187`. 코드 최초 배포 startup 55/59ms는 요청 CPU와 별도다.
+- `pwsh -File experiments/automation-png/run-remote.ps1 -Mode atlas_pipeline`: **8/8 HTTP 200·기존 5예제별 SHA256 일치**, 원장 started 8·completed 8·unknown 0. 실제 AI·카카오 호출은 없다.
+- 원격 생성 이벤트 예상 100개 중 69개 확보: 준비 58/84(3~28ms, 11회 초과), 조립 3/8(16/35/29ms, 모두 초과), 입구 8/8(12/5/9/18/9/10/8/10ms, 2회 초과). 비인증 401 이벤트 1개를 합쳐 파일은 70행이다. 확보한 이벤트 outcome ok·예외 0. 미수집 31개는 균일한 표본이 아니며 원인 미확인이다.
+- 두 시험 Worker와 DPAPI Secret을 삭제했고 tail을 종료했다. Dashboard에서 원래 세 Worker를 재확인했다. 누적 **56 PNG**. [CPU](evidence/AI_PNG_ATLAS_PIPELINE_REMOTE_2026-10-02.jsonl), [응답](evidence/AI_PNG_ATLAS_PIPELINE_RESPONSES_2026-10-02.json), [원장](evidence/AI_PNG_ATLAS_PIPELINE_ATTEMPTS_2026-10-02.jsonl), [로컬 비용](evidence/AI_PNG_ATLAS_PIPELINE_LOCAL_2026-10-02.json), [로컬 Worker](evidence/AI_PNG_ATLAS_PIPELINE_WORKER_2026-10-02.json).
+- 새 전체 Vitest·E2E·AI 계정·자동 예약·PC 종료 수신 검증은 하지 않았다. 무료 CPU와 전체 자동화는 미완료다.
+
+## 통합 최적화 검증 — 2026-10-02 23:45 KST
+
+- 브랜치 codex/ai-card-automation, 기반 ad875e8. 관련 Vitest 4파일 56개 통과(부모 54.28초), 신규 최적화 11개는 전문 검토자가 33.48초에 독립 통과했다. 전체 Vitest/E2E 재실행은 아니다.
+- 실제 로컬 workerd Static Assets·Service Binding의 800/720×5예제, PNG 10개 전체 바이트 및 크기 일치. 401/405/임의 경로 404/손상 조립 400 통과. `scripts/check-automation-trial-ledger.ps1` 모의 9시나리오에서 신규 모드 10회 상한·2해상도·5예제·사전 기록·재실행 거부 확인.
+- `npm run build`, 두 시험 config의 deploy dry-run, `npm run check:free` 통과. 운영 배포는 수행하지 않았다. 신규 본문 읽기는 헤더 누락·허위 길이·중단·실제 초과도 검증했다. 기본 1080 운영 PNG 검증은 유지한다.
+- 현재 Free·US$0 및 일일 2,257/100,000을 Dashboard에서 확인했다. 승인 범위에서 시험 두 Worker만 배포. renderer d40571e1-a3d1-4818-84df-a07fe708c2d9, Secret 설정 후 probe 7d92b290-be74-4899-83db-44da1b07bfb9, 최초 startup 각 66ms(요청 CPU 아님).
+- `run-remote.ps1 -Mode atlas_optimized`: 실제 10 PNG, started 10/completed 10/unknown 0. 모두 HTTP 200·로컬 SHA256 일치, 비인증 401·비공개 렌더러 공개 주소 404. 누적 66 PNG.
+- 생성 CPU 이벤트 160개 중 100개 확보(사전 비인증 1개 별도). 800 준비 45/70에서 2~13ms·2회 초과, 조립 1/5에서 11ms, 수집 5/5에서 8~22ms·3회 초과. 720 준비 43/70에서 2~13ms·1회 초과, 조립 1/5에서 9ms, 수집 5/5에서 6~27ms·2회 초과. outcome ok·예외 0이며 무료 CPU 합격은 아니다.
+- 누락 60개(준비 52·조립 8). 파서 오류·버퍼 폐기·stderr·sampling 경고 0. 종료 시 잔여 버퍼 카운터 미기록은 도구에서 후속 수정하고 구문 검사했다. 추가 원격 호출 없음. 제공사 누락 원인 미확정·분위수 미산출.
+- 실제 원장·응답·CPU 로그·로컬 원자료·빌드·바인딩·tail 진단을 docs/evidence/AI_PNG_OPTIMIZED*에 보존했다. 수집기 200회 모의 하위 응답 프로파일은 별도 파일이며 원격 CPU로 해석하지 않는다.
+- 두 시험 Worker와 DPAPI Secret 삭제, tail·로컬 서버 종료, Dashboard 기존 3 Worker 확인. 실제 AI·카카오·운영 DB/KV·예약 변경 없음. 실제 휴대전화 이미지 품질·AI 무료 계정·전체 무인 경로·PC 종료 수신은 미검증. [해석과 재현](AI_CARD_AUTOMATION_OPTIMIZATION.md).
+
+
+## SQLite DO 전체 이미지 경로 — 2026-10-03
+
+- 실제 Free 계정 확인 후 격리 Worker2개·SQLite DO·임시 D1/KV를 배포했다. 카드 JSON부터 폰트·배치·1080 PNG·검증·기존 업로드 저장까지 DO에서 실행한다. AI·카카오 호출은 없고 운영 DB/KV·예약은 변경하지 않았다.
+- 실제20장 모두 기준 PNG 바이트/SHA256 일치. DO 생성 CPU78~474ms(중앙133), 첫 생성4회252~474ms·후속16회78~187ms. 일반 입구 생성 CPU0~1ms, 전체 경과996~2273ms. CPU와 경과 시간을 구별한다.
+- 이미지 생성/회수 CPU 로그80/80. 전체90개 중89개이며409 충돌 거부의 입구 로그1개는 미확인이다. 원격 cards/assets/KV각20개, ready20, 예약/발송0, 저장량1,213,920바이트, 외래키 오류0을 대조했다.
+- 로컬 DO 동작8개·구성9개·증거12개 검증을 수행했다. 타입/Vite/운영2Worker dry-run·무료 구성·시험2Worker dry-run도 통과했다. 기존 전체 Vitest/E2E는 이번 재실행 대상이 아니다.
+- 리뷰에서 내용/번호 검증 분리·완료 기록 실패 재업로드 방지 검증·실패 단계 기록을 보완했다. 후속 증거 리뷰에서 배포 버전 혼합과 첫 실행 표시 변경을 거부하도록 수정했다. 수집기의 JSON 모드 연결 배너 오인도 수정했고 최초 실패는 요청0·생성0이었다.
+- 시험 Worker/Secret·DO 클래스/상태·D1·KV·로컬 토큰 삭제를 확인했다. Dashboard DO없음·기존 Worker3개, D1/KV 기존1개씩으로 복귀했다. DO 사용량 표시는44요청·3.19GB-s였다.
+- [실측 보고서](AI_CARD_AUTOMATION_DURABLE.md)와 [원장·CPU·해시·정리 증거](evidence/AI_PNG_DURABLE_2026-10-03.json). 메모리 최고 사용량, 이번 PNG의 휴대전화/카카오 표시, AI무료조건·제품 자동화·PC종료 신규 제작/수신은 미검증이다.
+
+
+## 비공개 DO 실제 토큰 갱신 — 2026-10-04 14:48 KST
+
+- 14:45:35의 검증 Cron과 14:45:36의 credentials DO RPC는 각각 요청1·sampleInterval1·success·오류0, P50=P99였다. Cloudflare GraphQL 원자료의 2,250/6,054µs를 1,000으로 나눈 수치다. 제공사 대기 시간과 구분한다.
+- 토큰 만료 메타데이터를 현재 version12/만료 시각 일치 조건으로 한 번만0으로 바꾸고 실제 시각을 사용해 운영 RPC를 호출했다. version13·20:45:35.200 KST 만료·연결 정상·갱신 오류/잠금0이며 리프레시 토큰 만료 시각은 유지됐다. 토큰 자체를 출력하거나 과거 값으로 복원하지 않았다.
+- 주 Worker는14:45:51에 기존1082abeb 버전100%로 복원했다. DO/발송 버전은 변경하지 않았다. /settings는 마지막 업로드의 비활성 시험 변수를 계속 보여 주므로, 활성 배포가 가리키는 immutable version의 bindings로 재검증했다. 활성 버전에는 시험 코드/변수가 없고18개 비인증 테이블의 행 수·SHA256은 일치한다.
+- 모의 검증은 신규15개·기존 갱신/입력차단43개·실제 workerd RPC 경계와 모의 제공사1개로59개다. 기존 실제 PC 종료 제작/발송 시험은 사용자 확인과 서버 기록을 함께 근거로 한다. 이번 시험은 추가 AI·메시지 발송을 만들지 않았다.
+- 무료 구성 검사를 통과했고 기존 무료 리소스를 유지했다. 계정 구독 API의 최신 조회는403이라 이번에 플랜을 새로 확인했다고 표시하지 않는다. 이전 실제 Free 계정 확인과 이번 구성 보존을 구별한다. 미래 CPU 최고치/무중단/영구 무료를 보장하지 않는다.
+- 재검증 명령: `npx vitest run tests/token-refresh-verification.test.ts tests/refresh-cpu.test.ts tests/token-rpc-guards.test.ts tests/token-rpc-runtime.test.mjs`, `npm run typecheck`. 실제 재시험은 [검증 절차](../experiments/token-refresh-verification/README.md)에 따라 현재 상태를 새로 확인하며 자동 반복하지 않는다. 정상 운영 배포 명령은 `npx wrangler deploy --config wrangler.live.jsonc`이고 이번에는 기존 버전 복원으로 종료했다.
+
+핵심 무인 제작·교차 검토·1080 PNG·예약·본인 수신 및 실제 인증 갱신 검증을 완료했다. 정상 예약 엔진 전체 갱신 회차의 원격 CPU는 이번 별도 probe 측정과 구분한다. 다음 자동 제작은 켜지 않았으며 사용자가 일정을 정해 시작할 수 있다.

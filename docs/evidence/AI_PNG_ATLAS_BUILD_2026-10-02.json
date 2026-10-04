@@ -1,0 +1,16 @@
+{
+  "measured_at_utc": "2026-10-02T11:02:10.286Z",
+  "qualification": "not_qualified",
+  "scope": "Build-time artifacts. All 11172 modern Hangul syllables, supported compatibility Jamo, printable ASCII, Latin1 and explicit punctuation; not arbitrary Unicode. No runtime or remote qualification.",
+  "supported_characters": 11478,
+  "unsupported_points": [
+    8251
+  ],
+  "styles": 34,
+  "files": 476,
+  "compressed_bytes": 101902091,
+  "raw_bytes": 693636700,
+  "max_compressed_bytes": 551424,
+  "max_raw_bytes": 5810109,
+  "build_ms": 69238.6694
+}

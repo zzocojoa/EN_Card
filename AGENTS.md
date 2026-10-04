@@ -58,6 +58,10 @@
 
 아래 구성만 사용하며 외부 상품을 자동 추가하지 않는다.
 
+2026-10-03 사용자 승인 예외: AI 카드 PNG 실행 환경 검증에 SQLite 기반 Durable Objects Free를 사용할 수 있다. 별도 임시 DO·D1·KV·Secret 인증 시험 입구에서 1080 PNG 전체 제작·검증·저장을 시험하고 자원을 정리한다. 기존 운영 자원·AI·카카오 발송은 이 시험에서 변경하지 않는다. 최초 시험의 렌더 시도는 4개 고정 DO × 각 10회, 최대 40회로 제한한다. 실제 Free 계정 확인 후 배포하며 정상 HTTP 응답만으로 CPU 적합성을 판정하지 않는다. 운영 채택과 전체 자동화 완료는 별도 검증 기록으로 구분한다.
+
+2026-10-03 후속 진행 승인에 따라 DO 제품 편입·AI 작성/교차 검토·자동 예약·하루단어 화면 연결을 구현한다. 이 후속 기능은 기본 수동 제작 범위의 예외이며 SQLite Durable Objects Free, Gemini 3.1 Flash-Lite와 Groq GPT-OSS 120B의 확인된 Free 계정만 사용한다. 기본 설정은 `AUTOMATION_MODE=off`, `AI_FREE_CONFIRMED=unconfirmed`이다. Secret 준비·실제 AI 계정 무료 조건·제품 경로 CPU·실제 본인 수신 검증은 구현 완료와 구분한다. R2/Browser Run/Workers Paid/OpenAI API 등 기존 금지 유료 경로는 추가하지 않는다.
+
 | 역할 | 구성 | 조건 |
 | --- | --- | --- |
 | 화면 | React + Vite + TypeScript, Workers Static Assets | 정적 SPA, 무료 기본 workers.dev 주소 |

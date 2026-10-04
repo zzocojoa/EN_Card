@@ -210,7 +210,11 @@ export function LibraryPage(): ReactElement | null {
                 {String(index + 1).padStart(3, '0')} /{' '}
                 {item.content.template === 'comparison' ? '비교형' : '표현형'}
               </span>
-              <span className={`badge ${item.status}`}>{label(item.status)}</span>
+              <span className={`badge ${item.status}`}>
+                {item.status === 'ready' && item.review_source === 'ai'
+                  ? 'AI 검토 완료'
+                  : label(item.status)}
+              </span>
             </div>
             {item.content.template === 'comparison' && (
               <p className="base-expression">{item.content.base_expression}</p>

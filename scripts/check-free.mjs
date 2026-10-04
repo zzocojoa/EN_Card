@@ -5,12 +5,15 @@ import { parseArgs } from 'node:util';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
+import { checkAutomationConfig } from './check-automation-config.mjs';
 
 const { values } = parseArgs({
   options: {
     config: { type: 'string' },
     mode: { type: 'string' },
     'delivery-config': { type: 'string' },
+    'automation-config': { type: 'string' },
+    'automation-active': { type: 'boolean', default: false },
   },
   strict: true,
   allowPositionals: false,
@@ -53,12 +56,18 @@ const allowed = new Set([
   'triggers',
   'observability',
   'services',
+  'durable_objects',
 ]);
 assert(
   Object.keys(config).every((key) => allowed.has(key)),
   '허용되지 않은 Worker 바인딩/서비스 설정이 있습니다.',
 );
 assert.equal(config.main, 'src/worker/index.ts');
+assert.deepEqual(config.durable_objects, {
+  bindings: [
+    { name: 'AUTOMATION', class_name: 'CardAutomation', script_name: 'en-card-automation' },
+  ],
+});
 assert.equal(config.workers_dev, true);
 assert.equal(config.vars.COST_MODE, 'free_only');
 assert.equal(config.vars.SEND_MODE, mode, '검사 모드와 실제 배포 설정의 SEND_MODE가 다릅니다.');
@@ -119,6 +128,27 @@ assert.equal(
 );
 assert.equal(deliveryConfig.d1_databases[0].database_name, config.d1_databases[0].database_name);
 assert.deepEqual(Object.keys(pkg.dependencies).sort(), ['react', 'react-dom', 'zod']);
+const automationPath = values['automation-config']
+  ? resolve(values['automation-config'])
+  : resolve(root, 'wrangler.automation.jsonc');
+assert.equal(dirname(automationPath), resolve(root));
+assert(
+  configPath === defaultPath || !!values['automation-config'],
+  '별도 배포 설정 검사는 실제 인증 DO의 --automation-config를 명시해야 합니다.',
+);
+assert(
+  !values['automation-active'] || mode === 'live',
+  '자동 제작 활성 검사는 주 Worker의 live 모드가 필요합니다.',
+);
+assert(
+  !values['automation-active'] ||
+    (!!values['automation-config'] &&
+      automationPath !== resolve(root, 'wrangler.automation.jsonc')),
+  '자동 제작 활성 검사는 별도 설정 파일이 필요합니다.',
+);
+// Validate defaults separately, then compare the exact deployment pair, including AI-off credentials.
+await checkAutomationConfig(resolve(root, 'wrangler.automation.jsonc'), defaultConfig, false);
+const automation = await checkAutomationConfig(automationPath, config, values['automation-active']);
 assert(
   Object.values({ ...pkg.dependencies, ...pkg.devDependencies }).every((version) =>
     /^\d+\.\d+\.\d+(-[\w.]+)?$/.test(version),
@@ -161,6 +191,7 @@ console.log(
       check: 'free_configuration',
       result: 'passed',
       runtime: ['Workers Free', 'D1 Free', 'KV Free'],
+      automation,
       externalHosts: [...new Set(urls)],
       defaultMode: 'dry_run',
       checkedMode: mode,

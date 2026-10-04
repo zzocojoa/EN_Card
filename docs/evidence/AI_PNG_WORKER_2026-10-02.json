@@ -1,0 +1,65 @@
+{
+  "measured_at_utc": "2026-10-02T09:21:24.386Z",
+  "environment": "local workerd",
+  "remote": false,
+  "cpu_measured": false,
+  "png_cases": [
+    {
+      "fixture": "expression",
+      "encoder": "wasm",
+      "status": 200,
+      "bytes": 45915,
+      "sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712"
+    },
+    {
+      "fixture": "expression",
+      "encoder": "native",
+      "status": 200,
+      "bytes": 30479,
+      "sha256": "e55537e1281e5163bfb0cf9f8a44c3abbf29b2bfa3f26626a8ef407767dccd4a"
+    },
+    {
+      "fixture": "comparison",
+      "encoder": "wasm",
+      "status": 200,
+      "bytes": 41524,
+      "sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68"
+    },
+    {
+      "fixture": "comparison",
+      "encoder": "native",
+      "status": 200,
+      "bytes": 27891,
+      "sha256": "d5035d8133acb59924371a64206f4b8596a9c94f6bdd1d2f3a94a2da60018f3f"
+    },
+    {
+      "fixture": "long",
+      "encoder": "wasm",
+      "status": 200,
+      "bytes": 69474,
+      "sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196"
+    },
+    {
+      "fixture": "long",
+      "encoder": "native",
+      "status": 200,
+      "bytes": 45937,
+      "sha256": "f49fb9cffde426c5608d17837a39487745a2fffe487029eeef6df7069766d863"
+    },
+    {
+      "fixture": "long_comparison",
+      "encoder": "wasm",
+      "status": 200,
+      "bytes": 72668,
+      "sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae"
+    },
+    {
+      "fixture": "long_comparison",
+      "encoder": "native",
+      "status": 200,
+      "bytes": 48078,
+      "sha256": "b4395ef6b2a1ea91ae80ce94cde0703c47a48e4c7393be95bdd05b63bdfc3268"
+    }
+  ],
+  "negative_cases": 5
+}

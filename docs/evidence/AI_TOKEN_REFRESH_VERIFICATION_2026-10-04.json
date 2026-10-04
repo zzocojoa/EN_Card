@@ -1,0 +1,366 @@
+{
+  "recordedAt": "2026-10-04T05:50:17.762Z",
+  "status": "actual_credential_refresh_verified_and_production_restored",
+  "authorization": "User requested remaining verification; bounded one-off existing own credential refresh with no new AI/card/Kakao message.",
+  "purpose": "Verify the production private credential RPC performs a real Kakao refresh and measure its CPU after the ordinary Worker CPU fix.",
+  "method": {
+    "window": {
+      "start": 1791092674237,
+      "end": 1791092974237,
+      "version": 12,
+      "expiresAt": 1791099924808
+    },
+    "temporaryMainVersion": "2404a602-1430-4d34-97df-d994b3d424e0",
+    "productionDoUnchanged": true,
+    "expiredMetadataByConditionalUpdate": true,
+    "actualClock": true,
+    "normalCreationAndSendingSuppressedDuringWindow": true,
+    "newPublicRoute": false,
+    "newResource": false,
+    "newSecret": false,
+    "newCron": false,
+    "maximumProbeAttempts": 1
+  },
+  "refresh": {
+    "confirmedAt": "2026-10-04T05:47:53.545Z",
+    "versionBefore": 12,
+    "versionAfter": 13,
+    "status": "connected",
+    "expiresAt": 1791114335200,
+    "expiresKst": "2026-10-04 20:45:35.200",
+    "refreshExpiryUnchanged": true,
+    "refreshErrors": null,
+    "lock": false,
+    "additionalAiCalls": 0,
+    "additionalKakaoMessages": 0
+  },
+  "cpu": {
+    "unit": "microseconds",
+    "displayUnit": "milliseconds",
+    "mainProbeMs": 2.25,
+    "credentialDoMs": 6.054,
+    "requestsEach": 1,
+    "sampleIntervalEach": 1,
+    "mainScope": "Temporary Cron probe CAS plus scheduledToken, not full production automationCron/runEngine/prepare/defer tick",
+    "doScope": "Unmodified deployed production credentialToken RPC with actual Kakao OAuth refresh",
+    "futureMaximumGuaranteed": false
+  },
+  "restoration": {
+    "at": "2026-10-04T05:45:51.451Z",
+    "activeVersions": {
+      "en-card": "1082abeb-b3d1-4410-82d3-074890feeb67",
+      "en-card-delivery": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+      "en-card-automation": "82238a38-ac77-4d31-8069-218fa9f4e38a"
+    },
+    "activeBindings": {
+      "en-card": {
+        "version": "1082abeb-b3d1-4410-82d3-074890feeb67",
+        "vars": [
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": [
+          "KAKAO_CLIENT_SECRET",
+          "KAKAO_REST_API_KEY",
+          "SESSION_SECRET",
+          "SETUP_TOKEN",
+          "STUDIO_BRIDGE_SECRET",
+          "STUDIO_ORIGIN",
+          "STUDIO_OWNER_ID",
+          "TOKEN_ENCRYPTION_KEY"
+        ],
+        "bindings": [
+          {
+            "name": "ASSETS",
+            "type": "assets"
+          },
+          {
+            "class_name": "CardAutomation",
+            "name": "AUTOMATION",
+            "namespace_id": "db7aca8ba4c344fb8e8ea75382735cdd",
+            "script_name": "en-card-automation",
+            "type": "durable_object_namespace"
+          },
+          {
+            "name": "CARD_IMAGES",
+            "namespace_id": "0d291d97991941988d3da9f4f4cab053",
+            "type": "kv_namespace"
+          },
+          {
+            "database_id": "b66aaf55-f0fd-48cb-98f4-1ff86b361c9b",
+            "id": "b66aaf55-f0fd-48cb-98f4-1ff86b361c9b",
+            "name": "DB",
+            "type": "d1"
+          },
+          {
+            "environment": "production",
+            "name": "DELIVERY_SERVICE",
+            "service": "en-card-delivery",
+            "type": "service"
+          }
+        ]
+      },
+      "en-card-delivery": {
+        "version": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+        "vars": [
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": [],
+        "bindings": [
+          {
+            "database_id": "b66aaf55-f0fd-48cb-98f4-1ff86b361c9b",
+            "id": "b66aaf55-f0fd-48cb-98f4-1ff86b361c9b",
+            "name": "DB",
+            "type": "d1"
+          }
+        ]
+      },
+      "en-card-automation": {
+        "version": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+        "vars": [
+          {
+            "name": "AI_FREE_CONFIRMED",
+            "value": "google_groq_free"
+          },
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "AUTOMATION_MODE",
+            "value": "live"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": [],
+        "bindings": [
+          {
+            "class_name": "CardAutomation",
+            "name": "AUTOMATION",
+            "namespace_id": "db7aca8ba4c344fb8e8ea75382735cdd",
+            "type": "durable_object_namespace"
+          },
+          {
+            "name": "CARD_IMAGES",
+            "namespace_id": "0d291d97991941988d3da9f4f4cab053",
+            "type": "kv_namespace"
+          },
+          {
+            "database_id": "b66aaf55-f0fd-48cb-98f4-1ff86b361c9b",
+            "id": "b66aaf55-f0fd-48cb-98f4-1ff86b361c9b",
+            "name": "DB",
+            "type": "d1"
+          },
+          {
+            "name": "FONT_ASSETS",
+            "type": "assets"
+          }
+        ]
+      }
+    },
+    "probeInActiveVersion": false,
+    "preservedTables": [
+      "assets",
+      "auth_state",
+      "automation_attempts",
+      "automation_expressions",
+      "automation_runs",
+      "automation_settings",
+      "cards",
+      "d1_migrations",
+      "deliveries",
+      "delivery_attempts",
+      "dry_runs",
+      "manual_decisions",
+      "occurrences",
+      "pause_recoveries",
+      "schedule_items",
+      "schedules",
+      "tick_limits",
+      "usage_counters"
+    ],
+    "counts": {
+      "active_schedules": 0,
+      "active_automation": 0,
+      "pending_automation": 0,
+      "runnable_or_unresolved_deliveries": 0,
+      "delivery_attempts": 19,
+      "ai_attempts": 4
+    },
+    "foreignKeyErrors": 0,
+    "latestUploadedSettingsNote": "Settings API retains probe variable on the latest uploaded inactive version; current deployed version has no probe variable or probe code."
+  },
+  "validation": {
+    "newProbeTests": 15,
+    "existingRefreshAndRpcGuardTests": 43,
+    "actualWorkerdRpcMockProviderTests": 1,
+    "total": 59,
+    "typecheck": "passed",
+    "dryRun": "passed",
+    "productionFreeConfiguration": "passed",
+    "reviewFindingsFixed": 2,
+    "fixtureColumnErrorCorrected": true,
+    "unresolvedReviewFindings": 0,
+    "reviewSource": "same-model independent subagents; not a multi-model gate"
+  },
+  "freeConditions": {
+    "existingConfirmedFreeResourcesRetained": true,
+    "newPaidDependencies": false,
+    "accountPlanFreshRead": "subscriptions API 403; previous verified Workers Free account retained, not a fresh plan confirmation",
+    "newAiCalls": 0
+  },
+  "limits": [
+    "One actual refresh sample does not prove a future maximum.",
+    "Temporary main probe CPU is not the complete normal refresh-and-defer Cron CPU; that orchestration is covered by local regression tests.",
+    "Future daily automation remains disabled; the saved daily configuration and historical blocked delivery were preserved."
+  ],
+  "sourceHashes": {
+    "experiments/token-refresh-verification/probe.ts": "2e9a50636debbf5ed3995d24f6cd204ceeed44dfd80ba1a2b0ae6506469e13e0",
+    "experiments/token-refresh-verification/worker.ts": "19b5257c80ec560cb618dfc63f23686218ac7d0667fe25b70b10648debd62ada",
+    "tests/token-refresh-verification.test.ts": "cce3ea54e7c1a98736029e49ef850d3b0a235f62bd44b09ec5fd97f5bd19ee45",
+    "src/worker/durable-token.ts": "ec61852de896135ab6e99305c1920fdd53901d796c0fb61e18eeabe99b52c347",
+    "src/automation/credentials.ts": "bf5a8bf033de6ffe7d28898ca192cf0311be91092fce755eea355fcf98cd94c8",
+    "src/worker/auth.ts": "5039c965da7d0a854b0a742daba6d7ccefdeceb76bc716d8a5269ceaa06394f8"
+  },
+  "rawMetrics": {
+    "at": "2026-10-04T05:46:53.177Z",
+    "start": "2026-10-04T05:44:34.237Z",
+    "end": "2026-10-04T05:45:51.451Z",
+    "cpuUnit": "microseconds",
+    "workers": {
+      "en-card": {
+        "httpStatus": 200,
+        "variables": {
+          "accountTag": "810c20b9a7139a05334b116dee0ea003",
+          "start": "2026-10-04T05:44:34.237Z",
+          "end": "2026-10-04T05:45:51.451Z",
+          "scriptName": "en-card"
+        },
+        "data": {
+          "data": {
+            "viewer": {
+              "accounts": [
+                {
+                  "workersInvocationsAdaptive": [
+                    {
+                      "avg": {
+                        "sampleInterval": 1
+                      },
+                      "dimensions": {
+                        "datetime": "2026-10-04T05:45:35Z",
+                        "scriptName": "en-card",
+                        "scriptVersion": "2404a602-1430-4d34-97df-d994b3d424e0",
+                        "status": "success"
+                      },
+                      "quantiles": {
+                        "cpuTimeP50": 2250,
+                        "cpuTimeP99": 2250
+                      },
+                      "sum": {
+                        "errors": 0,
+                        "requests": 1,
+                        "subrequests": 1
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "errors": null
+        }
+      },
+      "en-card-delivery": {
+        "httpStatus": 200,
+        "variables": {
+          "accountTag": "810c20b9a7139a05334b116dee0ea003",
+          "start": "2026-10-04T05:44:34.237Z",
+          "end": "2026-10-04T05:45:51.451Z",
+          "scriptName": "en-card-delivery"
+        },
+        "data": {
+          "data": {
+            "viewer": {
+              "accounts": [
+                {
+                  "workersInvocationsAdaptive": []
+                }
+              ]
+            }
+          },
+          "errors": null
+        }
+      },
+      "en-card-automation": {
+        "httpStatus": 200,
+        "variables": {
+          "accountTag": "810c20b9a7139a05334b116dee0ea003",
+          "start": "2026-10-04T05:44:34.237Z",
+          "end": "2026-10-04T05:45:51.451Z"
+        },
+        "data": {
+          "data": {
+            "viewer": {
+              "accounts": [
+                {
+                  "durableObjectsInvocationsAdaptiveGroups": [
+                    {
+                      "avg": {
+                        "sampleInterval": 1
+                      },
+                      "dimensions": {
+                        "datetime": "2026-10-04T05:45:36Z",
+                        "name": "credentials",
+                        "scriptName": "en-card-automation",
+                        "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                        "status": "success",
+                        "type": "jsrpc"
+                      },
+                      "quantiles": {
+                        "cpuTimeP50": 6054,
+                        "cpuTimeP99": 6054
+                      },
+                      "sum": {
+                        "errors": 0,
+                        "requests": 1
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "errors": null
+        }
+      }
+    }
+  }
+}

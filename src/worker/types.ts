@@ -1,5 +1,6 @@
 import type { Delivery, FeedPayload, SendMode, SendResult } from '../shared/model';
 import type { TokenFailure } from './token-errors';
+import type { CardAutomation } from '../automation/worker';
 
 export type Env = {
   DB: D1Database;
@@ -17,7 +18,12 @@ export type Env = {
   STUDIO_OWNER_ID?: string;
   STUDIO_ORIGIN?: string;
   DELIVERY_SERVICE?: Fetcher;
+  AUTOMATION?: DurableObjectNamespace<CardAutomation>;
 };
+export type TokenEnv = Pick<
+  Env,
+  'DB' | 'TOKEN_ENCRYPTION_KEY' | 'KAKAO_REST_API_KEY' | 'KAKAO_CLIENT_SECRET'
+>;
 export type Credentials = {
   owner_id: string;
   access_token: string | null;

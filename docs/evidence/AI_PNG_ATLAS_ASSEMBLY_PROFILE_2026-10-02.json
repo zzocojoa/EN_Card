@@ -1,0 +1,287 @@
+{
+  "measured_at_utc": "2026-10-02T12:46:22.463Z",
+  "qualification": "not_qualified",
+  "scope": "Local Node warm diagnostics only; not Cloudflare CPU. Assets/startup/network excluded. Prepared phase inputs; means are not additive. Full assembly includes plan, validation, merge, paint, compression and PNG validation. Baseline is measured before reuse, so ordering/JIT/GC effects remain.",
+  "results": [
+    {
+      "fixture": "expression",
+      "phases": {
+        "plan": {
+          "count": 100,
+          "process_cpu_ms": 0.48,
+          "thread_cpu_ms": 0.15,
+          "wall_ms": 0.17193600000000003
+        },
+        "unpack_and_validate": {
+          "count": 100,
+          "process_cpu_ms": 0.31,
+          "thread_cpu_ms": 0.31,
+          "wall_ms": 0.24423400000000015
+        },
+        "merge": {
+          "count": 100,
+          "process_cpu_ms": 0.16,
+          "thread_cpu_ms": 0,
+          "wall_ms": 0.09674000000000006
+        },
+        "paint": {
+          "count": 100,
+          "process_cpu_ms": 0.31,
+          "thread_cpu_ms": 0.32,
+          "wall_ms": 0.3514390000000003
+        },
+        "deflate": {
+          "count": 100,
+          "process_cpu_ms": 0.94,
+          "thread_cpu_ms": 0.93,
+          "wall_ms": 0.9592309999999997
+        },
+        "pack_and_validate_png": {
+          "count": 100,
+          "process_cpu_ms": 0.15,
+          "thread_cpu_ms": 0.16,
+          "wall_ms": 0.1296859999999998
+        },
+        "assembly_duplicate_layout": {
+          "count": 100,
+          "process_cpu_ms": 2.34,
+          "thread_cpu_ms": 2.19,
+          "wall_ms": 2.3296360000000003
+        },
+        "assembly_reuse_layout": {
+          "count": 100,
+          "process_cpu_ms": 2.66,
+          "thread_cpu_ms": 2.35,
+          "wall_ms": 2.2828560000000007
+        }
+      },
+      "png_bytes": 25223,
+      "sha256": "806591fcb51be7ea1473f4f088fff8358ccc8e5fcf73a1dd62f830740f428019",
+      "identical_png": true
+    },
+    {
+      "fixture": "comparison",
+      "phases": {
+        "plan": {
+          "count": 100,
+          "process_cpu_ms": 0,
+          "thread_cpu_ms": 0,
+          "wall_ms": 0.07418000000000007
+        },
+        "unpack_and_validate": {
+          "count": 100,
+          "process_cpu_ms": 0.31,
+          "thread_cpu_ms": 0.16,
+          "wall_ms": 0.17211699999999952
+        },
+        "merge": {
+          "count": 100,
+          "process_cpu_ms": 0.16,
+          "thread_cpu_ms": 0.15,
+          "wall_ms": 0.05398799999999938
+        },
+        "paint": {
+          "count": 100,
+          "process_cpu_ms": 0.46,
+          "thread_cpu_ms": 0.32,
+          "wall_ms": 0.31438499999999975
+        },
+        "deflate": {
+          "count": 100,
+          "process_cpu_ms": 0.94,
+          "thread_cpu_ms": 0.93,
+          "wall_ms": 0.8720479999999998
+        },
+        "pack_and_validate_png": {
+          "count": 100,
+          "process_cpu_ms": 0.16,
+          "thread_cpu_ms": 0.16,
+          "wall_ms": 0.1269510000000014
+        },
+        "assembly_duplicate_layout": {
+          "count": 100,
+          "process_cpu_ms": 2.49,
+          "thread_cpu_ms": 2.18,
+          "wall_ms": 2.0919309999999998
+        },
+        "assembly_reuse_layout": {
+          "count": 100,
+          "process_cpu_ms": 2.51,
+          "thread_cpu_ms": 2.04,
+          "wall_ms": 1.9602739999999994
+        }
+      },
+      "png_bytes": 23041,
+      "sha256": "da6798f9c90b0f32c933f4a6db20d46e4c5f17e6c3206a0c06ccfdfd8d24dfba",
+      "identical_png": true
+    },
+    {
+      "fixture": "long",
+      "phases": {
+        "plan": {
+          "count": 100,
+          "process_cpu_ms": 0,
+          "thread_cpu_ms": 0,
+          "wall_ms": 0.1709270000000015
+        },
+        "unpack_and_validate": {
+          "count": 100,
+          "process_cpu_ms": 0.31,
+          "thread_cpu_ms": 0.32,
+          "wall_ms": 0.2442989999999986
+        },
+        "merge": {
+          "count": 100,
+          "process_cpu_ms": 0,
+          "thread_cpu_ms": 0,
+          "wall_ms": 0.050945999999999006
+        },
+        "paint": {
+          "count": 100,
+          "process_cpu_ms": 0.62,
+          "thread_cpu_ms": 0.62,
+          "wall_ms": 0.5643340000000012
+        },
+        "deflate": {
+          "count": 100,
+          "process_cpu_ms": 1.25,
+          "thread_cpu_ms": 1.25,
+          "wall_ms": 1.1596509999999989
+        },
+        "pack_and_validate_png": {
+          "count": 100,
+          "process_cpu_ms": 0.16,
+          "thread_cpu_ms": 0.15,
+          "wall_ms": 0.2048219999999992
+        },
+        "assembly_duplicate_layout": {
+          "count": 100,
+          "process_cpu_ms": 2.97,
+          "thread_cpu_ms": 2.81,
+          "wall_ms": 2.8108349999999995
+        },
+        "assembly_reuse_layout": {
+          "count": 100,
+          "process_cpu_ms": 3.13,
+          "thread_cpu_ms": 2.81,
+          "wall_ms": 2.8426379999999973
+        }
+      },
+      "png_bytes": 38211,
+      "sha256": "4164f4a1deaaccea62979681516f5487c2ba3f1c65705ab69a2b10f4ddf919f9",
+      "identical_png": true
+    },
+    {
+      "fixture": "long_comparison",
+      "phases": {
+        "plan": {
+          "count": 100,
+          "process_cpu_ms": 0.16,
+          "thread_cpu_ms": 0.16,
+          "wall_ms": 0.1333640000000014
+        },
+        "unpack_and_validate": {
+          "count": 100,
+          "process_cpu_ms": 0.31,
+          "thread_cpu_ms": 0.31,
+          "wall_ms": 0.2211869999999999
+        },
+        "merge": {
+          "count": 100,
+          "process_cpu_ms": 0,
+          "thread_cpu_ms": 0,
+          "wall_ms": 0.05170500000000175
+        },
+        "paint": {
+          "count": 100,
+          "process_cpu_ms": 0.63,
+          "thread_cpu_ms": 0.62,
+          "wall_ms": 0.5712860000000001
+        },
+        "deflate": {
+          "count": 100,
+          "process_cpu_ms": 1.09,
+          "thread_cpu_ms": 1.1,
+          "wall_ms": 1.2424829999999973
+        },
+        "pack_and_validate_png": {
+          "count": 100,
+          "process_cpu_ms": 0.16,
+          "thread_cpu_ms": 0.15,
+          "wall_ms": 0.19244900000000142
+        },
+        "assembly_duplicate_layout": {
+          "count": 100,
+          "process_cpu_ms": 3.28,
+          "thread_cpu_ms": 3.13,
+          "wall_ms": 3.080893000000001
+        },
+        "assembly_reuse_layout": {
+          "count": 100,
+          "process_cpu_ms": 2.81,
+          "thread_cpu_ms": 2.65,
+          "wall_ms": 2.8102459999999976
+        }
+      },
+      "png_bytes": 38677,
+      "sha256": "2d49884c68a7df91e931fd1fcbe2e83aa153f03c83e330b26cdf82c76d70f03e",
+      "identical_png": true
+    },
+    {
+      "fixture": "coverage",
+      "phases": {
+        "plan": {
+          "count": 100,
+          "process_cpu_ms": 0.32,
+          "thread_cpu_ms": 0.16,
+          "wall_ms": 0.23622199999999793
+        },
+        "unpack_and_validate": {
+          "count": 100,
+          "process_cpu_ms": 0.47,
+          "thread_cpu_ms": 0.47,
+          "wall_ms": 0.4455699999999979
+        },
+        "merge": {
+          "count": 100,
+          "process_cpu_ms": 0.15,
+          "thread_cpu_ms": 0.15,
+          "wall_ms": 0.06514799999999923
+        },
+        "paint": {
+          "count": 100,
+          "process_cpu_ms": 0.79,
+          "thread_cpu_ms": 0.63,
+          "wall_ms": 0.5835719999999992
+        },
+        "deflate": {
+          "count": 100,
+          "process_cpu_ms": 1.4,
+          "thread_cpu_ms": 1.41,
+          "wall_ms": 1.3730330000000004
+        },
+        "pack_and_validate_png": {
+          "count": 100,
+          "process_cpu_ms": 0.16,
+          "thread_cpu_ms": 0.15,
+          "wall_ms": 0.20442000000000007
+        },
+        "assembly_duplicate_layout": {
+          "count": 100,
+          "process_cpu_ms": 3.91,
+          "thread_cpu_ms": 3.44,
+          "wall_ms": 3.534674
+        },
+        "assembly_reuse_layout": {
+          "count": 100,
+          "process_cpu_ms": 3.13,
+          "thread_cpu_ms": 2.97,
+          "wall_ms": 3.258589000000002
+        }
+      },
+      "png_bytes": 38493,
+      "sha256": "d01d67b5178d3505fb393089e5ad0b9aa9aa1755469836d7008b7865f14037ff",
+      "identical_png": true
+    }
+  ]
+}

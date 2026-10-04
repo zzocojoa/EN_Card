@@ -1,0 +1,1761 @@
+{
+  "at": "2026-10-04T05:14:45.653Z",
+  "status": "pc_off_trial_user_confirmed_and_server_verified",
+  "approval": "오늘 빠른 시간, 새 AI 카드 한 장 추가 제작; 기존 기록 보존하는 1회 시험 기능",
+  "run": {
+    "id": "3e87767f-ac8c-42a7-bf6d-f75ced0b318e",
+    "dedupe_key": "trial:2026-10-04",
+    "config_version": 5,
+    "settings": "{\"topic\":\"영화 대사\",\"base_expression\":\"\",\"level\":\"초급\",\"template\":\"expression\",\"start_date\":\"2026-10-04\",\"end_date\":\"2026-10-04\",\"time\":\"14:01\"}",
+    "due_at": 1791090060000,
+    "deadline": 1791089760000,
+    "status": "scheduled",
+    "writer": "google",
+    "reviewer": "groq",
+    "revision": 1,
+    "content": "{\"template\":\"expression\",\"expression\":\"What happens next?\",\"meaning_ko\":\"다음에는 무슨 일이 벌어지나요?\",\"example_en\":\"I'm watching a movie, but I have no idea what happens next.\",\"example_ko\":\"영화를 보고 있는데 다음에 무슨 일이 일어날지 전혀 모르겠어요.\",\"note_ko\":\"영화 줄거리나 상황의 전개가 궁금할 때 자주 사용하는 자연스러운 표현입니다.\",\"base_expression\":\"none\",\"base_meaning_ko\":\"none\"}",
+    "content_hash": "49ac4ec68bdc3acbe66074d2912353e3617a3dce88515502c786451ded325d29",
+    "review": "{\"natural\":true,\"meaning\":true,\"grammar\":true,\"translation\":true,\"level\":true,\"comparison\":true,\"issues\":[]}",
+    "review_hash": "49ac4ec68bdc3acbe66074d2912353e3617a3dce88515502c786451ded325d29",
+    "card_id": "693d132c-a1aa-481e-9e42-10aa6dee3c59",
+    "asset_id": "8187d9a7-0315-4cba-a896-d7fd5c5093b1",
+    "public_id": "8887e87ef43b4bcfb18a88c39ea1c6ee50f05547fe044d66ae54d116d8241683",
+    "schedule_id": "9f09f72d-6c82-4fe7-a118-228ecf28e2fa",
+    "claim_owner": null,
+    "claim_until": null,
+    "retry_at": null,
+    "error": null,
+    "updated_at": 1791089436557,
+    "render_attempts": 1,
+    "day": "2026-10-04",
+    "kind": "trial",
+    "not_before": 1791089160000
+  },
+  "settings": {
+    "settings": "{\"topic\":\"영화 대사\",\"base_expression\":\"\",\"level\":\"초급\",\"template\":\"expression\",\"start_date\":\"2026-10-05\",\"end_date\":\"2026-10-05\",\"time\":\"08:00\"}",
+    "version": 5,
+    "enabled": 0,
+    "reason": "complete",
+    "next_due_at": null,
+    "updated_at": 1791090098362
+  },
+  "times": {
+    "creation": "2026-10-04 13:46 KST",
+    "send": "2026-10-04 14:01 KST"
+  },
+  "newAiCalls": 2,
+  "newKakaoCalls": 1,
+  "oldRecordsPreserved": [
+    "assets",
+    "auth_state",
+    "automation_attempts",
+    "automation_expressions",
+    "automation_runs",
+    "cards",
+    "credentials",
+    "deliveries",
+    "delivery_attempts",
+    "dry_runs",
+    "manual_decisions",
+    "occurrences",
+    "pause_recoveries",
+    "schedule_items",
+    "schedules"
+  ],
+  "foreignKeyErrors": 0,
+  "backup": {
+    "sqlSha256": "13CDCC9D45D5DCFD379926AFF4A82F4CB991D84EA5D18EA5ED93E9BD70BF9289",
+    "bytes": 106004,
+    "createdAtUtc": "2026-10-04T04:25:25.1799791Z",
+    "ciphertextSha256": "0F09B2710215EB62F4431A9AF243D0ED231B0E6F82C719FA46278248C758061D",
+    "roundTripVerified": true,
+    "encryption": "Windows DPAPI CurrentUser",
+    "restrictedAcl": true
+  },
+  "workers": {
+    "en-card": {
+      "versions": [
+        {
+          "version_id": "1082abeb-b3d1-4410-82d3-074890feeb67",
+          "percentage": 100
+        }
+      ],
+      "crons": [
+        "* * * * *"
+      ],
+      "vars": [
+        {
+          "name": "APP_ORIGIN",
+          "value": "https://en-card.kmksla4.workers.dev"
+        },
+        {
+          "name": "COST_MODE",
+          "value": "free_only"
+        },
+        {
+          "name": "SEND_MODE",
+          "value": "live"
+        }
+      ],
+      "secretNames": [
+        "KAKAO_CLIENT_SECRET",
+        "KAKAO_REST_API_KEY",
+        "SESSION_SECRET",
+        "SETUP_TOKEN",
+        "STUDIO_BRIDGE_SECRET",
+        "STUDIO_ORIGIN",
+        "STUDIO_OWNER_ID",
+        "TOKEN_ENCRYPTION_KEY"
+      ]
+    },
+    "en-card-delivery": {
+      "versions": [
+        {
+          "version_id": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+          "percentage": 100
+        }
+      ],
+      "crons": [],
+      "vars": [
+        {
+          "name": "APP_ORIGIN",
+          "value": "https://en-card.kmksla4.workers.dev"
+        },
+        {
+          "name": "COST_MODE",
+          "value": "free_only"
+        },
+        {
+          "name": "SEND_MODE",
+          "value": "live"
+        }
+      ],
+      "secretNames": []
+    },
+    "en-card-automation": {
+      "versions": [
+        {
+          "version_id": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+          "percentage": 100
+        }
+      ],
+      "crons": [],
+      "vars": [
+        {
+          "name": "AI_FREE_CONFIRMED",
+          "value": "google_groq_free"
+        },
+        {
+          "name": "APP_ORIGIN",
+          "value": "https://en-card.kmksla4.workers.dev"
+        },
+        {
+          "name": "AUTOMATION_MODE",
+          "value": "live"
+        },
+        {
+          "name": "COST_MODE",
+          "value": "free_only"
+        },
+        {
+          "name": "SEND_MODE",
+          "value": "live"
+        }
+      ],
+      "secretNames": []
+    }
+  },
+  "site": {
+    "at": "2026-10-04T04:34:27.629Z",
+    "version": 112,
+    "source": {
+      "commit_sha": "08c7235b9cd1a1dd127375a54cb351c5fd04ab1e"
+    },
+    "version_id": "appgprj_6ab0a3cbaaa08191a05b0bcdf62df225~appgver_c07106648a808191b5afc279ebc6014f",
+    "archive": {
+      "archive_format": "tar",
+      "sediment_file_id": "file_00000000df00820685af9d96109f7183",
+      "content_hash": "sha256:d26e45276ba0d0ea31858f39ac46fc4644a7cfcac3f6f948b342c861b5cd345a",
+      "size_bytes": 15585280,
+      "file_count": 316
+    },
+    "deployment": {
+      "id": "appgdep_6ac1d70b71348191be893fe97cbd098a",
+      "project_id": "appgprj_6ab0a3cbaaa08191a05b0bcdf62df225",
+      "title": "하루단어 · Oxford 3000",
+      "version_id": "appgprj_6ab0a3cbaaa08191a05b0bcdf62df225~appgver_c07106648a808191b5afc279ebc6014f",
+      "type": "publish",
+      "status": "succeeded",
+      "url": "https://wordgrain-oxford-study.hoihou-o.chatgpt.site",
+      "has_mcp": false,
+      "screenshot_asset_pointer": null,
+      "provider_deployment_id": "site---6ab0a3cbaaa08191a05b0bcdf62df225",
+      "failure_message": null,
+      "env_set_revision": 59,
+      "updated_at": "2026-10-04T04:33:37.501338+00:00"
+    }
+  },
+  "verification": {
+    "product": 35,
+    "runtimeAndConfig": 44,
+    "site": 15,
+    "browser": 2,
+    "typecheck": "passed",
+    "build": "passed",
+    "freeConfig": "passed",
+    "review": "fixed; no unresolved code findings",
+    "externalResponses": "mock"
+  },
+  "remaining": [],
+  "completion": {
+    "checkedAt": "2026-10-04T05:14:45.653Z",
+    "userConfirmation": {
+      "message": "정상 통과했다.",
+      "scope": "PC·브라우저·Codex 종료 후 새 카드 제작 및 휴대전화 나와의 채팅 이미지·원본 링크 확인 요청에 대한 사용자 정상 보고",
+      "method": "user_report; agent did not observe device power or phone directly"
+    },
+    "server": {
+      "at": "2026-10-04T05:11:42.185Z",
+      "settings": [
+        {
+          "settings": "{\"topic\":\"영화 대사\",\"base_expression\":\"\",\"level\":\"초급\",\"template\":\"expression\",\"start_date\":\"2026-10-05\",\"end_date\":\"2026-10-05\",\"time\":\"08:00\"}",
+          "version": 5,
+          "enabled": 0,
+          "reason": "complete",
+          "next_due_at": null,
+          "updated_at": 1791090098362
+        }
+      ],
+      "run": [
+        {
+          "id": "3e87767f-ac8c-42a7-bf6d-f75ced0b318e",
+          "dedupe_key": "trial:2026-10-04",
+          "config_version": 5,
+          "settings": "{\"topic\":\"영화 대사\",\"base_expression\":\"\",\"level\":\"초급\",\"template\":\"expression\",\"start_date\":\"2026-10-04\",\"end_date\":\"2026-10-04\",\"time\":\"14:01\"}",
+          "due_at": 1791090060000,
+          "deadline": 1791089760000,
+          "status": "scheduled",
+          "writer": "google",
+          "reviewer": "groq",
+          "revision": 1,
+          "content": "{\"template\":\"expression\",\"expression\":\"What happens next?\",\"meaning_ko\":\"다음에는 무슨 일이 벌어지나요?\",\"example_en\":\"I'm watching a movie, but I have no idea what happens next.\",\"example_ko\":\"영화를 보고 있는데 다음에 무슨 일이 일어날지 전혀 모르겠어요.\",\"note_ko\":\"영화 줄거리나 상황의 전개가 궁금할 때 자주 사용하는 자연스러운 표현입니다.\",\"base_expression\":\"none\",\"base_meaning_ko\":\"none\"}",
+          "content_hash": "49ac4ec68bdc3acbe66074d2912353e3617a3dce88515502c786451ded325d29",
+          "review": "{\"natural\":true,\"meaning\":true,\"grammar\":true,\"translation\":true,\"level\":true,\"comparison\":true,\"issues\":[]}",
+          "review_hash": "49ac4ec68bdc3acbe66074d2912353e3617a3dce88515502c786451ded325d29",
+          "card_id": "693d132c-a1aa-481e-9e42-10aa6dee3c59",
+          "asset_id": "8187d9a7-0315-4cba-a896-d7fd5c5093b1",
+          "public_id": "8887e87ef43b4bcfb18a88c39ea1c6ee50f05547fe044d66ae54d116d8241683",
+          "schedule_id": "9f09f72d-6c82-4fe7-a118-228ecf28e2fa",
+          "claim_owner": null,
+          "claim_until": null,
+          "retry_at": null,
+          "error": null,
+          "updated_at": 1791089436557,
+          "render_attempts": 1,
+          "day": "2026-10-04",
+          "kind": "trial",
+          "not_before": 1791089160000
+        }
+      ],
+      "attempts": [
+        {
+          "stage": "draft",
+          "revision": 1,
+          "provider": "google",
+          "started_at": 1791089180914,
+          "outcome": "ok",
+          "http_status": null
+        },
+        {
+          "stage": "review",
+          "revision": 1,
+          "provider": "groq",
+          "started_at": 1791089240939,
+          "outcome": "ok",
+          "http_status": null
+        }
+      ],
+      "schedule": [
+        {
+          "id": "9f09f72d-6c82-4fe7-a118-228ecf28e2fa",
+          "name": "AI 2026-10-04 · What happens next?",
+          "kind": "once",
+          "date": "2026-10-04",
+          "time": "14:01",
+          "end_date": null,
+          "weekdays": "[]",
+          "cards_per_occurrence": 1,
+          "timezone": "Asia/Seoul",
+          "next_run_at_utc": null,
+          "version": 1,
+          "cursor": 1,
+          "enabled": 0,
+          "reason": "completed",
+          "mutation_id": "3e87767f-ac8c-42a7-bf6d-f75ced0b318e"
+        }
+      ],
+      "deliveries": [
+        {
+          "id": "fa52275e-60ce-49e9-bfee-63931448a82a-0",
+          "state": "sent",
+          "mode": "live",
+          "due_at_utc": 1791090060000,
+          "attempts": 1,
+          "error": "카카오 API 접수 확인 (열람 확인 아님)",
+          "resolution": null,
+          "updated_at": 1791090072578
+        }
+      ],
+      "sends": [
+        {
+          "started_at": 1791090070741,
+          "outcome": "sent",
+          "mode": "live"
+        }
+      ],
+      "asset": [
+        {
+          "id": "8187d9a7-0315-4cba-a896-d7fd5c5093b1",
+          "public_id": "8887e87ef43b4bcfb18a88c39ea1c6ee50f05547fe044d66ae54d116d8241683",
+          "bytes": 64621,
+          "state": "ready",
+          "created_at": 1791089301785
+        }
+      ],
+      "connection": [
+        {
+          "status": "connected",
+          "version": 12,
+          "expires_at": 1791099924808,
+          "refresh_attempts": 0,
+          "refresh_failure": null
+        }
+      ],
+      "counts": [
+        {
+          "cards": 16,
+          "assets_ready": 7,
+          "active_schedules": 0,
+          "inflight_or_unknown": 0,
+          "automation_runs": 2,
+          "automation_attempts": 4
+        }
+      ],
+      "usage": [
+        {
+          "day": "2026-10-04",
+          "uploads": 2,
+          "sends": 2,
+          "bytes": 0
+        },
+        {
+          "day": "storage",
+          "uploads": 0,
+          "sends": 0,
+          "bytes": 515776
+        }
+      ],
+      "foreignKeys": []
+    },
+    "oldRecordTablesUnchanged": [
+      "assets",
+      "auth_state",
+      "automation_attempts",
+      "automation_expressions",
+      "automation_runs",
+      "cards",
+      "credentials",
+      "deliveries",
+      "delivery_attempts",
+      "dry_runs",
+      "manual_decisions",
+      "occurrences",
+      "pause_recoveries",
+      "schedule_items",
+      "schedules"
+    ],
+    "image": {
+      "publicUrl": "https://en-card.kmksla4.workers.dev/images/8887e87ef43b4bcfb18a88c39ea1c6ee50f05547fe044d66ae54d116d8241683.png",
+      "width": 1080,
+      "height": 1080,
+      "bytes": 64621,
+      "sha256": "e6abbb8047be0010096cf068629e589940d4f53161e6780e73327e015361a7f7",
+      "imageStatus": 200,
+      "originalStatus": 200,
+      "authenticationSent": false,
+      "originalContentType": "image/png",
+      "originalIdenticalToImage": true
+    },
+    "cpu": {
+      "units": "milliseconds",
+      "source": "Cloudflare GraphQL, each returned group requests=1 / sampleInterval=1 / P50=P99",
+      "window": {
+        "start": "2026-10-04T04:45:00Z",
+        "end": "2026-10-04T05:04:00Z"
+      },
+      "mainObservedMax": 4.269,
+      "deliveryObservedMax": 3.787,
+      "sendMain": 4.269,
+      "sendDelivery": 3.787,
+      "credentialRpc": 3.487,
+      "doDraft": 9.893,
+      "doReview": 7.17,
+      "doRender": 404.606,
+      "doSchedule": 4.588,
+      "qualifier": "Observed invocations only; not a future worst-case or universal limit guarantee. DO rendering is a different runtime from general Worker CPU."
+    },
+    "metrics": {
+      "at": "2026-10-04T05:10:50.935Z",
+      "start": "2026-10-04T04:45:00Z",
+      "end": "2026-10-04T05:04:00Z",
+      "cpuUnit": "microseconds",
+      "workers": {
+        "en-card": {
+          "httpStatus": 200,
+          "variables": {
+            "accountTag": "810c20b9a7139a05334b116dee0ea003",
+            "start": "2026-10-04T04:45:00Z",
+            "end": "2026-10-04T05:04:00Z",
+            "scriptName": "en-card"
+          },
+          "data": {
+            "data": {
+              "viewer": {
+                "accounts": [
+                  {
+                    "workersInvocationsAdaptive": [
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:11Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 3702,
+                          "cpuTimeP99": 3702
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:45:37Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2849,
+                          "cpuTimeP99": 2849
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:02:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1881,
+                          "cpuTimeP99": 1881
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:57:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1999,
+                          "cpuTimeP99": 1999
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:55:32Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2929,
+                          "cpuTimeP99": 2929
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:46:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2327,
+                          "cpuTimeP99": 2327
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:49:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2634,
+                          "cpuTimeP99": 2634
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:56:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2108,
+                          "cpuTimeP99": 2108
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:38Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2340,
+                          "cpuTimeP99": 2340
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:51:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2280,
+                          "cpuTimeP99": 2280
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:47:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1535,
+                          "cpuTimeP99": 1535
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:52:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2318,
+                          "cpuTimeP99": 2318
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:53:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2112,
+                          "cpuTimeP99": 2112
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:08Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 4269,
+                          "cpuTimeP99": 4269
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 4
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:03:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2393,
+                          "cpuTimeP99": 2393
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:48:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2248,
+                          "cpuTimeP99": 2248
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:58:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1892,
+                          "cpuTimeP99": 1892
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:54:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2276,
+                          "cpuTimeP99": 2276
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:59:20Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1837,
+                          "cpuTimeP99": 1837
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:50:35Z",
+                          "scriptName": "en-card",
+                          "scriptVersion": "1082abeb-b3d1-4410-82d3-074890feeb67",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2416,
+                          "cpuTimeP99": 2416
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 2
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "errors": null
+          }
+        },
+        "en-card-delivery": {
+          "httpStatus": 200,
+          "variables": {
+            "accountTag": "810c20b9a7139a05334b116dee0ea003",
+            "start": "2026-10-04T04:45:00Z",
+            "end": "2026-10-04T05:04:00Z",
+            "scriptName": "en-card-delivery"
+          },
+          "data": {
+            "data": {
+              "viewer": {
+                "accounts": [
+                  {
+                    "workersInvocationsAdaptive": [
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:09Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 3201,
+                          "cpuTimeP99": 3201
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:55:33Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1210,
+                          "cpuTimeP99": 1210
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:51:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1142,
+                          "cpuTimeP99": 1142
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:58:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1033,
+                          "cpuTimeP99": 1033
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:38Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 947,
+                          "cpuTimeP99": 947
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:02:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1003,
+                          "cpuTimeP99": 1003
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:56:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 940,
+                          "cpuTimeP99": 940
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:46:24Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 975,
+                          "cpuTimeP99": 975
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:47:23Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1047,
+                          "cpuTimeP99": 1047
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:53:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1076,
+                          "cpuTimeP99": 1076
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:54:21Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1055,
+                          "cpuTimeP99": 1055
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:49:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1060,
+                          "cpuTimeP99": 1060
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:03:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1057,
+                          "cpuTimeP99": 1057
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:59:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1062,
+                          "cpuTimeP99": 1062
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:48:22Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 996,
+                          "cpuTimeP99": 996
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:57:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1007,
+                          "cpuTimeP99": 1007
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:45:38Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 940,
+                          "cpuTimeP99": 940
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:10Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 3787,
+                          "cpuTimeP99": 3787
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:50:36Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1075,
+                          "cpuTimeP99": 1075
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:52:20Z",
+                          "scriptName": "en-card-delivery",
+                          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+                          "status": "success"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 966,
+                          "cpuTimeP99": 966
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1,
+                          "subrequests": 0
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "errors": null
+          }
+        },
+        "en-card-automation": {
+          "httpStatus": 200,
+          "variables": {
+            "accountTag": "810c20b9a7139a05334b116dee0ea003",
+            "start": "2026-10-04T04:45:00Z",
+            "end": "2026-10-04T05:04:00Z"
+          },
+          "data": {
+            "data": {
+              "viewer": {
+                "accounts": [
+                  {
+                    "durableObjectsInvocationsAdaptiveGroups": [
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:45:37Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2571,
+                          "cpuTimeP99": 2571
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:03:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 1049,
+                          "cpuTimeP99": 1049
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:10Z",
+                          "name": "credentials",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "jsrpc"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 3487,
+                          "cpuTimeP99": 3487
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:59:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2556,
+                          "cpuTimeP99": 2556
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:48:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 404606,
+                          "cpuTimeP99": 404606
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:46:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 9893,
+                          "cpuTimeP99": 9893
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:53:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2484,
+                          "cpuTimeP99": 2484
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:49:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2992,
+                          "cpuTimeP99": 2992
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:56:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 3185,
+                          "cpuTimeP99": 3185
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:52:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2703,
+                          "cpuTimeP99": 2703
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:57:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2608,
+                          "cpuTimeP99": 2608
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:47:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 7170,
+                          "cpuTimeP99": 7170
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:58:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2726,
+                          "cpuTimeP99": 2726
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:02:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 856,
+                          "cpuTimeP99": 856
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:51:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2631,
+                          "cpuTimeP99": 2631
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:55:32Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2473,
+                          "cpuTimeP99": 2473
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:54:20Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2898,
+                          "cpuTimeP99": 2898
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:08Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2421,
+                          "cpuTimeP99": 2421
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T05:01:38Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 2419,
+                          "cpuTimeP99": 2419
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      },
+                      {
+                        "avg": {
+                          "sampleInterval": 1
+                        },
+                        "dimensions": {
+                          "datetime": "2026-10-04T04:50:35Z",
+                          "name": "owner",
+                          "scriptName": "en-card-automation",
+                          "scriptVersion": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+                          "status": "success",
+                          "type": "http"
+                        },
+                        "quantiles": {
+                          "cpuTimeP50": 4588,
+                          "cpuTimeP99": 4588
+                        },
+                        "sum": {
+                          "errors": 0,
+                          "requests": 1
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "errors": null
+          }
+        }
+      }
+    },
+    "workersUnchanged": true,
+    "aiCalls": 2,
+    "kakaoCalls": 1,
+    "credentialRefreshOccurred": false
+  },
+  "registration": {
+    "at": "2026-10-04T04:36:11.387Z",
+    "status": "registered_waiting_for_pc_off",
+    "run": {
+      "id": "3e87767f-ac8c-42a7-bf6d-f75ced0b318e",
+      "day": "2026-10-04",
+      "kind": "trial",
+      "not_before": 1791089160000,
+      "due_at": 1791090060000,
+      "deadline": 1791089760000,
+      "status": "draft",
+      "config_version": 5,
+      "settings": "{\"topic\":\"영화 대사\",\"base_expression\":\"\",\"level\":\"초급\",\"template\":\"expression\",\"start_date\":\"2026-10-04\",\"end_date\":\"2026-10-04\",\"time\":\"14:01\"}",
+      "content": null,
+      "card_id": "693d132c-a1aa-481e-9e42-10aa6dee3c59",
+      "asset_id": "8187d9a7-0315-4cba-a896-d7fd5c5093b1",
+      "schedule_id": "9f09f72d-6c82-4fe7-a118-228ecf28e2fa",
+      "updated_at": 1791088555286
+    },
+    "settings": {
+      "settings": "{\"topic\":\"영화 대사\",\"base_expression\":\"\",\"level\":\"초급\",\"template\":\"expression\",\"start_date\":\"2026-10-05\",\"end_date\":\"2026-10-05\",\"time\":\"08:00\"}",
+      "version": 5,
+      "enabled": 1,
+      "reason": null,
+      "next_due_at": null
+    },
+    "newAiCalls": 0,
+    "newKakaoCalls": 0,
+    "oldRecordsPreserved": [
+      "assets",
+      "auth_state",
+      "automation_attempts",
+      "automation_expressions",
+      "automation_runs",
+      "cards",
+      "credentials",
+      "deliveries",
+      "delivery_attempts",
+      "dry_runs",
+      "manual_decisions",
+      "occurrences",
+      "pause_recoveries",
+      "schedule_items",
+      "schedules",
+      "tick_limits",
+      "usage_counters"
+    ]
+  },
+  "previousRemaining": [
+    "새 비공개 DO RPC에서 실제 토큰 갱신 발생 시 CPU 측정 (이번 시험은 유효 토큰 조회만 발생)"
+  ],
+  "tokenRefreshFollowup": {
+    "status": "verified",
+    "evidence": "AI_TOKEN_REFRESH_VERIFICATION_2026-10-04.json",
+    "credentialVersion": 13
+  }
+}

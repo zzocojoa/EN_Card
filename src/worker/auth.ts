@@ -11,6 +11,7 @@ import {
   type Env,
   type Session,
   type TokenGrant,
+  type TokenEnv,
   type Transport,
 } from './types';
 
@@ -191,16 +192,39 @@ export async function finishOAuth(
   headers.append('Set-Cookie', cookie('en_oauth', '', 0, env.APP_ORIGIN));
   return new Response(null, { status: 303, headers });
 }
-export async function markReconnect(env: Env, version: number): Promise<boolean> {
+export async function markReconnect(
+  env: Pick<Env, 'DB'>,
+  version: number,
+  now = Date.now(),
+): Promise<boolean> {
   const results = await env.DB.batch([
     env.DB.prepare(
       "UPDATE credentials SET status='needs_reconnect',refresh_failure='invalid',refresh_retry_at=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL,lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1 AND version=? AND status='connected'",
     ).bind(version),
     reconnectSchedules(env, version + 1),
+    ...revokeAutomation(env, now, version + 1),
   ]);
   return (results[0]?.meta.changes ?? 0) > 0;
 }
-function reconnectSchedules(env: Env, version: number): D1PreparedStatement {
+// A disconnected identity cannot retain permission to create future sends after reconnecting.
+// Keep revocation in the credential batch, including its version guard for stale refresh results.
+function revokeAutomation(
+  env: Pick<Env, 'DB'>,
+  now: number,
+  credentialVersion: number | null = null,
+): D1PreparedStatement[] {
+  const guard =
+    "EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND status IN ('disconnected','needs_reconnect') AND (? IS NULL OR version=?))";
+  return [
+    env.DB.prepare(
+      `UPDATE automation_settings SET enabled=0,version=version+1,reason='connection',next_due_at=NULL,updated_at=? WHERE singleton=1 AND ${guard}`,
+    ).bind(now, credentialVersion, credentialVersion),
+    env.DB.prepare(
+      `UPDATE automation_runs SET status='cancelled',error='connection',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE status IN ('draft','review','revise','render','schedule') AND ${guard}`,
+    ).bind(now, credentialVersion, credentialVersion),
+  ];
+}
+function reconnectSchedules(env: Pick<Env, 'DB'>, version: number): D1PreparedStatement {
   return env.DB.prepare(
     "UPDATE schedules SET enabled=0,reason='needs_reconnect' WHERE reason IS NOT 'cancelled' AND reason IS NOT 'paused' AND (enabled=1 OR EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND d.schedule_version=schedules.version AND d.state IN ('pending','claimed','sending','retry_wait','blocked'))) AND EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND version=? AND status='needs_reconnect')",
   ).bind(version);
@@ -267,8 +291,9 @@ function storageConfigError(): TokenError {
 async function readStoredToken(
   value: string,
   row: Credentials,
-  env: Env,
+  env: TokenEnv,
   cipher: TokenCipher,
+  now: number,
 ): Promise<string> {
   try {
     const token = await cipher.decrypt(value);
@@ -280,13 +305,14 @@ async function readStoredToken(
         "UPDATE credentials SET status='needs_reconnect',refresh_failure='configuration',refresh_retry_at=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL,lock_owner=NULL,lock_until=NULL,version=version+1 WHERE singleton=1 AND version=? AND status='connected' AND lock_owner IS NULL AND lock_until IS NULL",
       ).bind(row.version),
       reconnectSchedules(env, row.version + 1),
+      ...revokeAutomation(env, now, row.version + 1),
     ]);
     if (!results[0]?.meta.changes) throw tokenChangedError();
     throw storageConfigError();
   }
 }
 async function recordRefreshFailure(
-  env: Env,
+  env: TokenEnv,
   row: Credentials,
   owner: string,
   error: TokenError,
@@ -313,7 +339,11 @@ async function recordRefreshFailure(
       owner,
     ),
   ];
-  if (reconnect) statements.push(reconnectSchedules(env, row.version + 1));
+  if (reconnect)
+    statements.push(
+      reconnectSchedules(env, row.version + 1),
+      ...revokeAutomation(env, now, row.version + 1),
+    );
   const results = await env.DB.batch(statements);
   if (!results[0]?.meta.changes) throw tokenChangedError();
   if (failure === 'transient')
@@ -339,7 +369,7 @@ async function recordRefreshFailure(
   );
 }
 export async function accessToken(
-  env: Env,
+  env: TokenEnv,
   now: number,
   transport: Transport,
 ): Promise<TokenGrant> {
@@ -361,12 +391,12 @@ export async function accessToken(
   const cipher: TokenCipher = tokenCipher(env.TOKEN_ENCRYPTION_KEY);
   if (row.expires_at > now + 60_000)
     return {
-      token: await readStoredToken(row.access_token, row, env, cipher),
+      token: await readStoredToken(row.access_token, row, env, cipher, now),
       version: row.version,
       expiresAt: row.expires_at,
     };
   if (row.refresh_expires_at <= now) {
-    if (!(await markReconnect(env, row.version))) throw tokenChangedError();
+    if (!(await markReconnect(env, row.version, now))) throw tokenChangedError();
     throw tokenError(
       'invalid',
       'NEEDS_RECONNECT',
@@ -413,7 +443,7 @@ export async function accessToken(
       null,
       now + 60_000,
     );
-  const refreshToken: string = await readStoredToken(row.refresh_token, row, env, cipher);
+  const refreshToken: string = await readStoredToken(row.refresh_token, row, env, cipher, now);
   const owner: string = randomToken();
   const locked = await env.DB.prepare(
     "UPDATE credentials SET lock_owner=?,lock_until=?,refresh_attempts=refresh_attempts+1 WHERE singleton=1 AND version=? AND status='connected' AND lock_owner IS NULL AND refresh_attempts=? AND refresh_attempts<? AND (refresh_retry_at IS NULL OR refresh_retry_at<=?) AND (refresh_failure IS NULL OR refresh_failure='transient') RETURNING *",
@@ -545,6 +575,7 @@ export async function disconnect(env: Env, now: number): Promise<void> {
     env.DB.prepare(
       "UPDATE credentials SET access_token=NULL,refresh_token=NULL,status='disconnected',version=version+1,lock_owner=NULL,lock_until=NULL,refresh_attempts=0,refresh_retry_at=NULL,refresh_failure=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL WHERE singleton=1",
     ),
+    ...revokeAutomation(env, now),
     env.DB.prepare(
       "UPDATE schedules SET enabled=0,reason='disconnected' WHERE reason IS NOT 'cancelled' AND reason IS NOT 'paused' AND (enabled=1 OR EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND d.schedule_version=schedules.version AND d.state IN ('pending','claimed','sending','retry_wait','blocked')))",
     ),

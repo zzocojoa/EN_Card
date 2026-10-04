@@ -50,6 +50,7 @@ export const cardSchema = z
   });
 export type CardInput = z.infer<typeof cardSchema>;
 export type Card = {
+  review_source?: 'human' | 'ai' | null;
   id: string;
   revision: number;
   content: CardInput;

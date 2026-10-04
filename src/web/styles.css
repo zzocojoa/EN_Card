@@ -1725,3 +1725,54 @@ footer > span:last-child {
     animation: none !important;
   }
 }
+.automation-panel {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid #dbe3eb;
+  border-radius: 16px;
+  background: #fff;
+}
+.automation-panel summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+.automation-panel p {
+  margin: 12px 0;
+}
+.automation-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.automation-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.automation-fields input,
+.automation-fields select {
+  min-width: 0;
+  width: 100%;
+}
+.automation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.automation-runs {
+  list-style: none;
+  padding: 0;
+}
+.automation-runs li {
+  padding: 16px 0;
+  border-bottom: 1px solid #e2e8f0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .automation-fields {
+    grid-template-columns: 1fr;
+  }
+  .automation-panel {
+    padding: 16px;
+  }
+}

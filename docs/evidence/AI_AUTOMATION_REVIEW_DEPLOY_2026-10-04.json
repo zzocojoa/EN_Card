@@ -1,0 +1,214 @@
+{
+  "checked_at": "2026-10-04T07:21:31.760Z",
+  "scope": "Commit and deploy the reviewed AI card automation without changing the activated October 5 schedule",
+  "source": {
+    "branch": "codex/ai-card-automation",
+    "commit": "e088d6175254bee3cd0ce62a56ab803a1d80fa63",
+    "reviewed_source_files": 197,
+    "all_source_hashes_unchanged": true
+  },
+  "workers": {
+    "en-card": {
+      "previous_version": "1082abeb-b3d1-4410-82d3-074890feeb67",
+      "active_version": "a1771709-28e3-4124-9735-cf517c15a248",
+      "traffic_percent": 100,
+      "bindings_unchanged": true,
+      "cron": [
+        "* * * * *"
+      ],
+      "public_endpoints": {
+        "enabled": true,
+        "previews_enabled": true
+      }
+    },
+    "en-card-delivery": {
+      "previous_version": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+      "active_version": "87d3daa6-9c4e-4cb7-9be0-38d656f38994",
+      "traffic_percent": 100,
+      "bindings_unchanged": true,
+      "cron": [],
+      "public_endpoints": {
+        "enabled": false,
+        "previews_enabled": false
+      }
+    },
+    "en-card-automation": {
+      "previous_version": "82238a38-ac77-4d31-8069-218fa9f4e38a",
+      "active_version": "1c4600cd-a36d-456b-90e3-ce96b3245b8b",
+      "traffic_percent": 100,
+      "bindings_unchanged": true,
+      "cron": [],
+      "public_endpoints": {
+        "enabled": false,
+        "previews_enabled": false
+      }
+    }
+  },
+  "site": {
+    "version": 113,
+    "version_id": "appgprj_6ab0a3cbaaa08191a05b0bcdf62df225~appgver_5d9afe62c8b88191abbcd5ce1c18c171",
+    "commit": "22c2da299fe6a836671f6b76e8536bd640504a74",
+    "deployment_id": "appgdep_6ac1fd497ce08191b246cb0fdff11971",
+    "status": "succeeded",
+    "url": "https://wordgrain-oxford-study.hoihou-o.chatgpt.site",
+    "env_revision": 59,
+    "access": "public",
+    "access_revision": 4,
+    "archive_sha256": "sha256:dd6476cf16e26a764757147a741afcacf4fcff83745c993b45463eb19db9b4fa"
+  },
+  "preservation": {
+    "checked_tables": {
+      "cards": {
+        "count": 16,
+        "sha256": "4a2a018bd5b1e267d8bd320a21228dea9a84fa031c33ece90d93e1e600a215ba"
+      },
+      "assets": {
+        "count": 7,
+        "sha256": "8153751c296af599f403219e5bbf6e9d2f220ab164223f58a68b852b31d3372a"
+      },
+      "schedules": {
+        "count": 14,
+        "sha256": "e5323438b147c2bcfe8f6efbdce8fce0c43b13dbd3d63a51dbce9738a9e60c67"
+      },
+      "schedule_items": {
+        "count": 24,
+        "sha256": "4ea80ae06cdfadcc88ba92883f90ab6416933f2dbc4b6b9bdfa0d523423787e3"
+      },
+      "occurrences": {
+        "count": 13,
+        "sha256": "01e42031a186c0dc216868afe6b483cd2516a986ff08590588a64f0b171c9ef4"
+      },
+      "deliveries": {
+        "count": 21,
+        "sha256": "471f1ef7dad0054464aad495a6097bc50e49db21cb4e15c81318d49d9e02b483"
+      },
+      "delivery_attempts": {
+        "count": 19,
+        "sha256": "0bd120c4942d73d24d28a0b8de0556ed3780cb762d9ff386687543b99d4eaafd"
+      },
+      "credentials": {
+        "count": 1,
+        "sha256": "6d43806c77ed1f8ea4b7a19b79f033d95edb4334bc7d485174fc28932da74492"
+      },
+      "usage_counters": {
+        "count": 5,
+        "sha256": "7c6a66ff74f70f57a60d89f244694f3d2da5599b459bb2683caf0586421c3b83"
+      },
+      "automation_settings": {
+        "count": 1,
+        "sha256": "87029bf2c95b21bc5a900439b753a55d039c74007bab2479bf222425b4a271ed"
+      },
+      "automation_runs": {
+        "count": 2,
+        "sha256": "c59355d029af6249f9c9d9d8ae9904df9d6ffb4c03b411960ea745a99a2a0d2d"
+      },
+      "automation_attempts": {
+        "count": 4,
+        "sha256": "33a3b14875803fa719e1a69398ffb5e739e722df113bd38d39cc41b15a35339b"
+      },
+      "automation_expressions": {
+        "count": 2,
+        "sha256": "12b1c9d70c71d626819a6fe85d9f7dab4c2c073eb273daa22b62cbdfc50b5982"
+      },
+      "d1_migrations": {
+        "count": 15,
+        "sha256": "156293574c3b80f199d55b06715f77c5b019d285aa8b08e7ee821cb2d6e91cd7"
+      }
+    },
+    "all_counts_and_hashes_unchanged": true,
+    "automation": [
+      {
+        "singleton": 1,
+        "settings": "{\"topic\":\"영화 대사\",\"base_expression\":\"\",\"level\":\"초급\",\"template\":\"expression\",\"start_date\":\"2026-10-05\",\"end_date\":\"2026-10-05\",\"time\":\"08:00\"}",
+        "version": 6,
+        "enabled": 1,
+        "reason": null,
+        "next_due_at": 1791154800000
+      }
+    ],
+    "foreign_key_errors": 0,
+    "inflight_deliveries": 0,
+    "active_generation_runs": 0,
+    "new_ai_attempts": 0,
+    "new_delivery_attempts": 0,
+    "new_migrations": 0,
+    "new_resources": 0,
+    "final_snapshot_at": "2026-10-04T07:21:31.760Z"
+  },
+  "checks": {
+    "prior_review": "docs/AI_CARD_AUTOMATION_REVIEW.md#전체-변경-리뷰--2026-10-04-1552-kst",
+    "site_integration_tests": 15,
+    "site_typecheck": "passed",
+    "site_framework_build": "passed",
+    "actual_live_three_worker_dry_runs": "passed",
+    "actual_live_free_config": "passed",
+    "staged_secret_pattern_check": "no matches in 304 files; not a proof that every possible secret is absent",
+    "git_diff_check": "passed",
+    "http": [
+      {
+        "path": "/",
+        "status": 200,
+        "type": "text/html",
+        "bytes": 533,
+        "sha256": "0597bf8f3177ae2d639f5452bdfcaa789ec803968659d364da8f8f1ac369223a"
+      },
+      {
+        "path": "/api/automation",
+        "status": 401,
+        "type": "application/json",
+        "bytes": 68,
+        "sha256": "88b2d0e11152f3c427e2e0c52eba5c214e5549807d994b709473f3e5a1486cb2"
+      },
+      {
+        "path": "/images/8887e87ef43b4bcfb18a88c39ea1c6ee50f05547fe044d66ae54d116d8241683.png",
+        "status": 200,
+        "type": "image/png",
+        "bytes": 64621,
+        "sha256": "e6abbb8047be0010096cf068629e589940d4f53161e6780e73327e015361a7f7"
+      },
+      {
+        "path": "/original/8887e87ef43b4bcfb18a88c39ea1c6ee50f05547fe044d66ae54d116d8241683",
+        "status": 200,
+        "type": "image/png",
+        "bytes": 64621,
+        "sha256": "e6abbb8047be0010096cf068629e589940d4f53161e6780e73327e015361a7f7"
+      }
+    ],
+    "live_ui": {
+      "checked_at_kst": "2026-10-04T16:18:00+09:00",
+      "authenticated": true,
+      "automation_status": "실행 중",
+      "topic": "영화 대사",
+      "start_date": "2026-10-05",
+      "end_date": "2026-10-05",
+      "creation_kst": "07:00",
+      "delivery_kst": "08:00",
+      "mutations": 0
+    }
+  },
+  "free_configuration": {
+    "new_paid_services": 0,
+    "preserved": "Existing Workers/D1/KV/SQLite Durable Objects and confirmed Google/Groq Free accounts",
+    "latest_cloudflare_account_confirmation": "2026-10-03 20:19 KST, existing dashboard evidence",
+    "latest_ai_account_confirmation": "2026-10-04 02:27 KST plus user key-identity confirmation",
+    "current_plan_recheck": "Subscriptions API 403; browser login expired; no new account-plan confirmation",
+    "official_docs_checked_on": "2026-10-04",
+    "sources": [
+      "https://developers.cloudflare.com/workers/platform/pricing/",
+      "https://developers.cloudflare.com/workers/platform/limits/",
+      "https://developers.cloudflare.com/durable-objects/platform/pricing/",
+      "https://developers.cloudflare.com/d1/platform/pricing/",
+      "https://developers.cloudflare.com/kv/platform/pricing/"
+    ]
+  },
+  "packaging_recovery": {
+    "source_credential": "renewed after expiry; never written to a file",
+    "windows_npm": "process-only wrapper calls installed npm CLI by absolute path",
+    "windows_packaging": "bundled Node 24.19.0, Git Bash, TAR_OPTIONS=--force-local; no product or global environment changes"
+  },
+  "limits": [
+    "New deployment CPU under actual generation/send load was not measured in this step.",
+    "October 5 generation and mobile receipt are future events, not completed verification.",
+    "EN_Card commit is local; no GitHub push/merge was performed. Site source was pushed by the required publication helper."
+  ]
+}

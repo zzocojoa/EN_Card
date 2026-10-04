@@ -1,0 +1,358 @@
+{
+  "measured_at_utc": "2026-10-02T11:29:14.287Z",
+  "qualification": "not_qualified",
+  "scope": "Local separate font preparation / assembly invocation candidates. Includes dynamic plans and binary frame validation. Assets pre-read, I/O and startup excluded. Not Cloudflare CPU.",
+  "results": [
+    {
+      "fixture": "expression",
+      "phase": "glyph_chunk_0",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.62,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.3468079999999998
+    },
+    {
+      "fixture": "expression",
+      "phase": "glyph_chunk_1",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.96,
+      "thread_cpu_ms": 0.3,
+      "wall_ms": 0.29
+    },
+    {
+      "fixture": "expression",
+      "phase": "glyph_chunk_2",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.6,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.24337199999999995
+    },
+    {
+      "fixture": "expression",
+      "phase": "glyph_chunk_3",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.24442799999999976
+    },
+    {
+      "fixture": "expression",
+      "phase": "glyph_chunk_4",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0,
+      "thread_cpu_ms": 0,
+      "wall_ms": 0.17571399999999981
+    },
+    {
+      "fixture": "expression",
+      "phase": "glyph_chunk_5",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.3,
+      "wall_ms": 0.2569199999999995
+    },
+    {
+      "fixture": "expression",
+      "phase": "glyph_chunk_6",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.3,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.18500599999999964
+    },
+    {
+      "fixture": "expression",
+      "phase": "glyph_chunk_7",
+      "pages": 1,
+      "count": 50,
+      "process_cpu_ms": 0,
+      "thread_cpu_ms": 0,
+      "wall_ms": 0.10630200000000002
+    },
+    {
+      "fixture": "expression",
+      "phase": "assemble_png",
+      "chunks": 8,
+      "count": 50,
+      "process_cpu_ms": 3.44,
+      "thread_cpu_ms": 2.18,
+      "wall_ms": 2.2629319999999997
+    },
+    {
+      "fixture": "comparison",
+      "phase": "glyph_chunk_0",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.19257799999999975
+    },
+    {
+      "fixture": "comparison",
+      "phase": "glyph_chunk_1",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 1.24,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.3187480000000005
+    },
+    {
+      "fixture": "comparison",
+      "phase": "glyph_chunk_2",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0,
+      "thread_cpu_ms": 0,
+      "wall_ms": 0.1347160000000008
+    },
+    {
+      "fixture": "comparison",
+      "phase": "glyph_chunk_3",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.3,
+      "wall_ms": 0.2696079999999995
+    },
+    {
+      "fixture": "comparison",
+      "phase": "glyph_chunk_4",
+      "pages": 2,
+      "count": 50,
+      "process_cpu_ms": 0,
+      "thread_cpu_ms": 0,
+      "wall_ms": 0.11747600000000034
+    },
+    {
+      "fixture": "comparison",
+      "phase": "assemble_png",
+      "chunks": 5,
+      "count": 50,
+      "process_cpu_ms": 2.18,
+      "thread_cpu_ms": 2.18,
+      "wall_ms": 2.0257400000000008
+    },
+    {
+      "fixture": "long",
+      "phase": "glyph_chunk_0",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.62,
+      "thread_cpu_ms": 0.64,
+      "wall_ms": 0.4691159999999991
+    },
+    {
+      "fixture": "long",
+      "phase": "glyph_chunk_1",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.3,
+      "wall_ms": 0.2902240000000006
+    },
+    {
+      "fixture": "long",
+      "phase": "glyph_chunk_2",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.3,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.3410900000000015
+    },
+    {
+      "fixture": "long",
+      "phase": "glyph_chunk_3",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.3,
+      "wall_ms": 0.3575700000000006
+    },
+    {
+      "fixture": "long",
+      "phase": "glyph_chunk_4",
+      "pages": 2,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.19828800000000002
+    },
+    {
+      "fixture": "long",
+      "phase": "assemble_png",
+      "chunks": 5,
+      "count": 50,
+      "process_cpu_ms": 2.82,
+      "thread_cpu_ms": 2.82,
+      "wall_ms": 2.8879440000000023
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "glyph_chunk_0",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.64,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.4781140000000005
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "glyph_chunk_1",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.62,
+      "thread_cpu_ms": 0.3,
+      "wall_ms": 0.29265599999999947
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "glyph_chunk_2",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.3,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.24672199999999975
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "glyph_chunk_3",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.24063400000000001
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "glyph_chunk_4",
+      "pages": 1,
+      "count": 50,
+      "process_cpu_ms": 0,
+      "thread_cpu_ms": 0,
+      "wall_ms": 0.18607599999999822
+    },
+    {
+      "fixture": "long_comparison",
+      "phase": "assemble_png",
+      "chunks": 5,
+      "count": 50,
+      "process_cpu_ms": 3.44,
+      "thread_cpu_ms": 3.1,
+      "wall_ms": 2.891171999999999
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_0",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.94,
+      "thread_cpu_ms": 0.62,
+      "wall_ms": 0.5062639999999987
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_1",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 1.56,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.3862480000000005
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_2",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.24486199999999825
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_3",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.3,
+      "thread_cpu_ms": 0.3,
+      "wall_ms": 0.3747659999999996
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_4",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.27608200000000127
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_5",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.3,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.28444400000000314
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_6",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.3268960000000016
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_7",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.3,
+      "thread_cpu_ms": 0.3,
+      "wall_ms": 0.3351939999999968
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_8",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.62,
+      "thread_cpu_ms": 0.62,
+      "wall_ms": 0.3508159999999998
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_9",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0,
+      "thread_cpu_ms": 0,
+      "wall_ms": 0.25965400000000044
+    },
+    {
+      "fixture": "coverage",
+      "phase": "glyph_chunk_10",
+      "pages": 3,
+      "count": 50,
+      "process_cpu_ms": 0.32,
+      "thread_cpu_ms": 0.32,
+      "wall_ms": 0.26716799999999696
+    },
+    {
+      "fixture": "coverage",
+      "phase": "assemble_png",
+      "chunks": 11,
+      "count": 50,
+      "process_cpu_ms": 5,
+      "thread_cpu_ms": 3.44,
+      "wall_ms": 3.5492039999999996
+    }
+  ]
+}

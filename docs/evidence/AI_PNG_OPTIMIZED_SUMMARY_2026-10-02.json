@@ -1,0 +1,653 @@
+{
+  "measured_at_utc": "2026-10-02T14:39:58.616Z",
+  "qualification": "not_qualified",
+  "scope": "10 approved real Cloudflare Free PNG generations. HTTP success and exact local hash match are independent of CPU qualification. Missing traces are not successful samples. Local means are warm Node wall times, not remote CPU.",
+  "remote_png": 10,
+  "cumulative_remote_png": 66,
+  "expected_generation_invocations": 160,
+  "captured_generation_invocations": 100,
+  "excluded_pretrial_events": 1,
+  "missing_invocations": [
+    "/optimized/800/pipeline/glyphs/expression/11",
+    "/optimized/800/pipeline/glyphs/expression/12",
+    "/optimized/800/pipeline/assemble/expression",
+    "/optimized/800/pipeline/glyphs/long/2",
+    "/optimized/800/pipeline/glyphs/long/3",
+    "/optimized/800/pipeline/glyphs/long/4",
+    "/optimized/800/pipeline/glyphs/long/5",
+    "/optimized/800/pipeline/glyphs/long/6",
+    "/optimized/800/pipeline/glyphs/long/7",
+    "/optimized/800/pipeline/glyphs/long/8",
+    "/optimized/800/pipeline/glyphs/long/9",
+    "/optimized/800/pipeline/glyphs/long/10",
+    "/optimized/800/pipeline/glyphs/long/11",
+    "/optimized/800/pipeline/assemble/long",
+    "/optimized/800/pipeline/glyphs/long_comparison/11",
+    "/optimized/800/pipeline/assemble/long_comparison",
+    "/optimized/800/pipeline/glyphs/coverage/11",
+    "/optimized/800/pipeline/glyphs/coverage/12",
+    "/optimized/800/pipeline/glyphs/coverage/13",
+    "/optimized/800/pipeline/glyphs/coverage/14",
+    "/optimized/800/pipeline/glyphs/coverage/15",
+    "/optimized/800/pipeline/glyphs/coverage/16",
+    "/optimized/800/pipeline/glyphs/coverage/17",
+    "/optimized/800/pipeline/glyphs/coverage/19",
+    "/optimized/800/pipeline/glyphs/coverage/20",
+    "/optimized/800/pipeline/glyphs/coverage/21",
+    "/optimized/800/pipeline/glyphs/coverage/22",
+    "/optimized/800/pipeline/glyphs/coverage/24",
+    "/optimized/800/pipeline/assemble/coverage",
+    "/optimized/720/pipeline/glyphs/expression/11",
+    "/optimized/720/pipeline/glyphs/expression/12",
+    "/optimized/720/pipeline/assemble/expression",
+    "/optimized/720/pipeline/glyphs/long/5",
+    "/optimized/720/pipeline/glyphs/long/7",
+    "/optimized/720/pipeline/glyphs/long/8",
+    "/optimized/720/pipeline/glyphs/long/9",
+    "/optimized/720/pipeline/glyphs/long/10",
+    "/optimized/720/pipeline/assemble/long",
+    "/optimized/720/pipeline/glyphs/long_comparison/3",
+    "/optimized/720/pipeline/glyphs/long_comparison/4",
+    "/optimized/720/pipeline/glyphs/long_comparison/5",
+    "/optimized/720/pipeline/glyphs/long_comparison/7",
+    "/optimized/720/pipeline/glyphs/long_comparison/8",
+    "/optimized/720/pipeline/glyphs/long_comparison/9",
+    "/optimized/720/pipeline/glyphs/long_comparison/10",
+    "/optimized/720/pipeline/glyphs/long_comparison/11",
+    "/optimized/720/pipeline/assemble/long_comparison",
+    "/optimized/720/pipeline/glyphs/coverage/11",
+    "/optimized/720/pipeline/glyphs/coverage/12",
+    "/optimized/720/pipeline/glyphs/coverage/13",
+    "/optimized/720/pipeline/glyphs/coverage/14",
+    "/optimized/720/pipeline/glyphs/coverage/15",
+    "/optimized/720/pipeline/glyphs/coverage/16",
+    "/optimized/720/pipeline/glyphs/coverage/17",
+    "/optimized/720/pipeline/glyphs/coverage/19",
+    "/optimized/720/pipeline/glyphs/coverage/20",
+    "/optimized/720/pipeline/glyphs/coverage/21",
+    "/optimized/720/pipeline/glyphs/coverage/23",
+    "/optimized/720/pipeline/glyphs/coverage/24",
+    "/optimized/720/pipeline/assemble/coverage"
+  ],
+  "cpu": [
+    {
+      "size": 800,
+      "stage": "glyphs",
+      "expected": 70,
+      "captured": 45,
+      "min_ms": 2,
+      "max_ms": 13,
+      "over_10ms": 2,
+      "samples": [
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/0",
+          "cpu_ms": 13
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/1",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/2",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/3",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/4",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/5",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/6",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/7",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/8",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/9",
+          "cpu_ms": 6
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/expression/10",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/comparison/0",
+          "cpu_ms": 7
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/comparison/1",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/comparison/2",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/comparison/3",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/comparison/4",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/comparison/5",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/comparison/6",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/comparison/7",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long/0",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long/1",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/0",
+          "cpu_ms": 11
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/1",
+          "cpu_ms": 6
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/2",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/3",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/4",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/5",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/6",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/7",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/8",
+          "cpu_ms": 9
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/9",
+          "cpu_ms": 9
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/long_comparison/10",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/0",
+          "cpu_ms": 6
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/1",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/2",
+          "cpu_ms": 9
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/3",
+          "cpu_ms": 6
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/4",
+          "cpu_ms": 6
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/5",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/6",
+          "cpu_ms": 7
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/7",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/8",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/9",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/10",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/18",
+          "cpu_ms": 7
+        },
+        {
+          "path": "/optimized/800/pipeline/glyphs/coverage/23",
+          "cpu_ms": 5
+        }
+      ]
+    },
+    {
+      "size": 800,
+      "stage": "assembly",
+      "expected": 5,
+      "captured": 1,
+      "min_ms": 11,
+      "max_ms": 11,
+      "over_10ms": 1,
+      "samples": [
+        {
+          "path": "/optimized/800/pipeline/assemble/comparison",
+          "cpu_ms": 11
+        }
+      ]
+    },
+    {
+      "size": 800,
+      "stage": "collector",
+      "expected": 5,
+      "captured": 5,
+      "min_ms": 8,
+      "max_ms": 22,
+      "over_10ms": 3,
+      "samples": [
+        {
+          "path": "/probe/expression/atlas_optimized800",
+          "cpu_ms": 22
+        },
+        {
+          "path": "/probe/comparison/atlas_optimized800",
+          "cpu_ms": 9
+        },
+        {
+          "path": "/probe/long/atlas_optimized800",
+          "cpu_ms": 8
+        },
+        {
+          "path": "/probe/long_comparison/atlas_optimized800",
+          "cpu_ms": 11
+        },
+        {
+          "path": "/probe/coverage/atlas_optimized800",
+          "cpu_ms": 21
+        }
+      ]
+    },
+    {
+      "size": 720,
+      "stage": "glyphs",
+      "expected": 70,
+      "captured": 43,
+      "min_ms": 2,
+      "max_ms": 13,
+      "over_10ms": 1,
+      "samples": [
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/0",
+          "cpu_ms": 9
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/1",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/2",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/3",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/4",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/5",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/6",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/7",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/8",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/9",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/expression/10",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/comparison/0",
+          "cpu_ms": 9
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/comparison/1",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/comparison/2",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/comparison/3",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/comparison/4",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/comparison/5",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/comparison/6",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/comparison/7",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long/0",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long/1",
+          "cpu_ms": 3
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long/2",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long/3",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long/4",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long/6",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long/11",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long_comparison/0",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long_comparison/1",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long_comparison/2",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/long_comparison/6",
+          "cpu_ms": 2
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/0",
+          "cpu_ms": 13
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/1",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/2",
+          "cpu_ms": 6
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/3",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/4",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/5",
+          "cpu_ms": 6
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/6",
+          "cpu_ms": 9
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/7",
+          "cpu_ms": 10
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/8",
+          "cpu_ms": 7
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/9",
+          "cpu_ms": 5
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/10",
+          "cpu_ms": 7
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/18",
+          "cpu_ms": 4
+        },
+        {
+          "path": "/optimized/720/pipeline/glyphs/coverage/22",
+          "cpu_ms": 4
+        }
+      ]
+    },
+    {
+      "size": 720,
+      "stage": "assembly",
+      "expected": 5,
+      "captured": 1,
+      "min_ms": 9,
+      "max_ms": 9,
+      "over_10ms": 0,
+      "samples": [
+        {
+          "path": "/optimized/720/pipeline/assemble/comparison",
+          "cpu_ms": 9
+        }
+      ]
+    },
+    {
+      "size": 720,
+      "stage": "collector",
+      "expected": 5,
+      "captured": 5,
+      "min_ms": 6,
+      "max_ms": 27,
+      "over_10ms": 2,
+      "samples": [
+        {
+          "path": "/probe/expression/atlas_optimized720",
+          "cpu_ms": 18
+        },
+        {
+          "path": "/probe/comparison/atlas_optimized720",
+          "cpu_ms": 10
+        },
+        {
+          "path": "/probe/long/atlas_optimized720",
+          "cpu_ms": 7
+        },
+        {
+          "path": "/probe/long_comparison/atlas_optimized720",
+          "cpu_ms": 6
+        },
+        {
+          "path": "/probe/coverage/atlas_optimized720",
+          "cpu_ms": 27
+        }
+      ]
+    }
+  ],
+  "localMeans": [
+    {
+      "variant": "baseline",
+      "preparation_wall_ms": 4.1543648000000015,
+      "assembly_wall_ms": 2.9043388000000085,
+      "read_reduction_min": 0,
+      "read_reduction_max": 0
+    },
+    {
+      "variant": "pages64",
+      "preparation_wall_ms": 3.9224547999999957,
+      "assembly_wall_ms": 2.7689540000000235,
+      "read_reduction_min": 0.8262414501975914,
+      "read_reduction_max": 0.8988966878406355
+    },
+    {
+      "variant": "pages32",
+      "preparation_wall_ms": 3.4554875999999894,
+      "assembly_wall_ms": 2.528396800000013,
+      "read_reduction_min": 0.908569360481482,
+      "read_reduction_max": 0.9479859185990668
+    },
+    {
+      "variant": "compact",
+      "preparation_wall_ms": 3.369298399999989,
+      "assembly_wall_ms": 2.589217599999996,
+      "read_reduction_min": 0,
+      "read_reduction_max": 0
+    },
+    {
+      "variant": "size800",
+      "preparation_wall_ms": 3.637614799999967,
+      "assembly_wall_ms": 1.6730908000000273,
+      "read_reduction_min": 0.16947879048090608,
+      "read_reduction_max": 0.17356508372684754
+    },
+    {
+      "variant": "size720",
+      "preparation_wall_ms": 3.2305195999999556,
+      "assembly_wall_ms": 1.4127551999999888,
+      "read_reduction_min": 0.22126580117281636,
+      "read_reduction_max": 0.2313415375691692
+    },
+    {
+      "variant": "rle",
+      "preparation_wall_ms": 3.703990399999988,
+      "assembly_wall_ms": 2.348851200000019,
+      "read_reduction_min": 0,
+      "read_reduction_max": 0
+    },
+    {
+      "variant": "combined800_64",
+      "preparation_wall_ms": 3.105084800000019,
+      "assembly_wall_ms": 1.4587239999999766,
+      "read_reduction_min": 0.8575663542655487,
+      "read_reduction_max": 0.9160050167038221
+    },
+    {
+      "variant": "combined800_32",
+      "preparation_wall_ms": 3.186227600000013,
+      "assembly_wall_ms": 1.4540648000000036,
+      "read_reduction_min": 0.9249762073911236,
+      "read_reduction_max": 0.9569111003346614
+    },
+    {
+      "variant": "combined720_64",
+      "preparation_wall_ms": 2.933828000000012,
+      "assembly_wall_ms": 1.2897620000000096,
+      "read_reduction_min": 0.8681063886048941,
+      "read_reduction_max": 0.9219597201268918
+    },
+    {
+      "variant": "combined720_32",
+      "preparation_wall_ms": 3.061037200000006,
+      "assembly_wall_ms": 1.2860075999999827,
+      "read_reduction_min": 0.9304801902921281,
+      "read_reduction_max": 0.9598900607140496
+    }
+  ],
+  "collector_over_limit": 5,
+  "all_captured_outcomes_ok": true,
+  "tail_diagnostics": {
+    "updated_at_utc": "2026-10-02T14:36:29.134Z",
+    "scope": "Sanitized local tail process counters. Zero local drops does not prove provider delivered every invocation.",
+    "targets": {
+      "en-card-png-feasibility": {
+        "stdout_bytes": 55459,
+        "stderr_bytes": 0,
+        "parsed_events": 90,
+        "invalid_json": 0,
+        "buffer_discards": 0,
+        "discarded_characters": 0,
+        "warning_chunks": 0,
+        "sampling_notice_chunks": 0,
+        "connected": false,
+        "process_error": false,
+        "exit_code": null
+      },
+      "en-card-png-probe": {
+        "stdout_bytes": 50419,
+        "stderr_bytes": 0,
+        "parsed_events": 11,
+        "invalid_json": 0,
+        "buffer_discards": 0,
+        "discarded_characters": 0,
+        "warning_chunks": 0,
+        "sampling_notice_chunks": 0,
+        "connected": false,
+        "process_error": false,
+        "exit_code": null
+      }
+    }
+  }
+}

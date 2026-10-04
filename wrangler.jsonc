@@ -26,5 +26,10 @@
   "kv_namespaces": [{ "binding": "CARD_IMAGES", "id": "00000000000000000000000000000000" }],
   "triggers": { "crons": ["* * * * *"] },
   "services": [{ "binding": "DELIVERY_SERVICE", "service": "en-card-delivery" }],
+  "durable_objects": {
+    "bindings": [
+      { "name": "AUTOMATION", "class_name": "CardAutomation", "script_name": "en-card-automation" },
+    ],
+  },
   "observability": { "enabled": false },
 }
