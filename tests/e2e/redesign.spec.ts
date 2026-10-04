@@ -71,6 +71,20 @@ async function fixture(page: Page, state = initialState(), records = [delivery])
     if (url.pathname === '/api/boot')
       return route.fulfill({ json: { local: false, mode: state.mode, kakao_configured: true } });
     if (url.pathname === '/api/state') return route.fulfill({ json: state });
+    if (url.pathname === '/api/automation')
+      return route.fulfill({
+        json: {
+          settings: null,
+          version: 0,
+          enabled: false,
+          reason: null,
+          next_due_at: null,
+          available: false,
+          trial_used_today: false,
+          missing: [],
+        },
+      });
+    if (url.pathname === '/api/automation/runs') return route.fulfill({ json: [] });
     if (url.pathname === '/api/page/cards') {
       const q = url.searchParams.get('q')?.toLowerCase() ?? '';
       const status = url.searchParams.get('status');
@@ -237,16 +251,16 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
     }
     return route.fulfill({ json: view });
   });
-  await page.goto('/#/editor');
-  await page.locator('.automation-panel summary').click();
+  await page.goto('/#/automation');
+  await page.locator('.automation-trial summary').click();
   await expect(page.getByText('AI 검토 미통과', { exact: false })).toBeVisible();
   await expect(page.getByText('AI 검토 통과', { exact: false })).toHaveCount(0);
   await page.getByLabel('주제', { exact: true }).fill('여행 중 쓸 표현');
   await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: '오늘 한 장 시험', exact: true })).toBeDisabled();
   await navigate(page, 'library');
-  await navigate(page, 'editor');
-  await page.locator('.automation-panel summary').click();
+  await navigate(page, 'automation');
+  await page.locator('.automation-trial summary').click();
   await expect(page.getByLabel('주제', { exact: true })).toHaveValue('여행 중 쓸 표현');
   await page.getByRole('button', { name: '설정 저장', exact: true }).click();
   await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeEnabled();
@@ -268,20 +282,20 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
     '늦은 조회보다 새로 저장한 주제',
   );
   await page.getByRole('button', { name: '자동 제작 시작', exact: true }).click();
-  await expect(page.locator('.automation-panel summary')).toContainText('실행 중');
+  await expect(page.locator('.automation-status')).toHaveText('실행 중');
   // A Cron/other tab update uses the same session CSRF; the shared refresh must reload automation too.
   await expect(page.getByRole('button', { name: '새로고침', exact: true })).toBeEnabled();
   await page.getByLabel('주제', { exact: true }).fill('아직 저장하지 않은 주제');
   view = { ...view, enabled: false, reason: 'complete', version: view.version + 1 };
   await page.getByRole('button', { name: '새로고침', exact: true }).click();
-  await expect(page.locator('.automation-panel summary')).toContainText('기간 종료');
+  await expect(page.locator('.automation-status')).toHaveText('기간 종료');
   await expect(page.getByLabel('주제', { exact: true })).toHaveValue('아직 저장하지 않은 주제');
   await page.getByRole('button', { name: '설정 저장', exact: true }).click();
   await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: '자동 제작 시작', exact: true }).click();
-  await expect(page.locator('.automation-panel summary')).toContainText('실행 중');
+  await expect(page.locator('.automation-status')).toHaveText('실행 중');
   await page.getByRole('button', { name: '일시정지', exact: true }).click();
-  await expect(page.locator('.automation-panel summary')).toContainText('일시정지');
+  await expect(page.locator('.automation-status')).toHaveText('일시정지');
   await page.getByRole('button', { name: '오늘 한 장 시험', exact: true }).click();
   await expect(page.getByText('제작 시작', { exact: false })).toBeVisible();
   await expect(page.getByLabel('매일 받을 시각 (한국 시간)', { exact: true })).toHaveValue('08:00');
@@ -649,7 +663,15 @@ for (const width of [375, 390, 430, 768, 1440]) {
       await page.getByRole('button', { name: '미리보기 펼치기', exact: true }).click();
       await expect(page.locator('canvas')).toBeVisible();
     }
-    for (const route of ['home', 'editor', 'library', 'schedules', 'history', 'settings']) {
+    for (const route of [
+      'home',
+      'automation',
+      'editor',
+      'library',
+      'schedules',
+      'history',
+      'settings',
+    ]) {
       await navigate(page, route);
       await expect(page.locator('h1')).toBeVisible();
       await expect

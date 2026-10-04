@@ -12,9 +12,11 @@ import { SchedulesPage } from './pages/SchedulesPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
+import { AutomationPanel } from './AutomationPanel';
 
 const descriptions: Record<Page, string> = {
   home: '다음 영어 시간과 오늘 필요한 일을 확인하세요.',
+  automation: '주제와 시간을 정하면, 매일 한 장을 준비해 드려요.',
   editor: '직접 고른 표현을 담고, 미리보기를 확인한 뒤 저장하세요.',
   library: '준비한 표현을 찾아 편집하거나 예약에 담으세요.',
   schedules: '한국 시간으로 예약하고, 준비한 카드를 순서대로 보내세요.',
@@ -46,7 +48,6 @@ function Workspace(): ReactElement {
     confirmation,
     setConfirmation,
     modalOpener,
-    openCard,
   } = useStudio();
   const [moreOpen, setMoreOpen] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -88,8 +89,8 @@ function Workspace(): ReactElement {
               ? '보관함'
               : mobile && id === 'schedules'
                 ? '예약'
-                : mobile && id === 'history'
-                  ? '기록'
+                : mobile && id === 'automation'
+                  ? '자동 제작'
                   : pageTitles[id]}
         </span>
         {!mobile && id === 'library' && state && <em>{state.totals.cards}</em>}
@@ -210,9 +211,7 @@ function Workspace(): ReactElement {
             <>
               <div className="page-heading">
                 <div>
-                  <div className="eyebrow">
-                    MY ENGLISH STUDIO / {String(pages.indexOf(page) + 1).padStart(2, '0')}
-                  </div>
+                  <div className="eyebrow">나를 위한 영어 한 장</div>
                   <h1 ref={heading} tabIndex={-1}>
                     {pageTitles[page]}
                   </h1>
@@ -227,6 +226,7 @@ function Workspace(): ReactElement {
                 </button>
               </div>
               {page === 'home' && <HomePage />}
+              {page === 'automation' && <AutomationPanel />}
               {page === 'editor' && <EditorPage />}
               {page === 'library' && <LibraryPage />}
               {page === 'schedules' && <SchedulesPage />}
@@ -243,9 +243,11 @@ function Workspace(): ReactElement {
       </main>
       {state && (
         <nav className="mobile-nav" aria-label="모바일 메뉴">
-          {(['home', 'library', 'schedules', 'history'] as Page[]).map((id) => navButton(id, true))}
+          {(['home', 'automation', 'library', 'schedules'] as Page[]).map((id) =>
+            navButton(id, true),
+          )}
           <button
-            className={`nav-item ${['editor', 'settings'].includes(page) ? 'selected' : ''}`}
+            className={`nav-item ${['editor', 'history', 'settings'].includes(page) ? 'selected' : ''}`}
             disabled={busy}
             aria-expanded={moreOpen}
             onClick={(event) => {
@@ -280,19 +282,19 @@ function Workspace(): ReactElement {
               className="secondary"
               onClick={() => {
                 setMoreOpen(false);
+                setPage('history');
+              }}
+            >
+              발송 기록
+            </button>
+            <button
+              className="secondary"
+              onClick={() => {
+                setMoreOpen(false);
                 setPage('settings');
               }}
             >
               연결 및 설정
-            </button>
-            <button
-              className="text-button"
-              onClick={() => {
-                setMoreOpen(false);
-                openCard(null);
-              }}
-            >
-              새 카드 작성
             </button>
             <button className="secondary" onClick={() => setMoreOpen(false)}>
               닫기

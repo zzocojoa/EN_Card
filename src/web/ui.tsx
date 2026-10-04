@@ -65,6 +65,12 @@ export function Icon({ name }: { name: Page | 'arrow' | 'more' }): ReactElement 
         <path d="m14 7 3 3" />
       </>
     ),
+    automation: (
+      <>
+        <rect x="4" y="5" width="16" height="16" rx="3" />
+        <path d="M8 3v4M16 3v4M4 11h16m-11 5 2 2 4-4" />
+      </>
+    ),
     library: (
       <>
         <rect x="5" y="3" width="15" height="17" rx="2" />

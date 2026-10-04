@@ -10,7 +10,6 @@ import { TextField } from '../ui';
 import { TextAreaField } from '../ui';
 import { useStudio } from '../studio';
 import { endpoint } from '../environment';
-import { AutomationPanel } from '../AutomationPanel';
 export function EditorPage(): ReactElement | null {
   const {
     fieldErrors,
@@ -39,11 +38,17 @@ export function EditorPage(): ReactElement | null {
     perform,
     change,
     save,
+    setPage,
   } = useStudio();
   if (!state) return null;
   return (
     <>
-      <AutomationPanel />
+      <div className="editor-automation-link">
+        <span>매일 새 표현을 받아보고 싶다면</span>
+        <button className="text-button" disabled={busy} onClick={() => setPage('automation')}>
+          AI 자동 제작 <Icon name="arrow" />
+        </button>
+      </div>
       <div className="workflow-progress" aria-label="카드 준비 단계">
         <span className="active">01 내용 입력</span>
         <span className={reviewed ? 'active' : ''}>02 미리보기·검토</span>
