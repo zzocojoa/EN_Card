@@ -13,7 +13,12 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'webkit', testMatch: '**/redesign.spec.ts', use: { ...devices['Desktop Safari'] } },
+    {
+      name: 'webkit',
+      testMatch: /(?:redesign|responsive)\.spec\.ts$/,
+      use: { ...devices['Desktop Safari'] },
+    },
+    { name: 'iphone', testMatch: '**/responsive.spec.ts', use: { ...devices['iPhone 13'] } },
   ],
   webServer: {
     command: `npm run build:web && wrangler d1 migrations apply DB --local --config wrangler.local.jsonc --persist-to ${persistencePath} && wrangler dev --config wrangler.local.jsonc --local --port 8787 --persist-to ${persistencePath}`,

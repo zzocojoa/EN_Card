@@ -1,0 +1,157 @@
+{
+  "checkedAt": "2026-10-04T08:22:51.147Z",
+  "branch": "codex/card-studio-responsive-ui",
+  "base": "625377628c97c408ed398cac2552cc938c9632d8",
+  "site": {
+    "version": 114,
+    "source": "c65b66dca23f9e15b661d1b4a2dfdfd0b5a48f17",
+    "deployment": "appgdep_6ac20ba024a881918c32cddea6cb317d",
+    "envRevision": 59,
+    "publicAccessRevision": 4,
+    "url": "https://wordgrain-oxford-study.hoihou-o.chatgpt.site/cards"
+  },
+  "workerVersions": {
+    "en-card": [
+      {
+        "version_id": "6b289f9c-84cb-4905-9684-7b9897064109",
+        "percentage": 100
+      }
+    ],
+    "en-card-delivery": [
+      {
+        "version_id": "87d3daa6-9c4e-4cb7-9be0-38d656f38994",
+        "percentage": 100
+      }
+    ],
+    "en-card-automation": [
+      {
+        "version_id": "1c4600cd-a36d-456b-90e3-ce96b3245b8b",
+        "percentage": 100
+      }
+    ]
+  },
+  "unchangedTables": {
+    "cards": {
+      "count": 16,
+      "sha256": "4a2a018bd5b1e267d8bd320a21228dea9a84fa031c33ece90d93e1e600a215ba"
+    },
+    "assets": {
+      "count": 7,
+      "sha256": "8153751c296af599f403219e5bbf6e9d2f220ab164223f58a68b852b31d3372a"
+    },
+    "schedules": {
+      "count": 14,
+      "sha256": "e5323438b147c2bcfe8f6efbdce8fce0c43b13dbd3d63a51dbce9738a9e60c67"
+    },
+    "schedule_items": {
+      "count": 24,
+      "sha256": "4ea80ae06cdfadcc88ba92883f90ab6416933f2dbc4b6b9bdfa0d523423787e3"
+    },
+    "occurrences": {
+      "count": 13,
+      "sha256": "01e42031a186c0dc216868afe6b483cd2516a986ff08590588a64f0b171c9ef4"
+    },
+    "deliveries": {
+      "count": 21,
+      "sha256": "471f1ef7dad0054464aad495a6097bc50e49db21cb4e15c81318d49d9e02b483"
+    },
+    "delivery_attempts": {
+      "count": 19,
+      "sha256": "0bd120c4942d73d24d28a0b8de0556ed3780cb762d9ff386687543b99d4eaafd"
+    },
+    "credentials": {
+      "count": 1,
+      "sha256": "6d43806c77ed1f8ea4b7a19b79f033d95edb4334bc7d485174fc28932da74492"
+    },
+    "usage_counters": {
+      "count": 5,
+      "sha256": "7c6a66ff74f70f57a60d89f244694f3d2da5599b459bb2683caf0586421c3b83"
+    },
+    "automation_settings": {
+      "count": 1,
+      "sha256": "9a61194fe22e15a38dd702b8965e7d55badc846a8fd9cae7b678dbeebf4a3cdd"
+    },
+    "automation_runs": {
+      "count": 2,
+      "sha256": "c59355d029af6249f9c9d9d8ae9904df9d6ffb4c03b411960ea745a99a2a0d2d"
+    },
+    "automation_attempts": {
+      "count": 4,
+      "sha256": "33a3b14875803fa719e1a69398ffb5e739e722df113bd38d39cc41b15a35339b"
+    },
+    "automation_expressions": {
+      "count": 2,
+      "sha256": "12b1c9d70c71d626819a6fe85d9f7dab4c2c073eb273daa22b62cbdfc50b5982"
+    },
+    "d1_migrations": {
+      "count": 15,
+      "sha256": "156293574c3b80f199d55b06715f77c5b019d285aa8b08e7ee821cb2d6e91cd7"
+    }
+  },
+  "unchangedWorkerConfiguration": true,
+  "unchangedAutomation": {
+    "version": 10,
+    "enabled": 0,
+    "reason": "complete",
+    "next_due_at": null
+  },
+  "checks": {
+    "e2e": 60,
+    "siteProxyRelay": 15,
+    "typecheck": true,
+    "build": true,
+    "defaultAndLiveFreeConfiguration": true,
+    "siteLintErrors": 0,
+    "siteExistingLintWarnings": 13,
+    "remoteForeignKeyErrors": 0,
+    "activeGeneration": 0,
+    "inflightDelivery": 0
+  },
+  "requests": [
+    {
+      "path": "https://en-card.kmksla4.workers.dev/index.html",
+      "status": 200,
+      "sha256": "2a662295462abb5b5c7831bb76b158d01c8bdaef04a2e8e568522237eb136f0d"
+    },
+    {
+      "path": "https://en-card.kmksla4.workers.dev/assets/index-CgPbvLoL.js",
+      "status": 200,
+      "sha256": "5fa23107473be1a317afa2ec0801d1afd8c6f5523580c800009dcd050c6f0fb4"
+    },
+    {
+      "path": "https://en-card.kmksla4.workers.dev/assets/index-Zet1kPl4.css",
+      "status": 200,
+      "sha256": "f308ea23c8c9ad0245e83b7feb9882e02abb1cf6e5c2a9e58805188afdbf2ac3"
+    },
+    {
+      "path": "https://wordgrain-oxford-study.hoihou-o.chatgpt.site/card-studio/index.html",
+      "status": 307,
+      "note": "Canonical redirect; authenticated browser verified the UI and exact bundle reference."
+    },
+    {
+      "path": "https://wordgrain-oxford-study.hoihou-o.chatgpt.site/card-studio/assets/index-D4NL-za-.js",
+      "status": 200,
+      "sha256": "441f49834f63ab54b65492eb87c8947cbf67c7f64a0777cd14c4f890ccba9752"
+    },
+    {
+      "path": "https://wordgrain-oxford-study.hoihou-o.chatgpt.site/card-studio/assets/index-Zet1kPl4.css",
+      "status": 200,
+      "sha256": "f308ea23c8c9ad0245e83b7feb9882e02abb1cf6e5c2a9e58805188afdbf2ac3"
+    },
+    {
+      "path": "https://en-card.kmksla4.workers.dev/api/automation",
+      "status": 401
+    }
+  ],
+  "limits": {
+    "physicalIphone": false,
+    "newAiOrKakaoSendTest": false,
+    "accountPlanRecheck": "Cloudflare status 403 codes [10000]",
+    "remoteCpuRecheck": false,
+    "windowsWebkitVariableFontWeight": "Isolated fixture reproduces the same thin variable font; native iPhone typography remains unverified."
+  },
+  "rollback": {
+    "site": 113,
+    "worker": "a1771709-28e3-4124-9735-cf517c15a248"
+  }
+}

@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
 
-export const pages = ['home', 'editor', 'library', 'schedules', 'history', 'settings'] as const;
+export const pages = [
+  'home',
+  'automation',
+  'editor',
+  'library',
+  'schedules',
+  'history',
+  'settings',
+] as const;
 export type Page = (typeof pages)[number];
 export const pageTitles: Record<Page, string> = {
   home: '오늘의 작업실',
+  automation: 'AI 자동 제작',
   editor: '카드 만들기',
   library: '카드 보관함',
   schedules: '발송 예약',
