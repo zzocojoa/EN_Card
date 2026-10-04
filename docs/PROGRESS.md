@@ -1,5 +1,9 @@
 # 현재 구현 상태 — 2026-10-04
 
+**제품 관리 정리의 커밋·PR·병합 상태:** 아래 로컬 검증 기록은 검증 당시 상태다. 후속 GitHub 반영 결과는 [공통 관리 문서](PRODUCT_MANAGEMENT.md)가 연결하는 하루단어 출시 기록을 기준으로 확인한다.
+
+**2026-10-04 제품 관리·운영/main 차이 정리:** `origin/master@98832db`에서 `codex/product-release-management`를 만들고 [공통 관리 진입점](PRODUCT_MANAGEMENT.md)을 추가했다. 하루단어는 `github/main@76883e5`에서 `codex/card-release-reconciliation`을 만들었다. 원래 운영 소스 `codex/ai-card-automation@c65b66d`와 114개 차이를 분류하고, 현재 카드 산출물·trial 연결만 정리했다. 생성 파일 131개가 운영 v114와 같고 main의 강화된 회귀 4개 파일은 그대로 유지했다. 하루단어 전체 단위559개·타입·린트 오류0/기존 경고13·빌드·Chromium/WebKit 카드 QA, EN_Card 무료 구성 검사를 통과했다. 운영 재배포·데이터/예약/키 변경·새 실제 AI/카카오 호출은 없다. 변경은 두 새 브랜치의 미커밋 작업이며 기본 브랜치에는 아직 반영하지 않았다. 정확성 실험 95개 등 나머지는 보존·후속 검토 대상으로 명시했으며 전체 운영 소스가 main과 일치한다고 표시하지 않는다.
+
 **2026-10-04 웹·아이폰 UI 개선:** `codex/card-studio-responsive-ui`에서 frontend-design 스킬로 자동 제작 독립 화면, 홈의 실제 다음 일정, 저장 전 초안과 실행 요약, 모바일 메뉴·날짜 입력·화면 회전을 개선했다. 최종 Chromium/WebKit/iPhone 에뮬레이션60개·Site 연동15개·타입·빌드·무료 구성 통과. Site v114/주 Worker에 반영하고 운영14개 테이블·최신 자동화version10/enabled0/기간 종료·비공개 두 Worker·환경을 보존했다. 새 AI/카카오 시험은 없으며 실제 iPhone·무료 계정 재확인은 한계를 기록했다. [UI 개선 결과](UI_RESPONSIVE_2026-10-04.md).
 
 **2026-10-04 16:19 KST review 수정본 커밋·운영 반영:** `e088d61`을 커밋하고 DO→발송→주 Worker 및 하루단어 Site v113(소스 `22c2da2`)에 반영했다. 실제 live 설정의 세 Worker dry-run/무료 구성, Site 연동15개·타입·빌드, 공개 PNG/원본200·동일 해시·비인증 자동화401을 확인했다. 운영14개 주요 테이블의 행 수·해시, Secret 이름/바인딩/Cron, Site 공개 범위·환경 revision59를 보존했다. 화면도 **실행 중·10월5일07:00 제작·08:00 발송·당일 종료**를 확인했다. 추가 AI/카카오 시도·새 자원·마이그레이션0이다. 무료 계정 확인은 기존 기록을 유지하며 오늘 구독 API403·웹 로그인 만료로 재확인하지 못했다. 이 단계에서 새 코드의 실제 제작/발송 CPU나 내일 수신은 검증하지 않았다. [배포·보존 근거](evidence/AI_AUTOMATION_REVIEW_DEPLOY_2026-10-04.json). 아래 기록은 각 시점의 상태다.

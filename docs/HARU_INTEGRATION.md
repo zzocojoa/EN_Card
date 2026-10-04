@@ -1,5 +1,7 @@
 # 하루단어 영어 카드 통합
 
+현재 개발·병합·출시 책임은 [제품 관리 절차](PRODUCT_MANAGEMENT.md)를 따른다. 아래 브랜치·작업 위치·버전은 최초 통합 당시 기록이며 새 작업의 분기 기준이 아니다.
+
 2026-10-02 / 상태: 운영 반영·GitHub 병합·본인 예약 발송/수신·iPhone Safari PNG 저장 확인 완료
 
 [하루단어 영어 카드 열기](https://wordgrain-oxford-study.hoihou-o.chatgpt.site/cards). 기존 ChatGPT 계정으로 로그인하고 홈의 **영어 카드** 버튼을 누른다. 운영자 접속 토큰은 필요 없다. 카드 내용과 관리는 연결된 본인 계정만 허용한다.
