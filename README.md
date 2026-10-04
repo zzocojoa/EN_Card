@@ -1,5 +1,7 @@
 # 하루 한 표현
 
+개발·병합·배포는 [하루단어와 EN_Card 공통 관리 절차](docs/PRODUCT_MANAGEMENT.md)를 따릅니다. EN_Card는 카드 기능의 수정 원본이며, 두 저장소의 실제 출시 상태는 하루단어의 공통 기록에서 관리합니다.
+
 **2026-10-04 웹·아이폰 UI 개선:** [하루단어 카드 작업실](https://wordgrain-oxford-study.hoihou-o.chatgpt.site/cards) v114에 자동 제작 전용 메뉴·실행 요약·초안 안내·모바일 하단 메뉴를 반영했습니다. **AI 자동 제작 → 설정 저장 → 자동 제작 시작**으로 이용합니다. 브라우저 회귀 60개 통과, 실제 iPhone 확인은 별도입니다. 최신 조회의 자동화는 기간 종료 상태이며 기존 설정을 유지했습니다. [변경·검증·롤백 기록](docs/UI_RESPONSIVE_2026-10-04.md). 아래 운영 상태는 각 기록 시점 기준입니다.
 
 직접 고른 영어를 1080×1080 카드로 만들고 본인 카카오톡의 **나와의 채팅**으로 예약 발송하는 개인용 웹앱입니다. 한국어 화면, 표현형·비교형 템플릿, JSON/PNG 백업과 복원, 한국 시간 예약, 발송 기록을 제공합니다.
@@ -66,7 +68,7 @@ npm run test:e2e
 
 `build`에는 타입 검사·Vite 빌드·폰트 준비와 세 Worker의 배포 dry-run이 포함됩니다. 별도 검사는 `npm run deploy:dry-run`, `npm run deploy:delivery:dry-run`, `npm run deploy:automation:dry-run`입니다. 이 명령은 원격에 배포하지 않습니다. E2E는 8787 포트와 별도 `.wrangler/e2e-*` 저장소를 사용하므로 개발 서버를 종료한 뒤 실행합니다.
 
-화면 주소는 `#/home`, `#/editor`, `#/library`, `#/schedules`, `#/history`, `#/settings`입니다. 화면 이동 중 작성 내용은 유지되지만 브라우저를 닫으면 저장하지 않은 입력은 사라집니다. 아이폰에서는 하단 **더보기**로 제작·설정 화면에 접근합니다. Chromium은 기존 로컬 D1 회귀와 새 UI 검증을, WebKit은 새 UI 검증을 실행합니다. WebKit의 모의 API 검증은 실제 아이폰·카카오 연동 확인과 구분합니다. 개편 범위는 [계획](docs/UI_UX_REDESIGN_PLAN.md)과 [검토 기록](docs/UI_UX_REVIEW.md)을 따릅니다.
+화면 주소는 `#/home`, `#/editor`, `#/library`, `#/automation`, `#/schedules`, `#/history`, `#/settings`입니다. 화면 이동 중 작성 내용은 유지되지만 브라우저를 닫으면 저장하지 않은 입력은 사라집니다. 아이폰에서는 하단 **더보기**로 제작·설정 화면에 접근합니다. Chromium은 기존 로컬 D1 회귀와 새 UI 검증을, WebKit은 새 UI 검증을 실행합니다. WebKit의 모의 API 검증은 실제 아이폰·카카오 연동 확인과 구분합니다. 개편 범위는 [계획](docs/UI_UX_REDESIGN_PLAN.md)과 [검토 기록](docs/UI_UX_REVIEW.md)을 따릅니다.
 
 ## 운영 및 비용 조건
 
