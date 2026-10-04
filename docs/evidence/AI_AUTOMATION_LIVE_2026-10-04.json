@@ -1,0 +1,1255 @@
+{
+  "recordedAt": "2026-10-04T01:56:14.586Z",
+  "snapshotAt": "2026-10-04T01:53:32.255Z",
+  "authorization": "User approved one beginner everyday-conversation expression card, real AI review, same-day one-off own Kakao test.",
+  "settings": {
+    "topic": "일상 회화",
+    "base_expression": "",
+    "level": "초급",
+    "template": "expression",
+    "start_date": "2026-10-04",
+    "end_date": "2026-10-04",
+    "time": "10:45"
+  },
+  "versions": {
+    "en-card": {
+      "versions": [
+        {
+          "version_id": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+          "percentage": 100
+        }
+      ],
+      "crons": [
+        "* * * * *"
+      ],
+      "vars": [
+        {
+          "name": "APP_ORIGIN",
+          "value": "https://en-card.kmksla4.workers.dev"
+        },
+        {
+          "name": "COST_MODE",
+          "value": "free_only"
+        },
+        {
+          "name": "SEND_MODE",
+          "value": "live"
+        }
+      ],
+      "secretNames": [
+        "KAKAO_CLIENT_SECRET",
+        "KAKAO_REST_API_KEY",
+        "SESSION_SECRET",
+        "SETUP_TOKEN",
+        "STUDIO_BRIDGE_SECRET",
+        "STUDIO_ORIGIN",
+        "STUDIO_OWNER_ID",
+        "TOKEN_ENCRYPTION_KEY"
+      ]
+    },
+    "en-card-delivery": {
+      "versions": [
+        {
+          "version_id": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+          "percentage": 100
+        }
+      ],
+      "crons": [],
+      "vars": [
+        {
+          "name": "APP_ORIGIN",
+          "value": "https://en-card.kmksla4.workers.dev"
+        },
+        {
+          "name": "COST_MODE",
+          "value": "free_only"
+        },
+        {
+          "name": "SEND_MODE",
+          "value": "live"
+        }
+      ],
+      "secretNames": []
+    },
+    "en-card-automation": {
+      "versions": [
+        {
+          "version_id": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f",
+          "percentage": 100
+        }
+      ],
+      "crons": [],
+      "vars": [
+        {
+          "name": "AI_FREE_CONFIRMED",
+          "value": "google_groq_free"
+        },
+        {
+          "name": "APP_ORIGIN",
+          "value": "https://en-card.kmksla4.workers.dev"
+        },
+        {
+          "name": "AUTOMATION_MODE",
+          "value": "live"
+        },
+        {
+          "name": "COST_MODE",
+          "value": "free_only"
+        },
+        {
+          "name": "SEND_MODE",
+          "value": "live"
+        }
+      ],
+      "secretNames": []
+    }
+  },
+  "observed": {
+    "at": "2026-10-04T01:53:32.255Z",
+    "settings": [
+      {
+        "settings": "{\"topic\":\"일상 회화\",\"base_expression\":\"\",\"level\":\"초급\",\"template\":\"expression\",\"start_date\":\"2026-10-04\",\"end_date\":\"2026-10-04\",\"time\":\"10:45\"}",
+        "version": 2,
+        "enabled": 0,
+        "reason": "complete",
+        "next_due_at": null,
+        "updated_at": 1791078445198
+      }
+    ],
+    "runs": [
+      {
+        "id": "391c2cef-c586-40ab-9174-7f4871ab68bd",
+        "day": "2026-10-04",
+        "config_version": 2,
+        "due_at": 1791078300000,
+        "deadline": 1791078000000,
+        "status": "scheduled",
+        "writer": "google",
+        "reviewer": "groq",
+        "revision": 1,
+        "content": "{\"template\":\"expression\",\"expression\":\"How's it going?\",\"meaning_ko\":\"어떻게 지내세요?\",\"example_en\":\"Hey, long time no see! How's it going?\",\"example_ko\":\"야, 오랜만이야! 어떻게 지내?\",\"note_ko\":\"상대방의 안부를 묻는 아주 흔하고 자연스러운 인사말입니다.\",\"base_expression\":\"none\",\"base_meaning_ko\":\"none\"}",
+        "review": "{\"natural\":true,\"meaning\":true,\"grammar\":true,\"translation\":true,\"level\":true,\"comparison\":true,\"issues\":[]}",
+        "review_matches": 1,
+        "card_id": "8a45f2da-a608-4c67-8c4c-0b9442d0efc7",
+        "asset_id": "cdaffd56-b125-4a0c-ba66-e8c0a86c1b38",
+        "public_id": "212a047e9b034df8b8358813abd4afa83650adc204f243dfb1733ed3f975b489",
+        "schedule_id": "34c66316-e190-46fd-b0f6-044133499e59",
+        "retry_at": null,
+        "error": null,
+        "render_attempts": 1,
+        "updated_at": 1791075025570
+      }
+    ],
+    "attempts": [
+      {
+        "run_id": "391c2cef-c586-40ab-9174-7f4871ab68bd",
+        "stage": "draft",
+        "revision": 1,
+        "provider": "google",
+        "started_at": 1791074725791,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "run_id": "391c2cef-c586-40ab-9174-7f4871ab68bd",
+        "stage": "review",
+        "revision": 1,
+        "provider": "groq",
+        "started_at": 1791074785618,
+        "outcome": "ok",
+        "http_status": null
+      }
+    ],
+    "schedules": [
+      {
+        "id": "34c66316-e190-46fd-b0f6-044133499e59",
+        "name": "AI 2026-10-04 · How's it going?",
+        "kind": "once",
+        "date": "2026-10-04",
+        "time": "10:45",
+        "end_date": null,
+        "weekdays": "[]",
+        "cards_per_occurrence": 1,
+        "timezone": "Asia/Seoul",
+        "next_run_at_utc": null,
+        "version": 1,
+        "cursor": 1,
+        "enabled": 0,
+        "reason": "completed",
+        "mutation_id": "391c2cef-c586-40ab-9174-7f4871ab68bd"
+      }
+    ],
+    "deliveries": [
+      {
+        "id": "75f00c74-c864-47da-84c9-8372b7d339f1-0",
+        "schedule_id": "34c66316-e190-46fd-b0f6-044133499e59",
+        "state": "sent",
+        "mode": "live",
+        "due_at_utc": 1791078300000,
+        "attempts": 1,
+        "error": "카카오 API 접수 확인 (열람 확인 아님)",
+        "resolution": null,
+        "updated_at": 1791078386900
+      }
+    ],
+    "sends": [
+      {
+        "started_at": 1791078385761,
+        "outcome": "sent",
+        "mode": "live"
+      }
+    ],
+    "assets": [
+      {
+        "id": "cdaffd56-b125-4a0c-ba66-e8c0a86c1b38",
+        "public_id": "212a047e9b034df8b8358813abd4afa83650adc204f243dfb1733ed3f975b489",
+        "bytes": 48869,
+        "state": "ready",
+        "created_at": 1791074846873
+      }
+    ],
+    "connection": [
+      {
+        "status": "connected",
+        "version": 12
+      }
+    ],
+    "usage": [
+      {
+        "day": "2026-10-04",
+        "uploads": 1,
+        "sends": 1,
+        "bytes": 0
+      },
+      {
+        "day": "storage",
+        "uploads": 0,
+        "sends": 0,
+        "bytes": 451155
+      }
+    ]
+  },
+  "afterCounts": [
+    {
+      "kind": "cards",
+      "n": 15
+    },
+    {
+      "'assets_ready'": "assets_ready",
+      "count(*)": 6
+    },
+    {
+      "'active_schedules'": "active_schedules",
+      "count(*)": 1
+    },
+    {
+      "'inflight_or_unknown'": "inflight_or_unknown",
+      "count(*)": 0
+    },
+    {
+      "'automation_settings'": "automation_settings",
+      "count(*)": 1
+    },
+    {
+      "'automation_runs'": "automation_runs",
+      "count(*)": 1
+    },
+    {
+      "'automation_attempts'": "automation_attempts",
+      "count(*)": 2
+    },
+    {
+      "'automation_expressions'": "automation_expressions",
+      "count(*)": 1
+    }
+  ],
+  "finalState": {
+    "at": "2026-10-04T01:53:31.723Z",
+    "workers": {
+      "en-card": {
+        "versions": [
+          {
+            "version_id": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+            "percentage": 100
+          }
+        ],
+        "crons": [
+          "* * * * *"
+        ],
+        "vars": [
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": [
+          "KAKAO_CLIENT_SECRET",
+          "KAKAO_REST_API_KEY",
+          "SESSION_SECRET",
+          "SETUP_TOKEN",
+          "STUDIO_BRIDGE_SECRET",
+          "STUDIO_ORIGIN",
+          "STUDIO_OWNER_ID",
+          "TOKEN_ENCRYPTION_KEY"
+        ]
+      },
+      "en-card-delivery": {
+        "versions": [
+          {
+            "version_id": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+            "percentage": 100
+          }
+        ],
+        "crons": [],
+        "vars": [
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": []
+      },
+      "en-card-automation": {
+        "versions": [
+          {
+            "version_id": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f",
+            "percentage": 100
+          }
+        ],
+        "crons": [],
+        "vars": [
+          {
+            "name": "AI_FREE_CONFIRMED",
+            "value": "google_groq_free"
+          },
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "AUTOMATION_MODE",
+            "value": "live"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": []
+      }
+    },
+    "counts": [
+      {
+        "kind": "cards",
+        "n": 15
+      },
+      {
+        "'assets_ready'": "assets_ready",
+        "count(*)": 6
+      },
+      {
+        "'active_schedules'": "active_schedules",
+        "count(*)": 0
+      },
+      {
+        "'inflight_or_unknown'": "inflight_or_unknown",
+        "count(*)": 0
+      },
+      {
+        "'automation_settings'": "automation_settings",
+        "count(*)": 1
+      },
+      {
+        "'automation_runs'": "automation_runs",
+        "count(*)": 1
+      },
+      {
+        "'automation_attempts'": "automation_attempts",
+        "count(*)": 2
+      },
+      {
+        "'automation_expressions'": "automation_expressions",
+        "count(*)": 1
+      }
+    ],
+    "foreignKeyErrors": 0
+  },
+  "userConfirmation": {
+    "recordedDateKst": "2026-10-04",
+    "source": "User reply to the annotated PC/browser/Codex-off phone image and original-link verification request",
+    "userStatement": "정상 동작 확인했다.",
+    "scope": {
+      "phoneReceipt": true,
+      "phoneImage": true,
+      "originalLink": true,
+      "pcBrowserCodexOffDelivery": true,
+      "pcOffNewAiGeneration": false
+    },
+    "limitation": "The AI card was generated while the PC was on; this reply confirms the later scheduled delivery test."
+  },
+  "png": {
+    "bytes": 48869,
+    "width": 1080,
+    "height": 1080,
+    "sha256": "65e6d5135365564fc8a2259759376969ff97c795a2e0e27f4f580446425432ab"
+  },
+  "cpu": {
+    "cpu-en-card-automation.jsonl": [
+      {
+        "event": "safe_tail_waiting",
+        "target": "en-card-automation",
+        "pid": 51576,
+        "startAt": 1791074162588,
+        "stopAt": 1791075362588
+      },
+      {
+        "event": "safe_tail_starting",
+        "target": "en-card-automation",
+        "pid": 51576,
+        "childPid": 85872,
+        "stopAt": 1791075362588
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "site_status",
+        "at": 1791074218912,
+        "scheduledTime": null,
+        "cpuMs": 9,
+        "wallMs": 383,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074245201,
+        "scheduledTime": null,
+        "cpuMs": 0,
+        "wallMs": 108,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074305198,
+        "scheduledTime": null,
+        "cpuMs": 3,
+        "wallMs": 426,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074365200,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 418,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074425197,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 429,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074485196,
+        "scheduledTime": null,
+        "cpuMs": 3,
+        "wallMs": 449,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074545196,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 420,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074605197,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 426,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074665198,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 414,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074725235,
+        "scheduledTime": null,
+        "cpuMs": 11,
+        "wallMs": 28765,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074785198,
+        "scheduledTime": null,
+        "cpuMs": 7,
+        "wallMs": 28626,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074845197,
+        "scheduledTime": null,
+        "cpuMs": 505,
+        "wallMs": 2219,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "site_status",
+        "at": 1791074848849,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 5043,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [
+          {
+            "configured": true,
+            "available": true
+          }
+        ],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074905200,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 584,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791074965192,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 423,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791075025258,
+        "scheduledTime": null,
+        "cpuMs": 4,
+        "wallMs": 642,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791075085196,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 417,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "site_status",
+        "at": 1791075103330,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 5102,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [
+          {
+            "configured": true,
+            "available": true
+          }
+        ],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791075145200,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 422,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "target": "en-card-automation",
+        "kind": "automation_tick",
+        "at": 1791075205197,
+        "scheduledTime": null,
+        "cpuMs": 2,
+        "wallMs": 418,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+      },
+      {
+        "event": "collector_exit",
+        "target": "en-card-automation",
+        "code": 4294967295,
+        "at": 1791075231346
+      }
+    ],
+    "cpu-en-card.jsonl": [
+      {
+        "event": "safe_tail_waiting",
+        "target": "en-card",
+        "pid": 71724,
+        "startAt": 1791074172796,
+        "stopAt": 1791075372796
+      },
+      {
+        "event": "safe_tail_starting",
+        "target": "en-card",
+        "pid": 71724,
+        "childPid": 42500,
+        "stopAt": 1791075372796
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074185138,
+        "scheduledTime": 1791074185000,
+        "cpuMs": 2,
+        "wallMs": 291,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074245139,
+        "scheduledTime": 1791074245000,
+        "cpuMs": 1,
+        "wallMs": 280,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074305138,
+        "scheduledTime": 1791074305000,
+        "cpuMs": 2,
+        "wallMs": 599,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074365141,
+        "scheduledTime": 1791074365000,
+        "cpuMs": 2,
+        "wallMs": 589,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074425140,
+        "scheduledTime": 1791074425000,
+        "cpuMs": 2,
+        "wallMs": 634,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074485138,
+        "scheduledTime": 1791074485000,
+        "cpuMs": 2,
+        "wallMs": 620,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074545140,
+        "scheduledTime": 1791074545000,
+        "cpuMs": 1,
+        "wallMs": 585,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074605139,
+        "scheduledTime": 1791074605000,
+        "cpuMs": 2,
+        "wallMs": 597,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074665142,
+        "scheduledTime": 1791074665000,
+        "cpuMs": 2,
+        "wallMs": 581,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074725174,
+        "scheduledTime": 1791074725000,
+        "cpuMs": 2,
+        "wallMs": 5081,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074785142,
+        "scheduledTime": 1791074785000,
+        "cpuMs": 2,
+        "wallMs": 3930,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074845137,
+        "scheduledTime": 1791074845000,
+        "cpuMs": 2,
+        "wallMs": 2392,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074905141,
+        "scheduledTime": 1791074905000,
+        "cpuMs": 2,
+        "wallMs": 755,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791074965136,
+        "scheduledTime": 1791074965000,
+        "cpuMs": 2,
+        "wallMs": 586,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791075025202,
+        "scheduledTime": 1791075025000,
+        "cpuMs": 2,
+        "wallMs": 810,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791075085139,
+        "scheduledTime": 1791075085000,
+        "cpuMs": 2,
+        "wallMs": 582,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791075145139,
+        "scheduledTime": 1791075145000,
+        "cpuMs": 2,
+        "wallMs": 596,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "target": "en-card",
+        "kind": "cron",
+        "at": 1791075205139,
+        "scheduledTime": 1791075205000,
+        "cpuMs": 1,
+        "wallMs": 586,
+        "outcome": "ok",
+        "exceptions": 0,
+        "relayFailure": [],
+        "siteStatus": [],
+        "version": "00bb067b-4d23-459d-8eef-26c17941b5e2"
+      },
+      {
+        "event": "collector_exit",
+        "target": "en-card",
+        "code": 4294967295,
+        "at": 1791075231346
+      }
+    ]
+  },
+  "criticalCpu": [
+    {
+      "stage": "draft",
+      "target": "en-card",
+      "cpuMs": 2,
+      "wallMs": 5081,
+      "at": 1791074725174
+    },
+    {
+      "stage": "draft",
+      "target": "en-card-automation",
+      "cpuMs": 11,
+      "wallMs": 28765,
+      "at": 1791074725235
+    },
+    {
+      "stage": "review",
+      "target": "en-card",
+      "cpuMs": 2,
+      "wallMs": 3930,
+      "at": 1791074785142
+    },
+    {
+      "stage": "review",
+      "target": "en-card-automation",
+      "cpuMs": 7,
+      "wallMs": 28626,
+      "at": 1791074785198
+    },
+    {
+      "stage": "render",
+      "target": "en-card",
+      "cpuMs": 2,
+      "wallMs": 2392,
+      "at": 1791074845137
+    },
+    {
+      "stage": "render",
+      "target": "en-card-automation",
+      "cpuMs": 505,
+      "wallMs": 2219,
+      "at": 1791074845197
+    },
+    {
+      "stage": "schedule",
+      "target": "en-card",
+      "cpuMs": 2,
+      "wallMs": 810,
+      "at": 1791075025202
+    },
+    {
+      "stage": "schedule",
+      "target": "en-card-automation",
+      "cpuMs": 4,
+      "wallMs": 642,
+      "at": 1791075025258
+    }
+  ],
+  "verification": {
+    "realAiDraft": true,
+    "realCrossReview": true,
+    "approvedContentMatches": true,
+    "pngDownloadedAndHeaderChecked": true,
+    "siteDownloadMatches": true,
+    "visualInspection": "Agent opened the generated PNG and confirmed Korean/English text without clipping. User subsequently confirmed the phone image and original link.",
+    "oneOffSchedule": true,
+    "kakaoApiAccepted": true,
+    "phoneReceipt": "confirmed by user annotation reply on 2026-10-04",
+    "phoneImageAndOriginalLink": "confirmed by user annotation reply on 2026-10-04",
+    "pcOffDelivery": "confirmed by user annotation reply on 2026-10-04",
+    "pcOffNewAiGeneration": "not tested; generation occurred while the PC was on",
+    "scheduledSendCpu": "Retrieved later through GraphQL; main refresh tick 14.004ms exceeded 10ms. First trial tail did not capture send CPU.",
+    "trialAutomaticallyCompleted": true
+  },
+  "retrospectiveSendCpu": {
+    "queriedAt": "2026-10-04T03:30:30.363Z",
+    "source": "Cloudflare GraphQL workersInvocationsAdaptive",
+    "units": "microseconds from API schema; displayed ms = value / 1000",
+    "grouping": [
+      "datetime",
+      "scriptName",
+      "scriptVersion",
+      "status"
+    ],
+    "rows": [
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:47:25Z",
+          "scriptName": "en-card",
+          "scriptVersion": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 1917,
+          "cpuTimeP99": 1917
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 2
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:45:25Z",
+          "scriptName": "en-card",
+          "scriptVersion": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 14004,
+          "cpuTimeP99": 14004
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 4
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:46:26Z",
+          "scriptName": "en-card",
+          "scriptVersion": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 4426,
+          "cpuTimeP99": 4426
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 0
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:44:25Z",
+          "scriptName": "en-card",
+          "scriptVersion": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 2107,
+          "cpuTimeP99": 2107
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 2
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:46:25Z",
+          "scriptName": "en-card",
+          "scriptVersion": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 4776,
+          "cpuTimeP99": 4776
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 3
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:47:25Z",
+          "scriptName": "en-card-delivery",
+          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 1673,
+          "cpuTimeP99": 1673
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 0
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:45:25Z",
+          "scriptName": "en-card-delivery",
+          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 4747,
+          "cpuTimeP99": 4747
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 0
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:46:25Z",
+          "scriptName": "en-card-delivery",
+          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 1376,
+          "cpuTimeP99": 4890
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 2,
+          "subrequests": 1
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:45:26Z",
+          "scriptName": "en-card-delivery",
+          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 2515,
+          "cpuTimeP99": 2515
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 0
+        }
+      },
+      {
+        "avg": {
+          "sampleInterval": 1
+        },
+        "dimensions": {
+          "datetime": "2026-10-04T01:44:25Z",
+          "scriptName": "en-card-delivery",
+          "scriptVersion": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+          "status": "success"
+        },
+        "quantiles": {
+          "cpuTimeP50": 1558,
+          "cpuTimeP99": 1558
+        },
+        "sum": {
+          "errors": 0,
+          "requests": 1,
+          "subrequests": 0
+        }
+      }
+    ],
+    "caveat": "Percentiles are provider analytics, not raw per-invocation maxima. Rows with two requests cannot assign a CPU value to each request.",
+    "conclusion": "Main refresh tick recorded 14.004ms, above 10ms; successful delivery does not establish Free CPU suitability."
+  }
+}

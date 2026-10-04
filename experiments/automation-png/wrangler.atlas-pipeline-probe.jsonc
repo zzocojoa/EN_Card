@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "en-card-png-probe",
+  "main": "atlas-pipeline-probe.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "rules": [
+    { "type": "Data", "globs": ["**/atlas-common.bin"], "fallthrough": false },
+    { "type": "Text", "globs": ["**/atlas-metrics.data"], "fallthrough": false },
+  ],
+  "services": [{ "binding": "RENDERER", "service": "en-card-png-feasibility" }],
+  "observability": { "enabled": false },
+}

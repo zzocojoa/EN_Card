@@ -20,7 +20,15 @@ function invalid(detail: string): Error {
     `PNG 구조가 잘못되었습니다: ${detail}. PNG를 다시 저장하세요.`,
   );
 }
-export function validatePng(bytes: Uint8Array<ArrayBuffer>): void {
+// Production uploads keep the 1080 default. Smaller outputs are opt-in until
+// storage and message payloads carry their actual dimensions end to end.
+export function validatePng(
+  bytes: Uint8Array<ArrayBuffer>,
+  expectedSize: 1080 | 800 | 720 = 1080,
+  // Trusted internal checksum implementation; never selected by upload input.
+  // Production callers retain the portable default and all structure checks.
+  checksum: (bytes: Uint8Array, start: number, end: number) => number = crc,
+): void {
   if (bytes.length > LIMITS.imageBytes)
     throw appError(413, 'IMAGE_LIMIT', 'PNG 크기는 1MiB 이하여야 합니다.');
   if (
@@ -46,8 +54,11 @@ export function validatePng(bytes: Uint8Array<ArrayBuffer>): void {
     if (offset === 8 && type !== 'IHDR') throw invalid('IHDR 순서');
     if (type === 'IHDR') {
       if (offset !== 8 || size !== 13) throw invalid('IHDR 중복 또는 길이');
-      if (view.getUint32(offset + 8) !== 1080 || view.getUint32(offset + 12) !== 1080)
-        throw appError(400, 'PNG_DIMENSIONS', '1080×1080 PNG를 사용하세요.');
+      if (
+        view.getUint32(offset + 8) !== expectedSize ||
+        view.getUint32(offset + 12) !== expectedSize
+      )
+        throw appError(400, 'PNG_DIMENSIONS', `${expectedSize}×${expectedSize} PNG를 사용하세요.`);
       depth = bytes[offset + 16]!;
       color = bytes[offset + 17]!;
       const depths: Readonly<Record<number, readonly number[]>> = {
@@ -89,7 +100,7 @@ export function validatePng(bytes: Uint8Array<ArrayBuffer>): void {
       if (['acTL', 'fcTL', 'fdAT'].includes(type)) throw invalid('애니메이션 PNG는 지원하지 않음');
     }
     if (dataStarted && type !== 'IDAT') dataEnded = true;
-    if (crc(bytes, offset + 4, end - 4) !== view.getUint32(end - 4))
+    if (checksum(bytes, offset + 4, end - 4) !== view.getUint32(end - 4))
       throw invalid(`${type} CRC 불일치`);
     if (type === 'IEND') return;
     offset = end;

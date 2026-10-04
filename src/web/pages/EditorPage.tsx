@@ -10,6 +10,7 @@ import { TextField } from '../ui';
 import { TextAreaField } from '../ui';
 import { useStudio } from '../studio';
 import { endpoint } from '../environment';
+import { AutomationPanel } from '../AutomationPanel';
 export function EditorPage(): ReactElement | null {
   const {
     fieldErrors,
@@ -42,6 +43,7 @@ export function EditorPage(): ReactElement | null {
   if (!state) return null;
   return (
     <>
+      <AutomationPanel />
       <div className="workflow-progress" aria-label="카드 준비 단계">
         <span className="active">01 내용 입력</span>
         <span className={reviewed ? 'active' : ''}>02 미리보기·검토</span>

@@ -1,0 +1,52 @@
+{
+  "measured_at_utc": "2026-10-02T11:15:57.937Z",
+  "scope": "Local full atlas Static Assets binding + authenticated probe + private renderer. Not remote CPU or production deployment.",
+  "qualification": "not_qualified",
+  "rows": [
+    {
+      "fixture": "expression",
+      "status": 200,
+      "bytes": 25223,
+      "sha256": "806591fcb51be7ea1473f4f088fff8358ccc8e5fcf73a1dd62f830740f428019",
+      "pages": 22,
+      "fetched_bytes": 5110786,
+      "wall_ms": 89.6508
+    },
+    {
+      "fixture": "comparison",
+      "status": 200,
+      "bytes": 23041,
+      "sha256": "da6798f9c90b0f32c933f4a6db20d46e4c5f17e6c3206a0c06ccfdfd8d24dfba",
+      "pages": 14,
+      "fetched_bytes": 3418978,
+      "wall_ms": 32.492699999999985
+    },
+    {
+      "fixture": "long",
+      "status": 200,
+      "bytes": 38211,
+      "sha256": "4164f4a1deaaccea62979681516f5487c2ba3f1c65705ab69a2b10f4ddf919f9",
+      "pages": 14,
+      "fetched_bytes": 3465708,
+      "wall_ms": 29.9803
+    },
+    {
+      "fixture": "long_comparison",
+      "status": 200,
+      "bytes": 38677,
+      "sha256": "2d49884c68a7df91e931fd1fcbe2e83aa153f03c83e330b26cdf82c76d70f03e",
+      "pages": 13,
+      "fetched_bytes": 3282532,
+      "wall_ms": 29.313000000000017
+    },
+    {
+      "fixture": "coverage",
+      "status": 200,
+      "bytes": 38493,
+      "sha256": "d01d67b5178d3505fb393089e5ad0b9aa9aa1755469836d7008b7865f14037ff",
+      "pages": 33,
+      "fetched_bytes": 7614150,
+      "wall_ms": 85.25639999999999
+    }
+  ]
+}

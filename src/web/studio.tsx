@@ -23,6 +23,7 @@ import { downloadBlob, pngBlob, renderCard } from './canvas';
 import { EMPTY, initialSchedule, errorMessage } from './ui';
 import { usePage } from './navigation';
 import { endpoint, integratedStudio } from './environment';
+import type { AutomationSettings } from '../shared/automation';
 type Notice = { kind: 'error' | 'success'; text: string } | null;
 function useStudioModel() {
   const [revision, setRevision] = useState(0);
@@ -31,6 +32,8 @@ function useStudioModel() {
   const [savedAsset, setSavedAsset] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [scheduleDirty, setScheduleDirty] = useState(false);
+  const [automationDraft, setAutomationDraft] = useState<AutomationSettings | null>(null);
+  const [automationDirty, setAutomationDirty] = useState(false);
   const [scheduleTitles, setScheduleTitles] = useState<Record<string, string>>({});
   const [confirmation, setConfirmation] = useState<{
     title: string;
@@ -110,14 +113,14 @@ function useStudioModel() {
   }, [authenticated, page, busy]);
   useEffect(() => {
     const prevent = (event: BeforeUnloadEvent) => {
-      if (dirty || scheduleDirty) {
+      if (dirty || scheduleDirty || automationDirty) {
         event.preventDefault();
         event.returnValue = '';
       }
     };
     window.addEventListener('beforeunload', prevent);
     return () => window.removeEventListener('beforeunload', prevent);
-  }, [dirty, scheduleDirty]);
+  }, [dirty, scheduleDirty, automationDirty]);
   useEffect(() => {
     let active: boolean = true;
     void Promise.all([api('/api/boot', 'GET', null, ''), fetch(endpoint('/api/state'))])
@@ -420,6 +423,10 @@ function useStudioModel() {
   }
 
   return {
+    automationDraft,
+    setAutomationDraft,
+    automationDirty,
+    setAutomationDirty,
     revision,
     scheduleOpen,
     setScheduleOpen,

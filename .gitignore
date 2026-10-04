@@ -5,6 +5,7 @@ dist-haru/
 .wrangler/
 .worker-build/
 .worker-delivery-build/
+.automation-png/
 .dev.vars*
 !.dev.vars.example
 .env*
@@ -19,3 +20,9 @@ backups/
 wrangler.deploy.jsonc
 wrangler.live.jsonc
 wrangler.delivery.deploy.jsonc
+.automation-fonts/
+.worker-automation-build/
+wrangler.automation.live.jsonc
+wrangler.automation.deploy.jsonc
+wrangler.trial-maintenance.jsonc
+wrangler.token-refresh-verification.jsonc

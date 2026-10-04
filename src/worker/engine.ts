@@ -343,6 +343,19 @@ export async function deliverClaimed(
     }
   } catch (error: unknown) {
     const message: string = error instanceof Error ? error.message : String(error);
+    if (message.includes('automation_send_blocked')) {
+      await finish(
+        env,
+        item,
+        owner,
+        'blocked',
+        '자동 제작이 중지되었거나 이전 발송 결과 확인이 필요합니다.',
+        null,
+        callTime,
+        null,
+      );
+      return { processed: 0, reuseGrant: false, stop: true };
+    }
     if (!message.includes('CHECK constraint failed')) throw error;
     const day = await env.DB.prepare('SELECT sends FROM usage_counters WHERE day=?')
       .bind(kstDate(callTime))
@@ -417,7 +430,7 @@ export async function deliverClaimed(
       attempt,
     );
   } else if (result.outcome === 'unauthorized' || result.outcome === 'reconnect') {
-    const changed: boolean = await markReconnect(env, grant.version);
+    const changed: boolean = await markReconnect(env, grant.version, runtime.clock());
     if (!changed && runtime.mode === 'live') {
       const retry: boolean = item.attempts + 1 < LIMITS.automaticAttempts;
       await finish(

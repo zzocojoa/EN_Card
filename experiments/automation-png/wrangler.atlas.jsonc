@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "en-card-png-feasibility",
+  "main": "atlas-worker.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": false,
+  "preview_urls": false,
+  "rules": [
+    { "type": "Data", "globs": ["**/atlas-common.bin"], "fallthrough": false },
+    { "type": "Text", "globs": ["**/atlas-metrics.data"], "fallthrough": false },
+  ],
+  "assets": {
+    "directory": "../../.automation-png/atlas-v2-assets",
+    "binding": "ATLAS_ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none",
+  },
+  "observability": { "enabled": false },
+}

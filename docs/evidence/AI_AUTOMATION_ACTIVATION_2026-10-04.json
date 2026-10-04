@@ -1,0 +1,178 @@
+{
+  "recorded_at": "2026-10-03T17:55:53.589Z",
+  "scope": "Enable server readiness after user confirms Free API key ownership",
+  "configuration": {
+    "SEND_MODE": "live",
+    "AUTOMATION_MODE": "live",
+    "AI_FREE_CONFIRMED": "google_groq_free",
+    "sha256": "289a9afbdc75cc4b023d3074476b3b8a5c3d2d6bd6cd592a882df537c89dcc87"
+  },
+  "readiness": [
+    {
+      "target": "en-card-automation",
+      "kind": "site_status",
+      "at": 1791050035987,
+      "scheduledTime": null,
+      "cpuMs": 6,
+      "wallMs": 5105,
+      "outcome": "ok",
+      "exceptions": 0,
+      "relayFailure": [],
+      "siteStatus": [
+        {
+          "configured": true,
+          "available": true
+        }
+      ],
+      "version": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f"
+    }
+  ],
+  "after": {
+    "at": "2026-10-03T17:53:41.369Z",
+    "workers": {
+      "en-card": {
+        "versions": [
+          {
+            "version_id": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+            "percentage": 100
+          }
+        ],
+        "crons": [
+          "* * * * *"
+        ],
+        "vars": [
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": [
+          "KAKAO_CLIENT_SECRET",
+          "KAKAO_REST_API_KEY",
+          "SESSION_SECRET",
+          "SETUP_TOKEN",
+          "STUDIO_BRIDGE_SECRET",
+          "STUDIO_ORIGIN",
+          "STUDIO_OWNER_ID",
+          "TOKEN_ENCRYPTION_KEY"
+        ]
+      },
+      "en-card-delivery": {
+        "versions": [
+          {
+            "version_id": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+            "percentage": 100
+          }
+        ],
+        "crons": [],
+        "vars": [
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": []
+      },
+      "en-card-automation": {
+        "versions": [
+          {
+            "version_id": "9b97ba69-b7f3-4bb5-bcc4-251b86956e7f",
+            "percentage": 100
+          }
+        ],
+        "crons": [],
+        "vars": [
+          {
+            "name": "AI_FREE_CONFIRMED",
+            "value": "google_groq_free"
+          },
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "AUTOMATION_MODE",
+            "value": "live"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": []
+      }
+    },
+    "counts": [
+      {
+        "kind": "cards",
+        "n": 14
+      },
+      {
+        "'assets_ready'": "assets_ready",
+        "count(*)": 5
+      },
+      {
+        "'active_schedules'": "active_schedules",
+        "count(*)": 0
+      },
+      {
+        "'inflight_or_unknown'": "inflight_or_unknown",
+        "count(*)": 0
+      },
+      {
+        "'automation_settings'": "automation_settings",
+        "count(*)": 0
+      },
+      {
+        "'automation_runs'": "automation_runs",
+        "count(*)": 0
+      },
+      {
+        "'automation_attempts'": "automation_attempts",
+        "count(*)": 0
+      },
+      {
+        "'automation_expressions'": "automation_expressions",
+        "count(*)": 0
+      }
+    ],
+    "foreignKeyErrors": 0
+  },
+  "checks": {
+    "activeFreeConfig": "passed",
+    "deployDryRun": "passed",
+    "previousWorkersUnchanged": true,
+    "rowCountsUnchanged": true,
+    "sourceCodeChanged": false,
+    "siteRepublished": false
+  },
+  "limits": {
+    "automationSettingsSaved": false,
+    "automationStarted": false,
+    "realAiCalls": 0,
+    "kakaoCalls": 0,
+    "firstLiveTrial": "awaiting user selection",
+    "generationCpu": "not tested",
+    "phoneReceipt": "not tested"
+  }
+}

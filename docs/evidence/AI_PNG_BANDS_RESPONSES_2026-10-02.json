@@ -1,0 +1,74 @@
+[
+  {
+    "iteration": 0,
+    "fixture": "expression",
+    "bytes": 57590,
+    "encoder": "bands",
+    "at": 1790936586599,
+    "status": 200,
+    "sha256": "568b4b39bb4121152369f7d8945c7242958afa4804dc27f08aa1b3d4ac6cb8df"
+  },
+  {
+    "iteration": 1,
+    "fixture": "expression",
+    "bytes": 57590,
+    "encoder": "bands",
+    "at": 1790936588239,
+    "status": 200,
+    "sha256": "568b4b39bb4121152369f7d8945c7242958afa4804dc27f08aa1b3d4ac6cb8df"
+  },
+  {
+    "iteration": 0,
+    "fixture": "comparison",
+    "bytes": 53892,
+    "encoder": "bands",
+    "at": 1790936589119,
+    "status": 200,
+    "sha256": "7082a3079fd48449014ed1ef16ec69878f8df801a0a35c33d6eb491ef8880de0"
+  },
+  {
+    "iteration": 1,
+    "fixture": "comparison",
+    "bytes": 53892,
+    "encoder": "bands",
+    "at": 1790936591679,
+    "status": 200,
+    "sha256": "7082a3079fd48449014ed1ef16ec69878f8df801a0a35c33d6eb491ef8880de0"
+  },
+  {
+    "iteration": 0,
+    "fixture": "long",
+    "bytes": 80215,
+    "encoder": "bands",
+    "at": 1790936593229,
+    "status": 200,
+    "sha256": "344fc4c27e5b6a0aaa2a0e1f2ff6d2f148d0dbedbd28311a84ac17d32ce20962"
+  },
+  {
+    "iteration": 1,
+    "fixture": "long",
+    "bytes": 80215,
+    "encoder": "bands",
+    "at": 1790936594038,
+    "status": 200,
+    "sha256": "344fc4c27e5b6a0aaa2a0e1f2ff6d2f148d0dbedbd28311a84ac17d32ce20962"
+  },
+  {
+    "iteration": 0,
+    "fixture": "long_comparison",
+    "bytes": 81656,
+    "encoder": "bands",
+    "at": 1790936596268,
+    "status": 200,
+    "sha256": "33f4862e3b9a8005c054a679afbddadd4dfef92ff3d54620197975c671577f58"
+  },
+  {
+    "iteration": 1,
+    "fixture": "long_comparison",
+    "bytes": 81656,
+    "encoder": "bands",
+    "at": 1790936597168,
+    "status": 200,
+    "sha256": "33f4862e3b9a8005c054a679afbddadd4dfef92ff3d54620197975c671577f58"
+  }
+]

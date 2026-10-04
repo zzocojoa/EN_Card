@@ -1,0 +1,204 @@
+{
+  "measured_at_utc": "2026-10-03T03:16:01.488Z",
+  "scope": "Actual local workerd fetch/Static Assets, no remote calls",
+  "rows": [
+    {
+      "variant": "json",
+      "size": 800,
+      "fixture": "expression",
+      "chunks": 7,
+      "png_sha256": "7164b1cbe611d82ba606c738520b2335b6b01e87e480037b88b2980407feb0db",
+      "bundle_bytes": 27074,
+      "metadata_bytes": 4083
+    },
+    {
+      "variant": "json",
+      "size": 800,
+      "fixture": "comparison",
+      "chunks": 4,
+      "png_sha256": "9ccbd96ca452319c418a803b5bd2c094da987167e909084f6281db368f0553f9",
+      "bundle_bytes": 17964,
+      "metadata_bytes": 2390
+    },
+    {
+      "variant": "json",
+      "size": 800,
+      "fixture": "long",
+      "chunks": 6,
+      "png_sha256": "44a9d8404d80608c696f4f4c1b68f25ae1264430c3c5e46a3f108e2e3c56265f",
+      "bundle_bytes": 31502,
+      "metadata_bytes": 4092
+    },
+    {
+      "variant": "json",
+      "size": 800,
+      "fixture": "long_comparison",
+      "chunks": 6,
+      "png_sha256": "9d049d792f2279aadceed06a15bd8a1ea003b3215b90a8caf868665f5b035f60",
+      "bundle_bytes": 30960,
+      "metadata_bytes": 3994
+    },
+    {
+      "variant": "json",
+      "size": 800,
+      "fixture": "coverage",
+      "chunks": 13,
+      "png_sha256": "815cbf982e3c5ffb9cd833b395fc4a9117a8b14a0713d03e2c991d8dd3d82e28",
+      "bundle_bytes": 56513,
+      "metadata_bytes": 8079
+    },
+    {
+      "variant": "json",
+      "size": 720,
+      "fixture": "expression",
+      "chunks": 7,
+      "png_sha256": "8d2ab90ca7b2aeb1f8ab42b862718946024f96a793c9722a655d4d7cd0aff042",
+      "bundle_bytes": 23188,
+      "metadata_bytes": 4090
+    },
+    {
+      "variant": "json",
+      "size": 720,
+      "fixture": "comparison",
+      "chunks": 4,
+      "png_sha256": "68d50582c4a7817eedf5d0325e5fa184ad0ba2158dc7128900494c116da85478",
+      "bundle_bytes": 15303,
+      "metadata_bytes": 2393
+    },
+    {
+      "variant": "json",
+      "size": 720,
+      "fixture": "long",
+      "chunks": 6,
+      "png_sha256": "fbfeedca7984b8ed5a453da952d762000cc5a126736dd182c9ea51359e036cb2",
+      "bundle_bytes": 26540,
+      "metadata_bytes": 4087
+    },
+    {
+      "variant": "json",
+      "size": 720,
+      "fixture": "long_comparison",
+      "chunks": 6,
+      "png_sha256": "0a2bde5ff31c87ec232d9f2fdf2e1145acc33a3c9a680f373203504b61dec282",
+      "bundle_bytes": 26150,
+      "metadata_bytes": 3987
+    },
+    {
+      "variant": "json",
+      "size": 720,
+      "fixture": "coverage",
+      "chunks": 13,
+      "png_sha256": "2ba542ec638a161c3648353a9aab306087b61dd22f495ea37bf6ef1ef8347e1e",
+      "bundle_bytes": 48264,
+      "metadata_bytes": 8090
+    },
+    {
+      "variant": "binary",
+      "size": 800,
+      "fixture": "expression",
+      "chunks": 7,
+      "png_sha256": "7164b1cbe611d82ba606c738520b2335b6b01e87e480037b88b2980407feb0db",
+      "bundle_bytes": 24303,
+      "metadata_bytes": 1312
+    },
+    {
+      "variant": "binary",
+      "size": 800,
+      "fixture": "comparison",
+      "chunks": 4,
+      "png_sha256": "9ccbd96ca452319c418a803b5bd2c094da987167e909084f6281db368f0553f9",
+      "bundle_bytes": 16342,
+      "metadata_bytes": 768
+    },
+    {
+      "variant": "binary",
+      "size": 800,
+      "fixture": "long",
+      "chunks": 6,
+      "png_sha256": "44a9d8404d80608c696f4f4c1b68f25ae1264430c3c5e46a3f108e2e3c56265f",
+      "bundle_bytes": 28722,
+      "metadata_bytes": 1312
+    },
+    {
+      "variant": "binary",
+      "size": 800,
+      "fixture": "long_comparison",
+      "chunks": 6,
+      "png_sha256": "9d049d792f2279aadceed06a15bd8a1ea003b3215b90a8caf868665f5b035f60",
+      "bundle_bytes": 28246,
+      "metadata_bytes": 1280
+    },
+    {
+      "variant": "binary",
+      "size": 800,
+      "fixture": "coverage",
+      "chunks": 13,
+      "png_sha256": "815cbf982e3c5ffb9cd833b395fc4a9117a8b14a0713d03e2c991d8dd3d82e28",
+      "bundle_bytes": 51026,
+      "metadata_bytes": 2592
+    },
+    {
+      "variant": "binary",
+      "size": 720,
+      "fixture": "expression",
+      "chunks": 7,
+      "png_sha256": "8d2ab90ca7b2aeb1f8ab42b862718946024f96a793c9722a655d4d7cd0aff042",
+      "bundle_bytes": 20410,
+      "metadata_bytes": 1312
+    },
+    {
+      "variant": "binary",
+      "size": 720,
+      "fixture": "comparison",
+      "chunks": 4,
+      "png_sha256": "68d50582c4a7817eedf5d0325e5fa184ad0ba2158dc7128900494c116da85478",
+      "bundle_bytes": 13678,
+      "metadata_bytes": 768
+    },
+    {
+      "variant": "binary",
+      "size": 720,
+      "fixture": "long",
+      "chunks": 6,
+      "png_sha256": "fbfeedca7984b8ed5a453da952d762000cc5a126736dd182c9ea51359e036cb2",
+      "bundle_bytes": 23765,
+      "metadata_bytes": 1312
+    },
+    {
+      "variant": "binary",
+      "size": 720,
+      "fixture": "long_comparison",
+      "chunks": 6,
+      "png_sha256": "0a2bde5ff31c87ec232d9f2fdf2e1145acc33a3c9a680f373203504b61dec282",
+      "bundle_bytes": 23443,
+      "metadata_bytes": 1280
+    },
+    {
+      "variant": "binary",
+      "size": 720,
+      "fixture": "coverage",
+      "chunks": 13,
+      "png_sha256": "2ba542ec638a161c3648353a9aab306087b61dd22f495ea37bf6ef1ef8347e1e",
+      "bundle_bytes": 42766,
+      "metadata_bytes": 2592
+    }
+  ],
+  "rejected": [
+    "json:wrong_codec",
+    "json:truncated",
+    "json:over_limit",
+    "json:POST /probe/expression/atlas_lean800 401",
+    "json:GET /probe/expression/atlas_lean800 405",
+    "json:POST /probe/expression/atlas_lean800?url=https://other.test 404",
+    "json:POST /probe/constructor/atlas_lean800 404",
+    "binary:wrong_codec",
+    "binary:truncated",
+    "binary:over_limit",
+    "binary:POST /probe/expression/atlas_binary800 401",
+    "binary:GET /probe/expression/atlas_binary800 405",
+    "binary:POST /probe/expression/atlas_binary800?url=https://other.test 404",
+    "binary:POST /probe/constructor/atlas_binary800 404"
+  ],
+  "verified_pngs": 40,
+  "verified_frames": 144
+}

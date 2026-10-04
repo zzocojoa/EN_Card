@@ -1,0 +1,666 @@
+{
+  "measured_at_utc": "2026-10-03T00:58:58.590Z",
+  "qualification": "not_qualified",
+  "scope": "Instrumented remote diagnostics, including UUID/counters/headers/auth overhead. One unfiltered tail per Worker. Correlated by random call ID, script and exact path. Assembly ordinal 1 is first assembly in that isolate, not necessarily its first request; earlier glyph calls can warm code. Missing CPU is never a pass. Single-glyph probes and full pipeline are reported separately.",
+  "remote_png": 12,
+  "cumulative_remote_png": 88,
+  "single_glyph_probes": 72,
+  "expected_invocations": 272,
+  "captured_invocations": 233,
+  "duplicated_events": 0,
+  "excluded_events": 1,
+  "missing_invocations": [
+    {
+      "call": "e3db942c0b41423aa951eb23e58d5154",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/expression/3",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "e3db942c0b41423aa951eb23e58d5154",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/expression/4",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "e3db942c0b41423aa951eb23e58d5154",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/expression/5",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "e3db942c0b41423aa951eb23e58d5154",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/expression/6",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "e3db942c0b41423aa951eb23e58d5154",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/assemble/expression",
+      "stage": "assembly",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "54830b8aa2b1433e9b96bda2509098f7",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/long/5",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "54830b8aa2b1433e9b96bda2509098f7",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/assemble/long",
+      "stage": "assembly",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9c52f2fbd3d64f94bf41a65eb8ee335e",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/long/3",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9c52f2fbd3d64f94bf41a65eb8ee335e",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/long/4",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9c52f2fbd3d64f94bf41a65eb8ee335e",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/long/5",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9c52f2fbd3d64f94bf41a65eb8ee335e",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/assemble/long",
+      "stage": "assembly",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9bcac6869344469998e45938c4cc5294",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/5",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9bcac6869344469998e45938c4cc5294",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/6",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9bcac6869344469998e45938c4cc5294",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/8",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9bcac6869344469998e45938c4cc5294",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/9",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9bcac6869344469998e45938c4cc5294",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/11",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9bcac6869344469998e45938c4cc5294",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/12",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "9bcac6869344469998e45938c4cc5294",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/assemble/coverage",
+      "stage": "assembly",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/1",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/2",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/3",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/4",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/5",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/6",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/7",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/8",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/9",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/10",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/11",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/coverage/12",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/assemble/coverage",
+      "stage": "assembly",
+      "size": 800,
+      "phase": "pipeline"
+    },
+    {
+      "call": "3705d8376dcb4efb8c31771928b42b09",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/720/pipeline/glyphs/coverage/11",
+      "stage": "glyphs",
+      "size": 720,
+      "phase": "pipeline"
+    },
+    {
+      "call": "3705d8376dcb4efb8c31771928b42b09",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/720/pipeline/glyphs/coverage/12",
+      "stage": "glyphs",
+      "size": 720,
+      "phase": "pipeline"
+    },
+    {
+      "call": "3705d8376dcb4efb8c31771928b42b09",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/720/pipeline/assemble/coverage",
+      "stage": "assembly",
+      "size": 720,
+      "phase": "pipeline"
+    },
+    {
+      "call": "ba34eb0bf92249c2aacdf7d0904db1b7",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/720/pipeline/glyphs/coverage/11",
+      "stage": "glyphs",
+      "size": 720,
+      "phase": "pipeline"
+    },
+    {
+      "call": "ba34eb0bf92249c2aacdf7d0904db1b7",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/720/pipeline/glyphs/coverage/12",
+      "stage": "glyphs",
+      "size": 720,
+      "phase": "pipeline"
+    },
+    {
+      "call": "ba34eb0bf92249c2aacdf7d0904db1b7",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/720/pipeline/assemble/coverage",
+      "stage": "assembly",
+      "size": 720,
+      "phase": "pipeline"
+    },
+    {
+      "call": "079964705b744046b13826963254cbf9",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/expression/1",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "single_glyph"
+    },
+    {
+      "call": "c38a6ee6a2ee4217b7771614ec35393d",
+      "script": "en-card-png-feasibility",
+      "path": "/lean/800/pipeline/glyphs/expression/3",
+      "stage": "glyphs",
+      "size": 800,
+      "phase": "single_glyph"
+    }
+  ],
+  "versions": [
+    "44d7d11c-bc1d-4d29-b1f1-f443c7f7a27d",
+    "52aef9a0-2ab4-4927-83d9-81063cb31f7e"
+  ],
+  "all_captured_outcomes_ok": true,
+  "provider_truncated_events": 0,
+  "cpu": [
+    {
+      "phase": "pipeline",
+      "size": 800,
+      "stage": "glyphs",
+      "expected": 52,
+      "captured": 26,
+      "min_ms": 2,
+      "max_ms": 10,
+      "over_10ms": 0
+    },
+    {
+      "phase": "pipeline",
+      "size": 800,
+      "stage": "assembly",
+      "expected": 6,
+      "captured": 1,
+      "min_ms": 13,
+      "max_ms": 13,
+      "over_10ms": 1
+    },
+    {
+      "phase": "pipeline",
+      "size": 800,
+      "stage": "collector",
+      "expected": 6,
+      "captured": 6,
+      "min_ms": 4,
+      "max_ms": 11,
+      "over_10ms": 1
+    },
+    {
+      "phase": "pipeline",
+      "size": 720,
+      "stage": "glyphs",
+      "expected": 52,
+      "captured": 48,
+      "min_ms": 2,
+      "max_ms": 18,
+      "over_10ms": 5
+    },
+    {
+      "phase": "pipeline",
+      "size": 720,
+      "stage": "assembly",
+      "expected": 6,
+      "captured": 4,
+      "min_ms": 13,
+      "max_ms": 22,
+      "over_10ms": 4
+    },
+    {
+      "phase": "pipeline",
+      "size": 720,
+      "stage": "collector",
+      "expected": 6,
+      "captured": 6,
+      "min_ms": 7,
+      "max_ms": 15,
+      "over_10ms": 1
+    },
+    {
+      "phase": "single_glyph",
+      "size": 800,
+      "stage": "glyphs",
+      "expected": 36,
+      "captured": 34,
+      "min_ms": 1,
+      "max_ms": 18,
+      "over_10ms": 3
+    },
+    {
+      "phase": "single_glyph",
+      "size": 800,
+      "stage": "diagnostic_entry",
+      "expected": 36,
+      "captured": 36,
+      "min_ms": 0,
+      "max_ms": 1,
+      "over_10ms": 0
+    },
+    {
+      "phase": "single_glyph",
+      "size": 720,
+      "stage": "glyphs",
+      "expected": 36,
+      "captured": 36,
+      "min_ms": 1,
+      "max_ms": 12,
+      "over_10ms": 2
+    },
+    {
+      "phase": "single_glyph",
+      "size": 720,
+      "stage": "diagnostic_entry",
+      "expected": 36,
+      "captured": 36,
+      "min_ms": 0,
+      "max_ms": 1,
+      "over_10ms": 0
+    }
+  ],
+  "assembly_groups": [
+    {
+      "first_assembly_in_isolate": true,
+      "captured": 5,
+      "min_ms": 13,
+      "max_ms": 22,
+      "over_10ms": 5
+    },
+    {
+      "first_assembly_in_isolate": false,
+      "captured": 0,
+      "min_ms": null,
+      "max_ms": null,
+      "over_10ms": 0
+    }
+  ],
+  "assembly": [
+    {
+      "bytes": 16304,
+      "call": "1335bc919fac4d2da511f2a025962732",
+      "sha256": "7164b1cbe611d82ba606c738520b2335b6b01e87e480037b88b2980407feb0db",
+      "kind": "png",
+      "iteration": 0,
+      "ordinal": 1,
+      "at": 1790988983132,
+      "size": 800,
+      "fixture": "expression",
+      "path": "/probe/expression/atlas_lean800",
+      "isolate": "301daa01-f09f-4e90-bda3-2194e3e56d8a",
+      "status": 200,
+      "cpu_ms": 13
+    },
+    {
+      "bytes": 16304,
+      "call": "e3db942c0b41423aa951eb23e58d5154",
+      "sha256": "7164b1cbe611d82ba606c738520b2335b6b01e87e480037b88b2980407feb0db",
+      "kind": "png",
+      "iteration": 1,
+      "ordinal": 2,
+      "at": 1790988988628,
+      "size": 800,
+      "fixture": "expression",
+      "path": "/probe/expression/atlas_lean800",
+      "isolate": "301daa01-f09f-4e90-bda3-2194e3e56d8a",
+      "status": 200,
+      "cpu_ms": null
+    },
+    {
+      "bytes": 14398,
+      "call": "0b5be279f8ec4d48a0e8ae7f12b93eb6",
+      "sha256": "8d2ab90ca7b2aeb1f8ab42b862718946024f96a793c9722a655d4d7cd0aff042",
+      "kind": "png",
+      "iteration": 0,
+      "ordinal": 1,
+      "at": 1790988989245,
+      "size": 720,
+      "fixture": "expression",
+      "path": "/probe/expression/atlas_lean720",
+      "isolate": "b485c014-f1a9-4c05-9c52-0e89fe1fc3da",
+      "status": 200,
+      "cpu_ms": 22
+    },
+    {
+      "bytes": 14398,
+      "call": "0dee7965fbbd499bbbbf8f8e5f0e8060",
+      "sha256": "8d2ab90ca7b2aeb1f8ab42b862718946024f96a793c9722a655d4d7cd0aff042",
+      "kind": "png",
+      "iteration": 1,
+      "ordinal": 1,
+      "at": 1790988995063,
+      "size": 720,
+      "fixture": "expression",
+      "path": "/probe/expression/atlas_lean720",
+      "isolate": "5d24de83-256c-44f4-9988-b1166f2c050e",
+      "status": 200,
+      "cpu_ms": 13
+    },
+    {
+      "bytes": 25133,
+      "call": "54830b8aa2b1433e9b96bda2509098f7",
+      "sha256": "44a9d8404d80608c696f4f4c1b68f25ae1264430c3c5e46a3f108e2e3c56265f",
+      "kind": "png",
+      "iteration": 0,
+      "ordinal": 3,
+      "at": 1790988996004,
+      "size": 800,
+      "fixture": "long",
+      "path": "/probe/long/atlas_lean800",
+      "isolate": "301daa01-f09f-4e90-bda3-2194e3e56d8a",
+      "status": 200,
+      "cpu_ms": null
+    },
+    {
+      "bytes": 25133,
+      "call": "9c52f2fbd3d64f94bf41a65eb8ee335e",
+      "sha256": "44a9d8404d80608c696f4f4c1b68f25ae1264430c3c5e46a3f108e2e3c56265f",
+      "kind": "png",
+      "iteration": 1,
+      "ordinal": 2,
+      "at": 1790989000100,
+      "size": 800,
+      "fixture": "long",
+      "path": "/probe/long/atlas_lean800",
+      "isolate": "5d24de83-256c-44f4-9988-b1166f2c050e",
+      "status": 200,
+      "cpu_ms": null
+    },
+    {
+      "bytes": 22357,
+      "call": "622e876b42a14c75a48d38e59758a3b4",
+      "sha256": "fbfeedca7984b8ed5a453da952d762000cc5a126736dd182c9ea51359e036cb2",
+      "kind": "png",
+      "iteration": 0,
+      "ordinal": 1,
+      "at": 1790989000996,
+      "size": 720,
+      "fixture": "long",
+      "path": "/probe/long/atlas_lean720",
+      "isolate": "91a9f732-3869-42ee-bdc3-ffd724f2eed0",
+      "status": 200,
+      "cpu_ms": 17
+    },
+    {
+      "bytes": 22357,
+      "call": "6f3e69c77dd4410288362736b6318b4a",
+      "sha256": "fbfeedca7984b8ed5a453da952d762000cc5a126736dd182c9ea51359e036cb2",
+      "kind": "png",
+      "iteration": 1,
+      "ordinal": 1,
+      "at": 1790989005278,
+      "size": 720,
+      "fixture": "long",
+      "path": "/probe/long/atlas_lean720",
+      "isolate": "656de435-b1ca-49e7-9c25-9cc8bb331fec",
+      "status": 200,
+      "cpu_ms": 22
+    },
+    {
+      "bytes": 27314,
+      "call": "9bcac6869344469998e45938c4cc5294",
+      "sha256": "815cbf982e3c5ffb9cd833b395fc4a9117a8b14a0713d03e2c991d8dd3d82e28",
+      "kind": "png",
+      "iteration": 0,
+      "ordinal": 3,
+      "at": 1790989007049,
+      "size": 800,
+      "fixture": "coverage",
+      "path": "/probe/coverage/atlas_lean800",
+      "isolate": "5d24de83-256c-44f4-9988-b1166f2c050e",
+      "status": 200,
+      "cpu_ms": null
+    },
+    {
+      "bytes": 27314,
+      "call": "de547a5c907e4151ae48eaffd416f996",
+      "sha256": "815cbf982e3c5ffb9cd833b395fc4a9117a8b14a0713d03e2c991d8dd3d82e28",
+      "kind": "png",
+      "iteration": 1,
+      "ordinal": 4,
+      "at": 1790989013285,
+      "size": 800,
+      "fixture": "coverage",
+      "path": "/probe/coverage/atlas_lean800",
+      "isolate": "5d24de83-256c-44f4-9988-b1166f2c050e",
+      "status": 200,
+      "cpu_ms": null
+    },
+    {
+      "bytes": 24198,
+      "call": "3705d8376dcb4efb8c31771928b42b09",
+      "sha256": "2ba542ec638a161c3648353a9aab306087b61dd22f495ea37bf6ef1ef8347e1e",
+      "kind": "png",
+      "iteration": 0,
+      "ordinal": 4,
+      "at": 1790989014037,
+      "size": 720,
+      "fixture": "coverage",
+      "path": "/probe/coverage/atlas_lean720",
+      "isolate": "301daa01-f09f-4e90-bda3-2194e3e56d8a",
+      "status": 200,
+      "cpu_ms": null
+    },
+    {
+      "bytes": 24198,
+      "call": "ba34eb0bf92249c2aacdf7d0904db1b7",
+      "sha256": "2ba542ec638a161c3648353a9aab306087b61dd22f495ea37bf6ef1ef8347e1e",
+      "kind": "png",
+      "iteration": 1,
+      "ordinal": 2,
+      "at": 1790989020268,
+      "size": 720,
+      "fixture": "coverage",
+      "path": "/probe/coverage/atlas_lean720",
+      "isolate": "b485c014-f1a9-4c05-9c52-0e89fe1fc3da",
+      "status": 200,
+      "cpu_ms": null
+    }
+  ],
+  "tail_diagnostics": {
+    "updated_at_utc": "2026-10-03T00:58:08.724Z",
+    "scope": "Sanitized local tail process counters. Zero local drops does not prove provider delivered every invocation.",
+    "targets": {
+      "en-card-png-feasibility": {
+        "stdout_bytes": 102572,
+        "stderr_bytes": 0,
+        "parsed_events": 149,
+        "invalid_json": 0,
+        "buffer_discards": 0,
+        "discarded_characters": 0,
+        "pending_characters": 0,
+        "warning_chunks": 0,
+        "sampling_notice_chunks": 0,
+        "connected": true,
+        "process_error": false,
+        "exit_code": null
+      },
+      "en-card-png-probe": {
+        "stdout_bytes": 398241,
+        "stderr_bytes": 0,
+        "parsed_events": 85,
+        "invalid_json": 0,
+        "buffer_discards": 0,
+        "discarded_characters": 0,
+        "pending_characters": 0,
+        "warning_chunks": 0,
+        "sampling_notice_chunks": 0,
+        "connected": true,
+        "process_error": false,
+        "exit_code": null
+      }
+    }
+  }
+}

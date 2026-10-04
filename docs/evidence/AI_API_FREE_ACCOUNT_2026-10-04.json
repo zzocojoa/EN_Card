@@ -1,0 +1,42 @@
+{
+  "checked_at_kst": "2026-10-04T02:27:33+09:00",
+  "method": "Read-only authenticated provider UI and Sites environment metadata",
+  "google": {
+    "key_name": "TESLA-TePilot",
+    "project_name": "Default Gemini Project",
+    "project_id": "gen-lang-client-0890699099",
+    "billing_tier_display": "무료 등급",
+    "source": "https://aistudio.google.com/api-keys?project=gen-lang-client-0890699099"
+  },
+  "groq": {
+    "key_name": "하루영어",
+    "organization": "Personal",
+    "project": "Default Project",
+    "plan_display": "Free",
+    "price_display": "$0",
+    "current_plan_confirmed": true,
+    "key_source": "https://console.groq.com/keys",
+    "plan_source": "https://console.groq.com/settings/billing/plans"
+  },
+  "site": {
+    "project_id": "appgprj_6ab0a3cbaaa08191a05b0bcdf62df225",
+    "environment_revision": 59,
+    "registered_secret_names": ["google_api", "groq_api"],
+    "google_ai_enabled": "true",
+    "secret_values_read": false,
+    "same_keys_as_provider_ui": "confirmed by user",
+    "identity_confirmation": {
+      "received_at_kst": "2026-10-04T02:50:01+09:00",
+      "user_statement": "두 개가 맞다.",
+      "scope": "Google TESLA-TePilot and Groq 하루영어 are the keys registered in this Site"
+    }
+  },
+  "changes": {"provider_settings": 0, "site_settings": 0, "deployments": 0},
+  "calls": {"ai_generation": 0, "kakao": 0},
+  "automation": {"mode": "off", "free_confirmation": "unconfirmed"},
+  "limits": [
+    "Provider account Free status does not identify a redacted Site Secret.",
+    "No inference of key validity or remaining quota from the key name or Free plan display.",
+    "No production AI generation or receipt verification performed."
+  ]
+}

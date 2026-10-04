@@ -1,0 +1,743 @@
+{
+  "measured_at_utc": "2026-10-02T09:16:58.542Z",
+  "environment": {
+    "runtime": "v22.22.2",
+    "platform": "win32",
+    "arch": "x64",
+    "cpu": "12th Gen Intel(R) Core(TM) i5-12400F"
+  },
+  "renderer": "@resvg/resvg-wasm@2.6.2",
+  "wasm_sha256": "22bf6e9f9a100d972da0411a69c5ba504367fc1fa87b3b64e3f35e53926d2d70",
+  "fonts_sha256": "a80ea5e6c2e2977b77a7373ec0bbc7db1a40cb49add5757fe270f5259ce4aa8d",
+  "wasm_init": {
+    "cpu_ms": 47,
+    "wall_ms": 40.101399999999956
+  },
+  "limits": {
+    "worker_cpu_ms": 10,
+    "worker_memory_bytes": 134217728,
+    "image_bytes": 1048576
+  },
+  "qualification": "not_qualified",
+  "remote_cpu": "not_measured",
+  "memory_scope": "Node process snapshots; neither peak memory nor Worker isolate memory",
+  "cpu_scope": "Local Node process and calling thread; Windows counters are coarse, use batch means. Native compression may run on another thread. Not Cloudflare invocation CPU.",
+  "prebuild": "Font WOFF2 to TTF decompression is excluded; generated from the existing OFL-licensed fonts.",
+  "note": "Local process CPU is diagnostic only. No Worker Free approval, real AI calls, database writes, scheduling or message sending.",
+  "rows": [
+    {
+      "fixture": "expression",
+      "iteration": 0,
+      "font_cache": "cold",
+      "svg_cpu_ms": 126,
+      "svg_wall_ms": 72.68809999999996,
+      "png_cpu_ms": 171,
+      "png_wall_ms": 73.72719999999998,
+      "svg_thread_cpu_ms": 78,
+      "png_thread_cpu_ms": 78,
+      "local_total_cpu_ms": 297,
+      "bytes": 45915,
+      "png_sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+      "memory_before": {
+        "rss": 102105088,
+        "heapTotal": 37298176,
+        "heapUsed": 18576304,
+        "external": 52910690,
+        "arrayBuffers": 13126716
+      },
+      "memory_after": {
+        "rss": 124047360,
+        "heapTotal": 57221120,
+        "heapUsed": 27215560,
+        "external": 59503102,
+        "arrayBuffers": 10677168
+      }
+    },
+    {
+      "fixture": "expression",
+      "iteration": 1,
+      "font_cache": "warm",
+      "svg_cpu_ms": 47,
+      "svg_wall_ms": 10.079799999999977,
+      "png_cpu_ms": 94,
+      "png_wall_ms": 28.06770000000006,
+      "svg_thread_cpu_ms": 15,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 141,
+      "bytes": 45915,
+      "png_sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+      "memory_before": {
+        "rss": 124559360,
+        "heapTotal": 58531840,
+        "heapUsed": 23509184,
+        "external": 59549792,
+        "arrayBuffers": 10627691
+      },
+      "memory_after": {
+        "rss": 143179776,
+        "heapTotal": 58531840,
+        "heapUsed": 29686136,
+        "external": 59545455,
+        "arrayBuffers": 10719521
+      }
+    },
+    {
+      "fixture": "expression",
+      "iteration": 2,
+      "font_cache": "warm",
+      "svg_cpu_ms": 47,
+      "svg_wall_ms": 13.5856,
+      "png_cpu_ms": 109,
+      "png_wall_ms": 34.90879999999993,
+      "svg_thread_cpu_ms": 16,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 156,
+      "bytes": 45915,
+      "png_sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+      "memory_before": {
+        "rss": 143724544,
+        "heapTotal": 58793984,
+        "heapUsed": 23543104,
+        "external": 59545455,
+        "arrayBuffers": 10719521
+      },
+      "memory_after": {
+        "rss": 135331840,
+        "heapTotal": 58793984,
+        "heapUsed": 30245672,
+        "external": 59545455,
+        "arrayBuffers": 10719521
+      }
+    },
+    {
+      "fixture": "expression",
+      "iteration": 3,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 11.704600000000028,
+      "png_cpu_ms": 110,
+      "png_wall_ms": 28.21780000000001,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 110,
+      "bytes": 45915,
+      "png_sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+      "memory_before": {
+        "rss": 129282048,
+        "heapTotal": 59056128,
+        "heapUsed": 23632600,
+        "external": 59545455,
+        "arrayBuffers": 10627691
+      },
+      "memory_after": {
+        "rss": 124538880,
+        "heapTotal": 59318272,
+        "heapUsed": 29993352,
+        "external": 59545455,
+        "arrayBuffers": 10719521
+      }
+    },
+    {
+      "fixture": "expression",
+      "iteration": 4,
+      "font_cache": "warm",
+      "svg_cpu_ms": 31,
+      "svg_wall_ms": 11.235000000000014,
+      "png_cpu_ms": 93,
+      "png_wall_ms": 29.267499999999927,
+      "svg_thread_cpu_ms": 16,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 124,
+      "bytes": 45915,
+      "png_sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+      "memory_before": {
+        "rss": 124698624,
+        "heapTotal": 59318272,
+        "heapUsed": 23713616,
+        "external": 59545455,
+        "arrayBuffers": 10627691
+      },
+      "memory_after": {
+        "rss": 124317696,
+        "heapTotal": 59580416,
+        "heapUsed": 30240800,
+        "external": 59545455,
+        "arrayBuffers": 10719521
+      }
+    },
+    {
+      "fixture": "expression",
+      "iteration": 5,
+      "font_cache": "warm",
+      "svg_cpu_ms": 63,
+      "svg_wall_ms": 9.448799999999892,
+      "png_cpu_ms": 62,
+      "png_wall_ms": 30.221000000000004,
+      "svg_thread_cpu_ms": 16,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 125,
+      "bytes": 45915,
+      "png_sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+      "memory_before": {
+        "rss": 125476864,
+        "heapTotal": 59842560,
+        "heapUsed": 23752416,
+        "external": 59545455,
+        "arrayBuffers": 10627691
+      },
+      "memory_after": {
+        "rss": 124248064,
+        "heapTotal": 59842560,
+        "heapUsed": 30430968,
+        "external": 59545455,
+        "arrayBuffers": 10719521
+      }
+    },
+    {
+      "fixture": "comparison",
+      "iteration": 0,
+      "font_cache": "cold",
+      "svg_cpu_ms": 63,
+      "svg_wall_ms": 42.934400000000096,
+      "png_cpu_ms": 16,
+      "png_wall_ms": 24.344900000000052,
+      "svg_thread_cpu_ms": 47,
+      "png_thread_cpu_ms": 16,
+      "local_total_cpu_ms": 79,
+      "bytes": 41524,
+      "png_sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+      "memory_before": {
+        "rss": 130760704,
+        "heapTotal": 59117568,
+        "heapUsed": 22129792,
+        "external": 73694967,
+        "arrayBuffers": 10658170
+      },
+      "memory_after": {
+        "rss": 139833344,
+        "heapTotal": 59117568,
+        "heapUsed": 29842712,
+        "external": 59594418,
+        "arrayBuffers": 10741998
+      }
+    },
+    {
+      "fixture": "comparison",
+      "iteration": 1,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 7.979900000000043,
+      "png_cpu_ms": 47,
+      "png_wall_ms": 26.23849999999993,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 47,
+      "bytes": 41524,
+      "png_sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+      "memory_before": {
+        "rss": 140034048,
+        "heapTotal": 61214720,
+        "heapUsed": 22411864,
+        "external": 59634474,
+        "arrayBuffers": 10653779
+      },
+      "memory_after": {
+        "rss": 140312576,
+        "heapTotal": 61214720,
+        "heapUsed": 26544808,
+        "external": 59589247,
+        "arrayBuffers": 10736827
+      }
+    },
+    {
+      "fixture": "comparison",
+      "iteration": 2,
+      "font_cache": "warm",
+      "svg_cpu_ms": 62,
+      "svg_wall_ms": 6.714200000000119,
+      "png_cpu_ms": 16,
+      "png_wall_ms": 24.442400000000134,
+      "svg_thread_cpu_ms": 16,
+      "png_thread_cpu_ms": 15,
+      "local_total_cpu_ms": 78,
+      "bytes": 41524,
+      "png_sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+      "memory_before": {
+        "rss": 140505088,
+        "heapTotal": 59641856,
+        "heapUsed": 22434824,
+        "external": 59589247,
+        "arrayBuffers": 10653779
+      },
+      "memory_after": {
+        "rss": 139980800,
+        "heapTotal": 59641856,
+        "heapUsed": 26573240,
+        "external": 59589247,
+        "arrayBuffers": 10736827
+      }
+    },
+    {
+      "fixture": "comparison",
+      "iteration": 3,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 4.823699999999917,
+      "png_cpu_ms": 15,
+      "png_wall_ms": 24.361900000000105,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 16,
+      "local_total_cpu_ms": 15,
+      "bytes": 41524,
+      "png_sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+      "memory_before": {
+        "rss": 140042240,
+        "heapTotal": 59904000,
+        "heapUsed": 22444520,
+        "external": 59589247,
+        "arrayBuffers": 10653779
+      },
+      "memory_after": {
+        "rss": 138575872,
+        "heapTotal": 59904000,
+        "heapUsed": 26580136,
+        "external": 59589247,
+        "arrayBuffers": 10736827
+      }
+    },
+    {
+      "fixture": "comparison",
+      "iteration": 4,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 6.878699999999981,
+      "png_cpu_ms": 63,
+      "png_wall_ms": 25.477299999999786,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 63,
+      "bytes": 41524,
+      "png_sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+      "memory_before": {
+        "rss": 138694656,
+        "heapTotal": 60166144,
+        "heapUsed": 22444904,
+        "external": 59589247,
+        "arrayBuffers": 10653779
+      },
+      "memory_after": {
+        "rss": 138887168,
+        "heapTotal": 60166144,
+        "heapUsed": 26656688,
+        "external": 59589247,
+        "arrayBuffers": 10736827
+      }
+    },
+    {
+      "fixture": "comparison",
+      "iteration": 5,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 6.183899999999994,
+      "png_cpu_ms": 31,
+      "png_wall_ms": 24.998000000000047,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 32,
+      "local_total_cpu_ms": 31,
+      "bytes": 41524,
+      "png_sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+      "memory_before": {
+        "rss": 139014144,
+        "heapTotal": 59641856,
+        "heapUsed": 22491472,
+        "external": 59589247,
+        "arrayBuffers": 10653779
+      },
+      "memory_after": {
+        "rss": 140234752,
+        "heapTotal": 59641856,
+        "heapUsed": 26644480,
+        "external": 59589247,
+        "arrayBuffers": 10736827
+      }
+    },
+    {
+      "fixture": "long",
+      "iteration": 0,
+      "font_cache": "cold",
+      "svg_cpu_ms": 125,
+      "svg_wall_ms": 47.13059999999996,
+      "png_cpu_ms": 32,
+      "png_wall_ms": 27.6558,
+      "svg_thread_cpu_ms": 16,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 157,
+      "bytes": 69474,
+      "png_sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+      "memory_before": {
+        "rss": 141889536,
+        "heapTotal": 60166144,
+        "heapUsed": 22561648,
+        "external": 59504011,
+        "arrayBuffers": 10651191
+      },
+      "memory_after": {
+        "rss": 143204352,
+        "heapTotal": 60166144,
+        "heapUsed": 35420496,
+        "external": 59652183,
+        "arrayBuffers": 10799763
+      }
+    },
+    {
+      "fixture": "long",
+      "iteration": 1,
+      "font_cache": "warm",
+      "svg_cpu_ms": 62,
+      "svg_wall_ms": 13.65059999999994,
+      "png_cpu_ms": 31,
+      "png_wall_ms": 29.82629999999972,
+      "svg_thread_cpu_ms": 16,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 93,
+      "bytes": 69474,
+      "png_sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+      "memory_before": {
+        "rss": 143433728,
+        "heapTotal": 62001152,
+        "heapUsed": 23181232,
+        "external": 59724599,
+        "arrayBuffers": 10679141
+      },
+      "memory_after": {
+        "rss": 142811136,
+        "heapTotal": 62001152,
+        "heapUsed": 30917800,
+        "external": 59670509,
+        "arrayBuffers": 10818089
+      }
+    },
+    {
+      "fixture": "long",
+      "iteration": 2,
+      "font_cache": "warm",
+      "svg_cpu_ms": 32,
+      "svg_wall_ms": 12.33389999999963,
+      "png_cpu_ms": 47,
+      "png_wall_ms": 30.5311999999999,
+      "svg_thread_cpu_ms": 15,
+      "png_thread_cpu_ms": 32,
+      "local_total_cpu_ms": 79,
+      "bytes": 69474,
+      "png_sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+      "memory_before": {
+        "rss": 143138816,
+        "heapTotal": 60428288,
+        "heapUsed": 23186360,
+        "external": 59670509,
+        "arrayBuffers": 10679141
+      },
+      "memory_after": {
+        "rss": 143581184,
+        "heapTotal": 60428288,
+        "heapUsed": 31188016,
+        "external": 59670509,
+        "arrayBuffers": 10818089
+      }
+    },
+    {
+      "fixture": "long",
+      "iteration": 3,
+      "font_cache": "warm",
+      "svg_cpu_ms": 46,
+      "svg_wall_ms": 12.946500000000015,
+      "png_cpu_ms": 47,
+      "png_wall_ms": 27.215099999999893,
+      "svg_thread_cpu_ms": 15,
+      "png_thread_cpu_ms": 32,
+      "local_total_cpu_ms": 93,
+      "bytes": 69474,
+      "png_sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+      "memory_before": {
+        "rss": 143679488,
+        "heapTotal": 60690432,
+        "heapUsed": 23192152,
+        "external": 59670509,
+        "arrayBuffers": 10679141
+      },
+      "memory_after": {
+        "rss": 144400384,
+        "heapTotal": 60690432,
+        "heapUsed": 30592048,
+        "external": 59670509,
+        "arrayBuffers": 10818089
+      }
+    },
+    {
+      "fixture": "long",
+      "iteration": 4,
+      "font_cache": "warm",
+      "svg_cpu_ms": 78,
+      "svg_wall_ms": 11.523400000000038,
+      "png_cpu_ms": 31,
+      "png_wall_ms": 28.682200000000194,
+      "svg_thread_cpu_ms": 15,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 109,
+      "bytes": 69474,
+      "png_sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+      "memory_before": {
+        "rss": 144478208,
+        "heapTotal": 60428288,
+        "heapUsed": 23194168,
+        "external": 59670509,
+        "arrayBuffers": 10679141
+      },
+      "memory_after": {
+        "rss": 143319040,
+        "heapTotal": 60428288,
+        "heapUsed": 32365272,
+        "external": 59670509,
+        "arrayBuffers": 10818089
+      }
+    },
+    {
+      "fixture": "long",
+      "iteration": 5,
+      "font_cache": "warm",
+      "svg_cpu_ms": 78,
+      "svg_wall_ms": 13.87350000000015,
+      "png_cpu_ms": 63,
+      "png_wall_ms": 29.267699999999877,
+      "svg_thread_cpu_ms": 16,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 141,
+      "bytes": 69474,
+      "png_sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+      "memory_before": {
+        "rss": 143413248,
+        "heapTotal": 60690432,
+        "heapUsed": 23169424,
+        "external": 59670509,
+        "arrayBuffers": 10679141
+      },
+      "memory_after": {
+        "rss": 155783168,
+        "heapTotal": 60690432,
+        "heapUsed": 30906904,
+        "external": 59670509,
+        "arrayBuffers": 10818089
+      }
+    },
+    {
+      "fixture": "long_comparison",
+      "iteration": 0,
+      "font_cache": "cold",
+      "svg_cpu_ms": 110,
+      "svg_wall_ms": 57.170099999999366,
+      "png_cpu_ms": 31,
+      "png_wall_ms": 29.791299999999865,
+      "svg_thread_cpu_ms": 63,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 141,
+      "bytes": 72668,
+      "png_sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+      "memory_before": {
+        "rss": 148807680,
+        "heapTotal": 60690432,
+        "heapUsed": 23239736,
+        "external": 73844050,
+        "arrayBuffers": 15363867
+      },
+      "memory_after": {
+        "rss": 152465408,
+        "heapTotal": 60690432,
+        "heapUsed": 36524560,
+        "external": 59705271,
+        "arrayBuffers": 15519531
+      }
+    },
+    {
+      "fixture": "long_comparison",
+      "iteration": 1,
+      "font_cache": "warm",
+      "svg_cpu_ms": 78,
+      "svg_wall_ms": 13.782000000000153,
+      "png_cpu_ms": 31,
+      "png_wall_ms": 30.598399999999856,
+      "svg_thread_cpu_ms": 16,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 109,
+      "bytes": 72668,
+      "png_sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+      "memory_before": {
+        "rss": 147886080,
+        "heapTotal": 62263296,
+        "heapUsed": 23271040,
+        "external": 59785996,
+        "arrayBuffers": 10700381
+      },
+      "memory_after": {
+        "rss": 146460672,
+        "heapTotal": 62263296,
+        "heapUsed": 31001816,
+        "external": 59698137,
+        "arrayBuffers": 10845717
+      }
+    },
+    {
+      "fixture": "long_comparison",
+      "iteration": 2,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 9.974600000000464,
+      "png_cpu_ms": 63,
+      "png_wall_ms": 30.894400000000132,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 16,
+      "local_total_cpu_ms": 63,
+      "bytes": 72668,
+      "png_sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+      "memory_before": {
+        "rss": 146558976,
+        "heapTotal": 60428288,
+        "heapUsed": 23317992,
+        "external": 59698137,
+        "arrayBuffers": 10700381
+      },
+      "memory_after": {
+        "rss": 145502208,
+        "heapTotal": 60428288,
+        "heapUsed": 31318208,
+        "external": 59698137,
+        "arrayBuffers": 10845717
+      }
+    },
+    {
+      "fixture": "long_comparison",
+      "iteration": 3,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 12.975099999999657,
+      "png_cpu_ms": 94,
+      "png_wall_ms": 31.06750000000011,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 31,
+      "local_total_cpu_ms": 94,
+      "bytes": 72668,
+      "png_sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+      "memory_before": {
+        "rss": 145612800,
+        "heapTotal": 60690432,
+        "heapUsed": 23337744,
+        "external": 59698137,
+        "arrayBuffers": 10700381
+      },
+      "memory_after": {
+        "rss": 146583552,
+        "heapTotal": 60690432,
+        "heapUsed": 31101456,
+        "external": 59698137,
+        "arrayBuffers": 10845717
+      }
+    },
+    {
+      "fixture": "long_comparison",
+      "iteration": 4,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 9.06630000000041,
+      "png_cpu_ms": 32,
+      "png_wall_ms": 32.01630000000023,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 32,
+      "local_total_cpu_ms": 32,
+      "bytes": 72668,
+      "png_sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+      "memory_before": {
+        "rss": 146653184,
+        "heapTotal": 60952576,
+        "heapUsed": 23360448,
+        "external": 59698137,
+        "arrayBuffers": 10700381
+      },
+      "memory_after": {
+        "rss": 146530304,
+        "heapTotal": 60952576,
+        "heapUsed": 31580936,
+        "external": 59698137,
+        "arrayBuffers": 10845717
+      }
+    },
+    {
+      "fixture": "long_comparison",
+      "iteration": 5,
+      "font_cache": "warm",
+      "svg_cpu_ms": 0,
+      "svg_wall_ms": 13.181300000000192,
+      "png_cpu_ms": 109,
+      "png_wall_ms": 33.1916999999994,
+      "svg_thread_cpu_ms": 0,
+      "png_thread_cpu_ms": 48,
+      "local_total_cpu_ms": 109,
+      "bytes": 72668,
+      "png_sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+      "memory_before": {
+        "rss": 146579456,
+        "heapTotal": 61214720,
+        "heapUsed": 23329152,
+        "external": 59698137,
+        "arrayBuffers": 10700381
+      },
+      "memory_after": {
+        "rss": 146722816,
+        "heapTotal": 61214720,
+        "heapUsed": 31202968,
+        "external": 59698137,
+        "arrayBuffers": 10845717
+      }
+    }
+  ],
+  "alternatives": [
+    {
+      "fixture": "expression",
+      "iterations": 20,
+      "baseline_mean_process_cpu_ms": 38.3,
+      "baseline_mean_thread_cpu_ms": 26.6,
+      "baseline_mean_wall_ms": 26.55737,
+      "native_mean_process_cpu_ms": 42.2,
+      "native_mean_wall_ms": 24.419255,
+      "native_bytes": 30479
+    },
+    {
+      "fixture": "comparison",
+      "iterations": 20,
+      "baseline_mean_process_cpu_ms": 28.1,
+      "baseline_mean_thread_cpu_ms": 24.15,
+      "baseline_mean_wall_ms": 25.027615000000015,
+      "native_mean_process_cpu_ms": 32.8,
+      "native_mean_wall_ms": 22.406714999999984,
+      "native_bytes": 27891
+    },
+    {
+      "fixture": "long",
+      "iterations": 20,
+      "baseline_mean_process_cpu_ms": 31.25,
+      "baseline_mean_thread_cpu_ms": 28.15,
+      "baseline_mean_wall_ms": 28.202610000000004,
+      "native_mean_process_cpu_ms": 47.65,
+      "native_mean_wall_ms": 27.04538500000001,
+      "native_bytes": 45937
+    },
+    {
+      "fixture": "long_comparison",
+      "iterations": 20,
+      "baseline_mean_process_cpu_ms": 28.95,
+      "baseline_mean_thread_cpu_ms": 28.9,
+      "baseline_mean_wall_ms": 28.581359999999997,
+      "native_mean_process_cpu_ms": 42.15,
+      "native_mean_wall_ms": 28.437130000000025,
+      "native_bytes": 48078
+    }
+  ]
+}

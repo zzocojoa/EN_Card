@@ -249,6 +249,12 @@ async function scheduleChange(env: Env, statements: D1PreparedStatement[]): Prom
   try {
     return await env.DB.batch(statements);
   } catch (error: unknown) {
+    if (error instanceof Error && error.message.includes('automation_schedule_managed'))
+      throw appError(
+        409,
+        'AUTOMATION_SCHEDULE_MANAGED',
+        '자동 제작 예약의 날짜·카드 변경은 새 예약으로 등록하세요. 기존 자동 예약은 일시정지하거나 취소할 수 있습니다.',
+      );
     if (error instanceof Error && error.message.includes('pause_recovery_decision_required'))
       throw appError(
         409,

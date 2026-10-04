@@ -1,0 +1,242 @@
+{
+  "at": "2026-10-03T13:22:13.085Z",
+  "scope": "Inactive AI card automation connection preflight",
+  "rootCause": "workerd rejects redirect:error before network dispatch",
+  "fix": "manual redirects with 3xx rejection",
+  "tests": {
+    "enCard": 48,
+    "haru": 23,
+    "externalResponses": "synthetic",
+    "typecheck": "passed",
+    "build": "passed",
+    "freeConfig": "passed"
+  },
+  "site": {
+    "version": 111,
+    "commit": "d6b8f6654e1edce872c1134abe60b34a927e15ac",
+    "deployment": "appgdep_6ac0ffede154819183920c4d1ee05d26",
+    "status": "succeeded",
+    "envRevision": 59
+  },
+  "state": {
+    "at": "2026-10-03T13:20:31.119Z",
+    "workers": {
+      "en-card": {
+        "versions": [
+          {
+            "version_id": "00bb067b-4d23-459d-8eef-26c17941b5e2",
+            "percentage": 100
+          }
+        ],
+        "crons": [
+          "* * * * *"
+        ],
+        "vars": [
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": [
+          "KAKAO_CLIENT_SECRET",
+          "KAKAO_REST_API_KEY",
+          "SESSION_SECRET",
+          "SETUP_TOKEN",
+          "STUDIO_BRIDGE_SECRET",
+          "STUDIO_ORIGIN",
+          "STUDIO_OWNER_ID",
+          "TOKEN_ENCRYPTION_KEY"
+        ]
+      },
+      "en-card-delivery": {
+        "versions": [
+          {
+            "version_id": "c20e9a02-b54a-40f3-bce6-6af5603c4c05",
+            "percentage": 100
+          }
+        ],
+        "crons": [],
+        "vars": [
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "live"
+          }
+        ],
+        "secretNames": []
+      },
+      "en-card-automation": {
+        "versions": [
+          {
+            "version_id": "33eaf35a-75c8-4131-b818-1037ebc9bc85",
+            "percentage": 100
+          }
+        ],
+        "crons": [],
+        "vars": [
+          {
+            "name": "AI_FREE_CONFIRMED",
+            "value": "unconfirmed"
+          },
+          {
+            "name": "APP_ORIGIN",
+            "value": "https://en-card.kmksla4.workers.dev"
+          },
+          {
+            "name": "AUTOMATION_MODE",
+            "value": "off"
+          },
+          {
+            "name": "COST_MODE",
+            "value": "free_only"
+          },
+          {
+            "name": "SEND_MODE",
+            "value": "dry_run"
+          }
+        ],
+        "secretNames": []
+      }
+    },
+    "counts": [
+      {
+        "kind": "cards",
+        "n": 14
+      },
+      {
+        "'assets_ready'": "assets_ready",
+        "count(*)": 5
+      },
+      {
+        "'active_schedules'": "active_schedules",
+        "count(*)": 0
+      },
+      {
+        "'inflight_or_unknown'": "inflight_or_unknown",
+        "count(*)": 0
+      },
+      {
+        "'automation_settings'": "automation_settings",
+        "count(*)": 0
+      },
+      {
+        "'automation_runs'": "automation_runs",
+        "count(*)": 0
+      },
+      {
+        "'automation_attempts'": "automation_attempts",
+        "count(*)": 0
+      },
+      {
+        "'automation_expressions'": "automation_expressions",
+        "count(*)": 0
+      }
+    ],
+    "foreignKeyErrors": 0
+  },
+  "events": [
+    {
+      "target": "en-card-automation",
+      "kind": "site_status",
+      "at": 1791032068336,
+      "scheduledTime": null,
+      "cpuMs": 3,
+      "wallMs": 164,
+      "outcome": "ok",
+      "exceptions": 0,
+      "siteStatus": [
+        {
+          "configured": false,
+          "available": false
+        }
+      ],
+      "version": "d89e17fd-f977-4ab6-9a2b-5ee5766d18c4"
+    },
+    {
+      "target": "en-card-automation",
+      "kind": "site_status",
+      "at": 1791032546249,
+      "scheduledTime": null,
+      "cpuMs": 1,
+      "wallMs": 106,
+      "outcome": "ok",
+      "exceptions": 0,
+      "relayFailure": [],
+      "siteStatus": [],
+      "version": "0675ad5d-0601-4786-8a24-f1db1dacbb68"
+    },
+    {
+      "target": "en-card-automation",
+      "kind": "site_status",
+      "at": 1791032668472,
+      "scheduledTime": null,
+      "cpuMs": 1,
+      "wallMs": 173,
+      "outcome": "ok",
+      "exceptions": 0,
+      "relayFailure": [
+        {
+          "httpStatus": null,
+          "code": "unavailable"
+        }
+      ],
+      "siteStatus": [
+        {
+          "configured": false,
+          "available": false
+        }
+      ],
+      "version": "0675ad5d-0601-4786-8a24-f1db1dacbb68"
+    },
+    {
+      "target": "en-card-automation",
+      "kind": "site_status",
+      "at": 1791033150000,
+      "scheduledTime": null,
+      "cpuMs": 6,
+      "wallMs": 5099,
+      "outcome": "ok",
+      "exceptions": 0,
+      "relayFailure": [],
+      "siteStatus": [
+        {
+          "configured": true,
+          "available": false
+        }
+      ],
+      "version": "33eaf35a-75c8-4131-b818-1037ebc9bc85"
+    }
+  ],
+  "hashes": {
+    "src/automation/worker.ts": "0d60700acdbb7eb59d433938ff9f4c28bb3edd37f0704eaf10ba0e79ff695d54",
+    "src/automation/relay-client.ts": "4cd96431a99aa6ec089667e579079b69c0eb0e945ece99981e4830b38daf96c3",
+    "src/automation/providers.ts": "2f98f0e4dc7d937e8562de1aedf63f088747ed4a20ff71a35c858a60000dcb9d",
+    "tests/automation-relay-runtime.test.mjs": "e5672290df4d2f8d0cfc18b60bb8d0ce09c23b7e604b29ff848d9f86ee95c8f6",
+    "tests/automation-relay.test.ts": "5ae43da3eefd53a0da24b3c1147bdc0f1b271263b730eb30028520985eac5983",
+    "tests/automation-product.test.ts": "f2dafdc930c9ece58ef2b4d4f500de1b6e688867e5c6f74648c76a35e2c12a5e"
+  },
+  "limits": {
+    "aiCalls": 0,
+    "kakaoCalls": 0,
+    "freeKeyAssociation": "awaiting user confirmation",
+    "successfulStatusBeforeSiteVersion111": true,
+    "postPublishTailEvent": "not captured",
+    "aiGenerationCpu": "not measured",
+    "receipt": "not tested"
+  }
+}

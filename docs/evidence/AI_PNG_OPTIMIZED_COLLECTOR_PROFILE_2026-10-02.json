@@ -1,0 +1,134 @@
+{
+  "measured_at_utc": "2026-10-02T14:42:23.267Z",
+  "qualification": "not_qualified",
+  "scope": "Local workerd warm collector sampling, 200 synthetic requests. Real prebuilt frame/PNG responses supplied by a local mock child binding. Excludes actual child computation and remote transport; not remote CPU or per-request limit evidence. Native work may be attributed to JS caller.",
+  "requests": 200,
+  "non_idle_samples": 280,
+  "top_self": [
+    {
+      "name": "fetch @ ",
+      "samples": 53,
+      "fraction": 0.18928571428571428
+    },
+    {
+      "name": "readCompactBody @ script-0.mjs",
+      "samples": 42,
+      "fraction": 0.15
+    },
+    {
+      "name": "(program) @ ",
+      "samples": 33,
+      "fraction": 0.11785714285714285
+    },
+    {
+      "name": "(anonymous) @ ",
+      "samples": 28,
+      "fraction": 0.1
+    },
+    {
+      "name": "fetch @ script-0.mjs",
+      "samples": 27,
+      "fraction": 0.09642857142857143
+    },
+    {
+      "name": "read @ ",
+      "samples": 22,
+      "fraction": 0.07857142857142857
+    },
+    {
+      "name": "Request @ ",
+      "samples": 21,
+      "fraction": 0.075
+    },
+    {
+      "name": "planCardAtlas @ script-0.mjs",
+      "samples": 11,
+      "fraction": 0.039285714285714285
+    },
+    {
+      "name": "(anonymous) @ script-0.mjs",
+      "samples": 10,
+      "fraction": 0.03571428571428571
+    },
+    {
+      "name": "(garbage collector) @ ",
+      "samples": 5,
+      "fraction": 0.017857142857142856
+    },
+    {
+      "name": "inst._zod.parse @ script-0.mjs",
+      "samples": 4,
+      "fraction": 0.014285714285714285
+    },
+    {
+      "name": "get @ ",
+      "samples": 3,
+      "fraction": 0.010714285714285714
+    },
+    {
+      "name": "Response @ ",
+      "samples": 3,
+      "fraction": 0.010714285714285714
+    },
+    {
+      "name": "validateAtlasChunkEnvelope @ script-0.mjs",
+      "samples": 2,
+      "fraction": 0.007142857142857143
+    },
+    {
+      "name": "releaseLock @ ",
+      "samples": 2,
+      "fraction": 0.007142857142857143
+    },
+    {
+      "name": "readBoundedBody @ script-0.mjs",
+      "samples": 2,
+      "fraction": 0.007142857142857143
+    },
+    {
+      "name": "wrap @ script-0.mjs",
+      "samples": 2,
+      "fraction": 0.007142857142857143
+    },
+    {
+      "name": "runChecks @ script-0.mjs",
+      "samples": 1,
+      "fraction": 0.0035714285714285713
+    },
+    {
+      "name": "URL @ ",
+      "samples": 1,
+      "fraction": 0.0035714285714285713
+    },
+    {
+      "name": "packAtlasBundle @ script-0.mjs",
+      "samples": 1,
+      "fraction": 0.0035714285714285713
+    },
+    {
+      "name": "timingSafeEqual @ ",
+      "samples": 1,
+      "fraction": 0.0035714285714285713
+    },
+    {
+      "name": "layoutCard @ script-0.mjs",
+      "samples": 1,
+      "fraction": 0.0035714285714285713
+    },
+    {
+      "name": "encode @ ",
+      "samples": 1,
+      "fraction": 0.0035714285714285713
+    },
+    {
+      "name": "inst._zod.check @ script-0.mjs",
+      "samples": 1,
+      "fraction": 0.0035714285714285713
+    },
+    {
+      "name": "getReader @ ",
+      "samples": 1,
+      "fraction": 0.0035714285714285713
+    }
+  ]
+}

@@ -1,4 +1,6 @@
 import { z, ZodError } from 'zod';
+import { automationApi, automationCron } from './automation';
+import { scheduledToken } from './durable-token';
 import { LIMITS, parseImport } from '../shared/model';
 import {
   beginOAuth,
@@ -6,11 +8,10 @@ import {
   cookie,
   disconnect,
   finishOAuth,
-  liveToken,
   requireSession,
   retryTokenRefresh,
 } from './auth';
-import { assetPage, cardPage, deliveryPage } from './catalog';
+import { assetPage, cardPage, deliveryPage, decodeCard, type CardRow } from './catalog';
 import { readStudioState } from './studio-state';
 import { consumeStudioOAuth, issueStudioOAuth } from './studio-bridge';
 import { dryRun, resolveUnknown, runEngine } from './engine';
@@ -58,6 +59,8 @@ export async function route(request: Request, env: Env): Promise<Response> {
     return finishOAuth(request, env, now, nativeTransport);
   if (!path.startsWith('/api/')) return env.ASSETS.fetch(request);
   const session = await requireSession(request, env, now);
+  if (path === '/api/automation' || path.startsWith('/api/automation/'))
+    return automationApi(request, env);
   if (path === '/api/studio/kakao' && request.method === 'POST') {
     if (session.id !== 'studio-bridge')
       throw appError(403, 'STUDIO_FORBIDDEN', '하루단어에서 연결하세요.');
@@ -157,6 +160,13 @@ export async function route(request: Request, env: Env): Promise<Response> {
       },
       { headers: { 'Content-Disposition': 'attachment; filename="en-cards.json"' } },
     );
+  }
+  if (/^\/api\/cards\/[^/]+$/.test(path) && request.method === 'GET') {
+    const card = await env.DB.prepare('SELECT * FROM cards WHERE id=?')
+      .bind(pathId(path, 3))
+      .first<CardRow>();
+    if (!card) throw appError(404, 'CARD_NOT_FOUND', '카드를 찾을 수 없습니다.');
+    return Response.json(decodeCard(card));
   }
   if (/^\/api\/cards\/[^/]+\/image$/.test(path) && request.method === 'POST')
     return uploadImage(request, pathId(path, 3), env, now);
@@ -372,6 +382,7 @@ export default {
   },
   async scheduled(_event: ScheduledController, env: Env): Promise<void> {
     validateProduction(env);
+    await automationCron(env);
     if (env.SEND_MODE === 'dry_run') {
       await dryRun(env, Date.now());
       return;
@@ -379,7 +390,7 @@ export default {
     await runEngine(env, {
       mode: 'live',
       clock: Date.now,
-      token: () => liveToken(env, Date.now()),
+      token: () => scheduledToken(env, Date.now()),
       deferAfterRefresh: true,
       defer: async (id, owner) => {
         const response = await env.DELIVERY_SERVICE!.fetch(

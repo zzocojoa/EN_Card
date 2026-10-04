@@ -1,0 +1,54 @@
+{
+  "measured_at_utc": "2026-10-02T10:18:42.819Z",
+  "scope": "Local workerd service binding, not remote CPU",
+  "results": [
+    {
+      "fixture": "expression",
+      "encoder": "fast",
+      "bytes": 58603,
+      "sha256": "3106502a5879e303ce8ff023ee4a719cd3e8978d2e2c4d58d285260d861de187"
+    },
+    {
+      "fixture": "expression",
+      "encoder": "bands",
+      "bytes": 57590,
+      "sha256": "568b4b39bb4121152369f7d8945c7242958afa4804dc27f08aa1b3d4ac6cb8df"
+    },
+    {
+      "fixture": "comparison",
+      "encoder": "fast",
+      "bytes": 54964,
+      "sha256": "5b1bd71077cad7850c869764fc56b5fb183a98bb024e2dfaba5f8f4a98fc3cdf"
+    },
+    {
+      "fixture": "comparison",
+      "encoder": "bands",
+      "bytes": 53892,
+      "sha256": "7082a3079fd48449014ed1ef16ec69878f8df801a0a35c33d6eb491ef8880de0"
+    },
+    {
+      "fixture": "long",
+      "encoder": "fast",
+      "bytes": 81392,
+      "sha256": "e90dd2fd85fda5aa33203b1fb0c9ca255bf37427a9cfeab6948083a9a2c50d37"
+    },
+    {
+      "fixture": "long",
+      "encoder": "bands",
+      "bytes": 80215,
+      "sha256": "344fc4c27e5b6a0aaa2a0e1f2ff6d2f148d0dbedbd28311a84ac17d32ce20962"
+    },
+    {
+      "fixture": "long_comparison",
+      "encoder": "fast",
+      "bytes": 82966,
+      "sha256": "2f3210b218814b48da38576d30f8fe99cda2f20332ba04082a44e58254586828"
+    },
+    {
+      "fixture": "long_comparison",
+      "encoder": "bands",
+      "bytes": 81656,
+      "sha256": "33f4862e3b9a8005c054a679afbddadd4dfef92ff3d54620197975c671577f58"
+    }
+  ]
+}

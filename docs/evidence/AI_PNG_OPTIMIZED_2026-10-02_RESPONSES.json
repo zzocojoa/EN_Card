@@ -1,0 +1,92 @@
+[
+  {
+    "at": 1790951739945,
+    "status": 200,
+    "encoder": "atlas_optimized800",
+    "bytes": 16304,
+    "iteration": 0,
+    "fixture": "expression",
+    "sha256": "7164b1cbe611d82ba606c738520b2335b6b01e87e480037b88b2980407feb0db"
+  },
+  {
+    "at": 1790951747890,
+    "status": 200,
+    "encoder": "atlas_optimized720",
+    "bytes": 14398,
+    "iteration": 0,
+    "fixture": "expression",
+    "sha256": "8d2ab90ca7b2aeb1f8ab42b862718946024f96a793c9722a655d4d7cd0aff042"
+  },
+  {
+    "at": 1790951753699,
+    "status": 200,
+    "encoder": "atlas_optimized800",
+    "bytes": 14764,
+    "iteration": 0,
+    "fixture": "comparison",
+    "sha256": "9ccbd96ca452319c418a803b5bd2c094da987167e909084f6281db368f0553f9"
+  },
+  {
+    "at": 1790951757919,
+    "status": 200,
+    "encoder": "atlas_optimized720",
+    "bytes": 13022,
+    "iteration": 0,
+    "fixture": "comparison",
+    "sha256": "68d50582c4a7817eedf5d0325e5fa184ad0ba2158dc7128900494c116da85478"
+  },
+  {
+    "at": 1790951760698,
+    "status": 200,
+    "encoder": "atlas_optimized800",
+    "bytes": 25133,
+    "iteration": 0,
+    "fixture": "long",
+    "sha256": "44a9d8404d80608c696f4f4c1b68f25ae1264430c3c5e46a3f108e2e3c56265f"
+  },
+  {
+    "at": 1790951764475,
+    "status": 200,
+    "encoder": "atlas_optimized720",
+    "bytes": 22357,
+    "iteration": 0,
+    "fixture": "long",
+    "sha256": "fbfeedca7984b8ed5a453da952d762000cc5a126736dd182c9ea51359e036cb2"
+  },
+  {
+    "at": 1790951767776,
+    "status": 200,
+    "encoder": "atlas_optimized800",
+    "bytes": 26126,
+    "iteration": 0,
+    "fixture": "long_comparison",
+    "sha256": "9d049d792f2279aadceed06a15bd8a1ea003b3215b90a8caf868665f5b035f60"
+  },
+  {
+    "at": 1790951769404,
+    "status": 200,
+    "encoder": "atlas_optimized720",
+    "bytes": 23700,
+    "iteration": 0,
+    "fixture": "long_comparison",
+    "sha256": "0a2bde5ff31c87ec232d9f2fdf2e1145acc33a3c9a680f373203504b61dec282"
+  },
+  {
+    "at": 1790951773562,
+    "status": 200,
+    "encoder": "atlas_optimized800",
+    "bytes": 27314,
+    "iteration": 0,
+    "fixture": "coverage",
+    "sha256": "815cbf982e3c5ffb9cd833b395fc4a9117a8b14a0713d03e2c991d8dd3d82e28"
+  },
+  {
+    "at": 1790951780975,
+    "status": 200,
+    "encoder": "atlas_optimized720",
+    "bytes": 24198,
+    "iteration": 0,
+    "fixture": "coverage",
+    "sha256": "2ba542ec638a161c3648353a9aab306087b61dd22f495ea37bf6ef1ef8347e1e"
+  }
+]

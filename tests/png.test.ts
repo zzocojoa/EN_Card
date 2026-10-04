@@ -1,6 +1,7 @@
 import { inflateSync } from 'node:zlib';
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { validatePng } from '../src/worker/png';
+import { nativePngCrc } from '../experiments/automation-png/atlas';
 import { saveCard, uploadImage } from '../src/worker/storage';
 import { assemble, chunk, PNG_CHUNKS, validPng } from './png-fixture';
 import { harness, NOW, SAMPLE, type Harness } from './helpers';
@@ -8,6 +9,7 @@ import { harness, NOW, SAMPLE, type Harness } from './helpers';
 it('R4 정상 fixture는 실제 압축 해제가 가능한 1080×1080 RGBA PNG다', () => {
   expect(inflateSync(PNG_CHUNKS[1]!.subarray(8, -4))).toHaveLength((1080 * 4 + 1) * 1080);
   expect(() => validatePng(validPng())).not.toThrow();
+  expect(() => validatePng(validPng(), 1080, nativePngCrc)).not.toThrow();
 });
 const header: Uint8Array = PNG_CHUNKS[0]!.slice(8, -4);
 const invalidCases: [string, Uint8Array<ArrayBuffer>][] = [
@@ -91,6 +93,7 @@ const invalidCases: [string, Uint8Array<ArrayBuffer>][] = [
 ];
 it.each(invalidCases)('R4 %s 파일을 거부한다', (_name, bytes) => {
   expect(() => validatePng(bytes)).toThrow();
+  expect(() => validatePng(bytes, 1080, nativePngCrc)).toThrow();
 });
 let h: Harness;
 beforeEach(async () => {

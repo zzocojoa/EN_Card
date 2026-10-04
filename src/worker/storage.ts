@@ -43,7 +43,7 @@ export async function readJson(request: Request): Promise<unknown> {
     throw error;
   }
 }
-async function retainUploadCleanup(assetId: string, env: Env): Promise<void> {
+export async function retainUploadCleanup(assetId: string, env: Pick<Env, 'DB'>): Promise<void> {
   await env.DB.prepare(
     "UPDATE assets SET state='cleanup_needed',cleanup_owner=NULL WHERE id=? AND state!='ready'",
   )
@@ -130,7 +130,11 @@ export async function reviewCard(
       '최신 카드와 저장된 PNG를 확인한 뒤 검토 완료를 눌러주세요.',
     );
 }
-export async function deleteImage(assetId: string, env: Env, now: number): Promise<void> {
+export async function deleteImage(
+  assetId: string,
+  env: Pick<Env, 'DB' | 'CARD_IMAGES'>,
+  now: number,
+): Promise<void> {
   const owner: string = crypto.randomUUID();
   const row = await env.DB.prepare(
     "UPDATE assets SET state='deleting',cleanup_owner=? WHERE id=? AND state!='deleted' AND (state!='uploading' OR created_at<?) RETURNING kv_key",

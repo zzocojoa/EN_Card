@@ -1,0 +1,47 @@
+{
+  "measured_at_utc": "2026-10-03T06:20:57.241Z",
+  "qualification": "not_qualified",
+  "scope": "Offline full-page conversion, no glyph subset. Every source glyph decoded and compared in each candidate. Each block size uses a separate asset directory. No remote operations.",
+  "results": [
+    {
+      "size": 800,
+      "blockSize": 4,
+      "files": 6291,
+      "glyphs": 390252,
+      "bytes": 63898487,
+      "max_bytes": 23094,
+      "source_tree_sha256": "6ba2fadafbb38058d054ee7a3efdbcb11ad1f6e90bfda88c52cb68de467307d9",
+      "output_tree_sha256": "ac9ba921f2e813b9e951b11f318da59e8a1a30ed036b738c5a5a36172e29d9c1"
+    },
+    {
+      "size": 800,
+      "blockSize": 8,
+      "files": 6291,
+      "glyphs": 390252,
+      "bytes": 59058394,
+      "max_bytes": 21664,
+      "source_tree_sha256": "6ba2fadafbb38058d054ee7a3efdbcb11ad1f6e90bfda88c52cb68de467307d9",
+      "output_tree_sha256": "8ae0fd9f688dd52d2a2d0dff0bd4bd2638a77d2c83bf32f6ad1e307e248ff523"
+    },
+    {
+      "size": 720,
+      "blockSize": 4,
+      "files": 6291,
+      "glyphs": 390252,
+      "bytes": 59290735,
+      "max_bytes": 20708,
+      "source_tree_sha256": "9733c5b6b2373c2bef784f92e846609df017b0f0c00431f4f2e39665cca7cc44",
+      "output_tree_sha256": "53a3dcec44666bcf65322451c303fc0f425832b812d5c86c7a5234811ae76bbf"
+    },
+    {
+      "size": 720,
+      "blockSize": 8,
+      "files": 6291,
+      "glyphs": 390252,
+      "bytes": 54601266,
+      "max_bytes": 19349,
+      "source_tree_sha256": "9733c5b6b2373c2bef784f92e846609df017b0f0c00431f4f2e39665cca7cc44",
+      "output_tree_sha256": "f6ca7a33d9e9a75e85f9602ee37c9910ce6cc69fd994945c40ad89cd56976fbd"
+    }
+  ]
+}

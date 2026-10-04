@@ -1,0 +1,73 @@
+{
+  "measured_at_utc": "2026-10-02T14:11:52.725Z",
+  "qualification": "not_qualified",
+  "scope": "Offline build only. All supported glyphs/styles at each size; each page layout is a separate deployment candidate, not a combined asset directory.",
+  "results": [
+    {
+      "size": 1080,
+      "characters": 11478,
+      "styles": 34,
+      "pages": {
+        "32": {
+          "files": 12376,
+          "bytes": 99167947,
+          "max_bytes": 19251
+        },
+        "64": {
+          "files": 6290,
+          "bytes": 99279467,
+          "max_bytes": 38090
+        },
+        "1024": {
+          "files": 476,
+          "bytes": 101902091,
+          "max_bytes": 551424
+        }
+      }
+    },
+    {
+      "size": 800,
+      "characters": 11478,
+      "styles": 34,
+      "pages": {
+        "32": {
+          "files": 12376,
+          "bytes": 81675150,
+          "max_bytes": 14325
+        },
+        "64": {
+          "files": 6290,
+          "bytes": 81786670,
+          "max_bytes": 28151
+        },
+        "1024": {
+          "files": 476,
+          "bytes": 84409294,
+          "max_bytes": 412520
+        }
+      }
+    },
+    {
+      "size": 720,
+      "characters": 11478,
+      "styles": 34,
+      "pages": {
+        "32": {
+          "files": 12376,
+          "bytes": 76441510,
+          "max_bytes": 12965
+        },
+        "64": {
+          "files": 6290,
+          "bytes": 76553030,
+          "max_bytes": 25694
+        },
+        "1024": {
+          "files": 476,
+          "bytes": 79175654,
+          "max_bytes": 378047
+        }
+      }
+    }
+  ]
+}

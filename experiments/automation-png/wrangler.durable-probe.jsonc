@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "en-card-png-do-probe",
+  "main": "durable-probe.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [
+      { "name": "PNG_TRIAL", "class_name": "CardPngTrial", "script_name": "en-card-png-do-trial" },
+    ],
+  },
+  "observability": { "enabled": false },
+}

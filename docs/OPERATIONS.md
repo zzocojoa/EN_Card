@@ -1,19 +1,43 @@
 # 운영과 복구
 
+예약 발송의 인증 처리는 기존 비공개 DO의 `credentialToken` RPC에서 수행한다. DO의 `SEND_MODE`는 주 Worker와 같아야 한다. AI만 중지하려면 화면 일시정지 또는 `AUTOMATION_MODE=off`를 사용하고, 수동 발송을 유지할 때는 DO의 `SEND_MODE=live`를 유지한다. DO만 dry_run으로 바꾸면 수동 예약도 인증 대기 후 missed가 될 수 있다. 배포는 RPC를 제공하는 DO를 먼저, 주 Worker를 나중에 적용한다. RPC 통신 실패는 로컬 재갱신으로 우회하지 않는다. 갱신 결과는 기존 D1 잠금·버전·실패 분류를 기준으로 복구한다.
+
+2026-10-04의 이전 갱신 tick CPU 14.004ms 확인 후 위 분리를 적용했다. 같은 날 14:48 KST까지 실제 갱신 DO CPU **6.054ms**, 검증용 주 Worker **2.250ms**를 확인하고 운영 버전을 복원했다. 2.250ms는 정상 예약 엔진 전체 갱신 회차의 측정값이 아니다. 앞선 실제 발송 표본은 주 Worker4.269ms·발송 Worker3.787ms였다. 실제 수신 성공과 CPU 적합성은 별개이며 이 표본을 미래 최댓값으로 보장하지 않는다. [실제 갱신 근거](evidence/AI_TOKEN_REFRESH_VERIFICATION_2026-10-04.json), [무인 제작·발송 근거](evidence/AI_AUTOMATION_TRIAL_2026-10-04.json).
+
+**2026-10-04 14:56 KST 운영 상태:** 영화 대사·초급·표현형 한 장의 10월5일 07:00 제작 시작·08:00 발송을 활성화했다. 종료일도10월5일이다. 그 미래 실행·수신은 아직 검증하지 않았다. [활성화 기록](evidence/AI_AUTOMATION_NEXT_2026-10-05.json).
+
+AI 서버 연결은 기존 Site Secret을 사용한다. 키 오류는 사이트 설정에서 수정하며 DO에 복사하지 않는다. 준비 확인 실패 시 Site의 `0004_card_automation_nonces` 적용과 Google/Groq 키·활성 설정, 기존 bridge/소유자 연결을 확인한다. nonce를 수동으로 삭제하거나 같은 서명으로 AI를 재호출하지 않는다. [전체 구조와 복구 경계](AI_CARD_AUTOMATION_IMPLEMENTATION.md)를 따른다.
+
+## AI 자동 제작 중단·복구
+
+**2026-10-04 review 로컬 수정(미배포):** 연결 해제나 확정된 인증 무효는 기존 예약뿐 아니라 자동 제작 설정과 진행 중인 제작도 중단한다. 재연결만으로 자동 제작을 재개하지 않으며 화면에서 다시 시작해야 한다. 일시적인 토큰 갱신 오류는 이 중단 사유가 아니다. 현재 운영 반영 여부는 [리뷰 기록](AI_CARD_AUTOMATION_REVIEW.md)을 확인한다.
+
+**오늘 한 장 시험:** 자동 제작이 중단된 상태에서 저장된 주제·난이도·카드 종류로 한 장을 추가 시험한다. 시작 후 약 10분 뒤 제작, 약 25분 뒤 발송하며 정확한 한국 시각은 제작 기록에 표시한다. 정규 하루 한 장과 별도로 KST 하루 한 번만 허용하고 중단·실패 후에도 시험 기록을 삭제하거나 한도를 초기화하지 않는다. 일일 날짜·시각 설정은 보존하지만 시험 종료 후 일일 제작을 자동 재개하지 않는다. 이전 자동 발송의 미확정 결과가 있으면 먼저 확인·정리한다.
+
+**0015 배포·복귀:** 기존 `day` 고유 키를 `dedupe_key`로 바꾸므로 구버전 자동 제작 코드와 호환되지 않는다. 자동 제작 비활성·활성 예약/진행 발송 없음 확인 → 주 Worker 유지보수로 쓰기/Cron 차단 → 암호화 D1 백업 → 미적용 파일을0015까지 적용·기존 행/FK 검증 → 새 DO → 발송 Worker → 주 Worker/Cron → Site 순서로 반영한다. 폰트 준비·타입/빌드·각 실제 설정의 dry-run/무료 검사는 원격 변경 전에 마친다. 실패 시 비활성을 유지하고 0015와 호환되는 코드로만 복귀한다. 시험·발송 이력이 생긴 DB에 이전 백업을 그대로 덮어쓰거나 구버전 DO만 되돌리지 않는다.
+
+카드 만들기의 **AI 카드 자동 제작 → 일시정지**는 처리 중인 제작과 아직 발송하지 않은 자동 예약을 취소한다. 무료 한도·인증·저장 오류는 원인을 해결한 뒤 시작 버튼으로 다음 가능한 날짜부터 재개한다. 지난 날짜를 몰아서 재실행하지 않는다. `unknown`은 기존 발송 기록에서 먼저 해결해야 하며 이미 접수된 메시지는 회수하지 않는다. 자동 예약을 수정하려면 기존 예약을 중지·취소한 뒤 새 예약을 만든다.
+
+주 Worker를 dry_run으로 되돌리면 새 자동 제작 시작/tick과 실제 발송을 함께 차단한다. 중단 후 DO도 dry_run/off/unconfirmed로 맞추며 구체적인 순서는 아래 복구 명령을 따른다. 이미 진행 중인 외부 요청의 취소는 보장하지 않는다. 0014/0015 테이블·시도 이력은 보존하며, 저장 오류에서 KV 파일 확인 없이 용량을 수동 반환하지 않는다. 상세 설정과 복구 경계는 [제품 연결 문서](AI_CARD_AUTOMATION_IMPLEMENTATION.md)를 따른다.
+
 ## 비공개 발송 Worker 중단·복구
 
 `en-card`의 매분 Cron은 `DELIVERY_SERVICE`로 비공개 `en-card-delivery`의 준비·발송 요청을 호출합니다. 자식에는 공개/preview URL, Cron, KV, 저장된 Secret이 없습니다. 두 Worker는 같은 D1을 사용합니다. 주 Worker의 dry_run 전환만으로 새 실제 발송을 중단할 수 있습니다. 배포 순서는 자식 → 주 Worker이며 자식을 삭제하기 전에 주 Worker의 바인딩을 먼저 정리합니다.
 
 바인딩 오류·불완전한 응답 뒤에는 주 Worker가 직접 재발송하지 않습니다. 자식이 이미 API를 호출했거나 결과를 저장했을 수 있기 때문입니다. 기한이 지난 claimed는 회수하고 sending은 unknown으로 처리합니다. 앱의 시도별 기록과 본인 채팅방을 확인한 뒤 기존 결과 확인 절차를 따르세요.
 
-현재 스키마와 호환되는 dry_run 복귀 명령은 다음과 같습니다. 설정이 바뀌면 검사부터 다시 실행합니다.
+현재 0015 스키마와 호환되는 dry_run 복귀 명령은 다음과 같습니다. `wrangler.deploy.jsonc`와 `wrangler.automation.deploy.jsonc`는 같은 운영 D1·KV·APP_ORIGIN을 가리키고 둘 다 `SEND_MODE=dry_run`이어야 합니다. DO는 off/unconfirmed로 준비합니다. 새 파일은 [설정 절차](SETUP.md#원격-실행-절차)대로 만들며 기존 파일을 덮어쓰지 않습니다. 설정이 바뀌면 로컬 검사부터 다시 실행합니다. 신규 설치 순서와 달리 **긴급 중단은 주 Worker를 먼저 dry_run으로 배포한 뒤 DO 모드를 맞춰** live 주 Worker가 dry_run DO를 호출하는 구간을 피합니다.
 
 ```sh
-npm run check:free -- --config wrangler.deploy.jsonc --delivery-config wrangler.delivery.deploy.jsonc --mode dry_run
+npm run automation:fonts
+npx wrangler deploy --dry-run --config wrangler.automation.deploy.jsonc --outdir .worker-automation-build
+npx wrangler deploy --dry-run --config wrangler.deploy.jsonc --outdir .worker-build
+npm run check:free -- --config wrangler.deploy.jsonc --delivery-config wrangler.delivery.deploy.jsonc --automation-config wrangler.automation.deploy.jsonc --mode dry_run
 npx wrangler deploy --config wrangler.deploy.jsonc
+npx wrangler deploy --config wrangler.automation.deploy.jsonc
 ```
 
-DB를 별도 복원 DB로 전환할 때 두 설정의 D1 식별자를 함께 바꿉니다. 기존 실패·시도·예산을 삭제하거나 자식 장애를 직접 카카오 호출로 우회하지 않습니다. CPU는 두 Worker의 호출을 각각 관측하며 카카오 응답을 기다린 wall 시간과 구별합니다. Free 10ms 초과가 관측되면 live 확대를 중단합니다.
+DB를 별도 복원 DB로 전환할 때 주 Worker·발송 Worker·DO 세 설정의 D1 식별자를 함께 바꾸고 주 Worker/DO의 KV도 일치시킵니다. 기존 실패·시도·예산을 삭제하거나 자식 장애를 직접 카카오 호출로 우회하지 않습니다. CPU는 일반 Worker와 DO를 각각 관측하며 카카오 응답을 기다린 wall 시간과 구별합니다. 일반 Worker에서 Free 10ms 초과가 관측되면 live 확대를 중단합니다.
 
 ## 발송 기록 해석
 
@@ -108,7 +132,7 @@ WHERE p.decision IS NOT NULL
 최초 배포에는 이전 운영 버전이 없었습니다. 복구는 아래 순서로 Cron 중단·현재 스키마와 호환되는 dry_run 수정본을 사용합니다. 0006의 query 분할 오류는 원본 SQL을 바꾸지 않은 file import로 복구했으며 적용 완료 파일을 다시 실행하지 않습니다. [복구 기록](SETUP.md#windows-마이그레이션-오류-복구-기록)을 참고하세요. 지속 Worker observability는 disabled를 유지하고 실제 시험의 CPU는 비밀정보를 제외한 invocation 메타데이터로 측정했습니다.
 
 1. 앱 접근이 가능하면 관련 예약을 일시정지하고 sending·unknown 기록을 확인합니다. 앱 접근이 어려우면 Cloudflare Dashboard에서 이 Worker의 Cron Trigger를 제거하여 새 실행을 중지합니다. 진행 중 외부 호출까지 취소되는 것은 아니므로 접수 여부를 확인합니다. 로그아웃은 발송 중지 수단이 아닙니다.
-2. 확인된 `wrangler.deploy.jsonc`로 `npm run check:free -- --config wrangler.deploy.jsonc --delivery-config wrangler.delivery.deploy.jsonc --mode dry_run` 후 `npx wrangler deploy --config wrangler.deploy.jsonc`를 실행하면 Cron이 복원되어도 SEND_MODE는 dry_run입니다. Worker 버전만 되돌리는 rollback은 이전 live 설정을 다시 켤 수 있으므로 무조건 실행하지 않습니다. 연결 해제는 토큰까지 제거하므로 필요할 때만 사용합니다.
+2. [현재 dry_run 복구 절차](#비공개-발송-worker-중단복구)에 따라 주 Worker와 DO의 대응 설정을 로컬 검사합니다. `npm run check:free -- --config wrangler.deploy.jsonc --delivery-config wrangler.delivery.deploy.jsonc --automation-config wrangler.automation.deploy.jsonc --mode dry_run` 후 주 Worker, DO 순서로 배포하면 Cron이 복원되어도 실제 제작·발송은 중지됩니다. Worker 버전만 되돌리는 rollback은 이전 live 설정을 다시 켤 수 있으므로 무조건 실행하지 않습니다. 연결 해제는 토큰까지 제거하므로 필요할 때만 사용합니다.
 3. 쓰기를 멈춘 상태에서 장애 시점 DB를 별도로 export하고 KV·기존 Secret·배포 버전·마이그레이션 이력을 보존합니다. D1 백업을 운영 DB에 그대로 덮어쓰지 않습니다. 코드 롤백이 스키마를 되돌리지는 않습니다. 0009 이후 복구 관계가 생겼다면 이를 모르는 이전 코드로 운영하지 말고 현재 스키마와 호환되는 수정본을 dry_run으로 배포합니다.
 4. 백업 복원이 필요하면 먼저 격리 로컬 DB에서 SQL·FK·적용 이력을 검증합니다. 전체 export는 스키마도 포함하므로 빈 DB에 가져옵니다. 이미 테이블이 있는 DB에 다시 초기 마이그레이션을 적용하지 않습니다. 기존 Free 계정 한도 안에서 별도 복구 DB를 만들 수 있을 때만 다음 원격 절차를 진행합니다. 무료 자격이 없으면 중단합니다.
 

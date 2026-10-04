@@ -119,6 +119,178 @@ async function navigate(page: Page, route: string) {
 }
 const mainNotice = (page: Page) => page.locator('.workspace > .notice');
 
+test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동 후 초안을 확인한다', async ({
+  page,
+}) => {
+  const state = initialState();
+  state.mode = 'live';
+  state.connection = {
+    status: 'connected',
+    expires_at: Date.now() + 86400000,
+    refresh_expires_at: Date.now() + 86400000,
+    version: 1,
+    refresh_attempts: 0,
+    refresh_retry_at: null,
+    refresh_failure: null,
+    refresh_http_status: null,
+    refresh_provider_error: null,
+    refresh_provider_code: null,
+  };
+  await fixture(page, state);
+  let view = {
+    settings: {
+      topic: '일상 회화',
+      base_expression: '',
+      level: '초급',
+      template: 'expression',
+      start_date: '2026-10-04',
+      end_date: null,
+      time: '08:00',
+    },
+    version: 1,
+    enabled: false,
+    reason: 'paused',
+    next_due_at: Date.now() + 86400000,
+    available: true,
+    trial_used_today: false,
+    missing: [],
+  };
+  let delayStatus = false;
+  let releaseStatus!: () => void;
+  let statusStarted!: () => void;
+  let statusFinished!: () => void;
+  const statusWaiting = new Promise<void>((resolve) => {
+    releaseStatus = resolve;
+  });
+  const statusRequested = new Promise<void>((resolve) => {
+    statusStarted = resolve;
+  });
+  const statusDelivered = new Promise<void>((resolve) => {
+    statusFinished = resolve;
+  });
+  await page.route('**/api/automation{,/**}', async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    if (path === '/api/automation' && request.method() === 'GET' && delayStatus) {
+      delayStatus = false;
+      const snapshot = structuredClone(view);
+      statusStarted();
+      await statusWaiting;
+      await route.fulfill({ json: snapshot }).catch(() => undefined);
+      statusFinished();
+      return;
+    }
+    if (path.endsWith('/runs'))
+      return route.fulfill({
+        json: [
+          {
+            id: 'test',
+            day: '2026-10-03',
+            kind: view.trial_used_today ? 'trial' : 'daily',
+            not_before: Date.now() + 600000,
+            due_at: Date.now(),
+            status: 'revise',
+            error: null,
+            writer: 'google',
+            reviewer: 'groq',
+            revision: 1,
+            content: cards[0]!.content,
+            review: {
+              natural: true,
+              meaning: true,
+              grammar: true,
+              translation: false,
+              level: true,
+              comparison: true,
+              issues: [],
+            },
+            public_id: null,
+            updated_at: Date.now(),
+            delivery_state: null,
+          },
+        ],
+      });
+    if (request.method() === 'PUT') {
+      expect(request.postDataJSON().version).toBe(view.version);
+      view = {
+        ...view,
+        settings: request.postDataJSON().settings,
+        version: view.version + 1,
+        enabled: false,
+      };
+    }
+    if (path.endsWith('/start')) {
+      expect(request.postDataJSON().version).toBe(view.version);
+      view = { ...view, enabled: true, reason: '', version: view.version + 1 };
+    }
+    if (path.endsWith('/pause'))
+      view = { ...view, enabled: false, reason: 'paused', version: view.version + 1 };
+    if (path.endsWith('/trial')) {
+      expect(request.postDataJSON()).toEqual({ version: view.version });
+      view = {
+        ...view,
+        enabled: true,
+        reason: '',
+        version: view.version + 1,
+        trial_used_today: true,
+      };
+    }
+    return route.fulfill({ json: view });
+  });
+  await page.goto('/#/editor');
+  await page.locator('.automation-panel summary').click();
+  await expect(page.getByText('AI 검토 미통과', { exact: false })).toBeVisible();
+  await expect(page.getByText('AI 검토 통과', { exact: false })).toHaveCount(0);
+  await page.getByLabel('주제', { exact: true }).fill('여행 중 쓸 표현');
+  await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '오늘 한 장 시험', exact: true })).toBeDisabled();
+  await navigate(page, 'library');
+  await navigate(page, 'editor');
+  await page.locator('.automation-panel summary').click();
+  await expect(page.getByLabel('주제', { exact: true })).toHaveValue('여행 중 쓸 표현');
+  await page.getByRole('button', { name: '설정 저장', exact: true }).click();
+  await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeEnabled();
+  delayStatus = true;
+  await page.getByRole('button', { name: '새로고침', exact: true }).click();
+  await statusRequested;
+  await page.getByLabel('주제', { exact: true }).fill('늦은 조회보다 새로 저장한 주제');
+  await page.getByRole('button', { name: '설정 저장', exact: true }).click();
+  await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeEnabled();
+  releaseStatus();
+  await statusDelivered;
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+  await expect(page.getByLabel('주제', { exact: true })).toHaveValue(
+    '늦은 조회보다 새로 저장한 주제',
+  );
+  await page.getByRole('button', { name: '자동 제작 시작', exact: true }).click();
+  await expect(page.locator('.automation-panel summary')).toContainText('실행 중');
+  // A Cron/other tab update uses the same session CSRF; the shared refresh must reload automation too.
+  await expect(page.getByRole('button', { name: '새로고침', exact: true })).toBeEnabled();
+  await page.getByLabel('주제', { exact: true }).fill('아직 저장하지 않은 주제');
+  view = { ...view, enabled: false, reason: 'complete', version: view.version + 1 };
+  await page.getByRole('button', { name: '새로고침', exact: true }).click();
+  await expect(page.locator('.automation-panel summary')).toContainText('기간 종료');
+  await expect(page.getByLabel('주제', { exact: true })).toHaveValue('아직 저장하지 않은 주제');
+  await page.getByRole('button', { name: '설정 저장', exact: true }).click();
+  await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: '자동 제작 시작', exact: true }).click();
+  await expect(page.locator('.automation-panel summary')).toContainText('실행 중');
+  await page.getByRole('button', { name: '일시정지', exact: true }).click();
+  await expect(page.locator('.automation-panel summary')).toContainText('일시정지');
+  await page.getByRole('button', { name: '오늘 한 장 시험', exact: true }).click();
+  await expect(page.getByText('제작 시작', { exact: false })).toBeVisible();
+  await expect(page.getByLabel('매일 받을 시각 (한국 시간)', { exact: true })).toHaveValue('08:00');
+  await page.getByRole('button', { name: '일시정지', exact: true }).click();
+  await expect(page.getByRole('button', { name: '오늘 한 장 시험', exact: true })).toBeDisabled();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 test('홈·주소·뒤로 가기와 카드 초안·키보드 본문 이동을 유지한다', async ({ page }) => {
   await fixture(page);
   await page.goto('/');

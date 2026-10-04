@@ -1,0 +1,218 @@
+[
+  {
+    "encoder": "wasm",
+    "sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+    "at": 1790933655448,
+    "fixture": "expression",
+    "status": 200,
+    "iteration": 0,
+    "bytes": 45915
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+    "at": 1790933656372,
+    "fixture": "expression",
+    "status": 200,
+    "iteration": 1,
+    "bytes": 45915
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "9a7b8a7c2570eaa7527b80010b2efe7d662a3c88bb2da80e9021e71a700ac712",
+    "at": 1790933657082,
+    "fixture": "expression",
+    "status": 200,
+    "iteration": 2,
+    "bytes": 45915
+  },
+  {
+    "encoder": "native",
+    "sha256": "e55537e1281e5163bfb0cf9f8a44c3abbf29b2bfa3f26626a8ef407767dccd4a",
+    "at": 1790933657873,
+    "fixture": "expression",
+    "status": 200,
+    "iteration": 0,
+    "bytes": 30479
+  },
+  {
+    "encoder": "native",
+    "sha256": "e55537e1281e5163bfb0cf9f8a44c3abbf29b2bfa3f26626a8ef407767dccd4a",
+    "at": 1790933658646,
+    "fixture": "expression",
+    "status": 200,
+    "iteration": 1,
+    "bytes": 30479
+  },
+  {
+    "encoder": "native",
+    "sha256": "e55537e1281e5163bfb0cf9f8a44c3abbf29b2bfa3f26626a8ef407767dccd4a",
+    "at": 1790933659401,
+    "fixture": "expression",
+    "status": 200,
+    "iteration": 2,
+    "bytes": 30479
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+    "at": 1790933661486,
+    "fixture": "comparison",
+    "status": 200,
+    "iteration": 0,
+    "bytes": 41524
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+    "at": 1790933662280,
+    "fixture": "comparison",
+    "status": 200,
+    "iteration": 1,
+    "bytes": 41524
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "ae73f77e9307eb6056acfe6e42159a27f343866d19e686b376430a5151cd7a68",
+    "at": 1790933663261,
+    "fixture": "comparison",
+    "status": 200,
+    "iteration": 2,
+    "bytes": 41524
+  },
+  {
+    "encoder": "native",
+    "sha256": "d5035d8133acb59924371a64206f4b8596a9c94f6bdd1d2f3a94a2da60018f3f",
+    "at": 1790933664020,
+    "fixture": "comparison",
+    "status": 200,
+    "iteration": 0,
+    "bytes": 27891
+  },
+  {
+    "encoder": "native",
+    "sha256": "d5035d8133acb59924371a64206f4b8596a9c94f6bdd1d2f3a94a2da60018f3f",
+    "at": 1790933665765,
+    "fixture": "comparison",
+    "status": 200,
+    "iteration": 1,
+    "bytes": 27891
+  },
+  {
+    "encoder": "native",
+    "sha256": "d5035d8133acb59924371a64206f4b8596a9c94f6bdd1d2f3a94a2da60018f3f",
+    "at": 1790933666366,
+    "fixture": "comparison",
+    "status": 200,
+    "iteration": 2,
+    "bytes": 27891
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+    "at": 1790933667111,
+    "fixture": "long",
+    "status": 200,
+    "iteration": 0,
+    "bytes": 69474
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+    "at": 1790933669298,
+    "fixture": "long",
+    "status": 200,
+    "iteration": 1,
+    "bytes": 69474
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "4e45756085c0e1601112eb9a8ffb25317053e31e117820a231bdf7a57ff61196",
+    "at": 1790933669928,
+    "fixture": "long",
+    "status": 200,
+    "iteration": 2,
+    "bytes": 69474
+  },
+  {
+    "encoder": "native",
+    "sha256": "f49fb9cffde426c5608d17837a39487745a2fffe487029eeef6df7069766d863",
+    "at": 1790933670885,
+    "fixture": "long",
+    "status": 200,
+    "iteration": 0,
+    "bytes": 45937
+  },
+  {
+    "encoder": "native",
+    "sha256": "f49fb9cffde426c5608d17837a39487745a2fffe487029eeef6df7069766d863",
+    "at": 1790933671975,
+    "fixture": "long",
+    "status": 200,
+    "iteration": 1,
+    "bytes": 45937
+  },
+  {
+    "encoder": "native",
+    "sha256": "f49fb9cffde426c5608d17837a39487745a2fffe487029eeef6df7069766d863",
+    "at": 1790933672468,
+    "fixture": "long",
+    "status": 200,
+    "iteration": 2,
+    "bytes": 45937
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+    "at": 1790933673117,
+    "fixture": "long_comparison",
+    "status": 200,
+    "iteration": 0,
+    "bytes": 72668
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+    "at": 1790933673742,
+    "fixture": "long_comparison",
+    "status": 200,
+    "iteration": 1,
+    "bytes": 72668
+  },
+  {
+    "encoder": "wasm",
+    "sha256": "0208dc9e359fccd7865741b8238e3dae4060b7a55441a9e02dca6532c853feae",
+    "at": 1790933674382,
+    "fixture": "long_comparison",
+    "status": 200,
+    "iteration": 2,
+    "bytes": 72668
+  },
+  {
+    "encoder": "native",
+    "sha256": "b4395ef6b2a1ea91ae80ce94cde0703c47a48e4c7393be95bdd05b63bdfc3268",
+    "at": 1790933675040,
+    "fixture": "long_comparison",
+    "status": 200,
+    "iteration": 0,
+    "bytes": 48078
+  },
+  {
+    "encoder": "native",
+    "sha256": "b4395ef6b2a1ea91ae80ce94cde0703c47a48e4c7393be95bdd05b63bdfc3268",
+    "at": 1790933676378,
+    "fixture": "long_comparison",
+    "status": 200,
+    "iteration": 1,
+    "bytes": 48078
+  },
+  {
+    "encoder": "native",
+    "sha256": "b4395ef6b2a1ea91ae80ce94cde0703c47a48e4c7393be95bdd05b63bdfc3268",
+    "at": 1790933676896,
+    "fixture": "long_comparison",
+    "status": 200,
+    "iteration": 2,
+    "bytes": 48078
+  }
+]

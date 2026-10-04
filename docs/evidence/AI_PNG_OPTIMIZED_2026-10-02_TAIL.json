@@ -1,0 +1,32 @@
+{
+  "updated_at_utc": "2026-10-02T14:36:29.134Z",
+  "scope": "Sanitized local tail process counters. Zero local drops does not prove provider delivered every invocation.",
+  "targets": {
+    "en-card-png-feasibility": {
+      "stdout_bytes": 55459,
+      "stderr_bytes": 0,
+      "parsed_events": 90,
+      "invalid_json": 0,
+      "buffer_discards": 0,
+      "discarded_characters": 0,
+      "warning_chunks": 0,
+      "sampling_notice_chunks": 0,
+      "connected": false,
+      "process_error": false,
+      "exit_code": null
+    },
+    "en-card-png-probe": {
+      "stdout_bytes": 50419,
+      "stderr_bytes": 0,
+      "parsed_events": 11,
+      "invalid_json": 0,
+      "buffer_discards": 0,
+      "discarded_characters": 0,
+      "warning_chunks": 0,
+      "sampling_notice_chunks": 0,
+      "connected": false,
+      "process_error": false,
+      "exit_code": null
+    }
+  }
+}
