@@ -1,5 +1,16 @@
 # 검증 근거
 
+## 중복 개선 후 새5장 실제 검증 — 2026-10-06 예약 관측·실행 대기
+
+- 다음 미완료 단계 승인에 따라 읽기를 시작했다. 최초 Cloudflare401은 공식 Wrangler `whoami`로 갱신했다. 이전 version20을 전제로 한 등록 전 검사는 실제 version22를 발견하고 중단했으며 제품 DB 쓰기를 하지 않았다. 조회 SQL의 없는 인증 열을 제거하고 다시 읽어 현재 상태를 확인했다.
+- 00:26 KST 설정은 **version22·enabled1·매일07:30·5장·2026-10-04~2027-10-31**, 다음 due는2026-10-06 07:30 KST다. 이미 활성화된 이 정규 설정을 보존한다. 신규 trial 등록·일시정지·원래07:00/1장 복구·추가 AI/카카오 호출·배포0이다. 이전 배포 시점의 비활성 상태를 현재 상태로 쓰지 않는다.
+- Site v119·환경 기록과 공개정책4, D1 0018/FK0, 세 현재 Worker 버전/바인딩/Cron 일치를 확인했다. 카카오 connected, 진행 중 제작·활성 개별예약·claimed/sending/미해결unknown0, 자동화에 연결된 pending/blocked0이다. 과거 별도 blocked1건은 변경하지 않았다. 실제 live 구성 무료 검사 통과이며 계정은 기존 명시적 Free 확인을 유지했다.
+- `verify-daily.mjs`는 day2026-10-06·kind=daily·수량5·설정22·예정/마감 시각을 대조한다. 카드/이미지 버전·작성/독립 검토·최종 표현의 다른 카드/거절 후보와 비중복·공개1080 PNG·live 접수1건·미해결0을 확인한다. 00:26 최초 실행은 `before_preparation`, 0장·미검증으로 기록했다. 제작 시작은06:30이며 시작 전0장을 실패나 완료로 판단하지 않는다.
+- 후속 `en-card-5`를 **10월6일07:50 KST 한 번 ACTIVE**로 갱신하고 실제 automation.toml의 시각·횟수·대상 채팅을 확인했다. 같은 디렉터리의 CPU 도구는 현재 버전3개를 기준으로 실제 AI 시작~마지막 발송 구간을 조회한다. microseconds→milliseconds, 일반 Worker/DO 분리, 샘플링·누락·오류·반환 그룹P99를 확인하며 미래 최댓값으로 표현하지 않는다.
+- 서버 접수·실제 휴대전화5장 이미지/원본링크·자연 발생 중복의 재생성은 별도 판정한다. 중복이 발생하지 않으면 실제 재생성 분기는 미관측이다. 중복을 강제로 주입하거나 과거 시험을 되살리지 않는다. 기존 사용자 새4장/서버trial3건 차이는 미해결로 보존한다. 아직 전체 목표 완료가 아니다.
+
+읽기 명령: `node backups/automation-duplicate-trial-20261006/verify-daily.mjs 2026-10-06 5 scheduled-daily`. CPU는 같은 디렉터리 `metrics.mjs <실제시작UTC> <실제종료UTC> scheduled-daily`를 사용한다. 폴더명과 달리 이번 대상은 기존 **daily**다. 새 등록/재개/복구 명령은 없으며 후속 자동 점검을 마쳐도 제품 정규 설정은 그대로 둔다. 근거: 하루단어 `docs/releases/2026-10-06-automation-duplicate-validation.json`, Git 제외 `preflight.json`, `verify-initial-checked.json`, `observation-record-proof.json`.
+
 ## 중복 표현 재생성 — 2026-10-05 운영 배포·보존 검증
 
 - 사용자 승인 범위는 암호화 백업·0018·호환 Worker/DO·기존 Site 게시다. 소스 EN_Card `ad2e125f09f669cfd5420064d819112e6cd2bf3e`, 하루단어 `40a4671dbcae07a4b82e03ca90fcc7322a02e1f8`를 커밋했다. GitHub push/PR/병합은 하지 않았다. 아래 로컬 검증은 이 코드에 해당한다.
