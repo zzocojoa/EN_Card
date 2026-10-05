@@ -1,5 +1,44 @@
 # 검증 근거
 
+## 정규 5장 결과 — 2026-10-06 07:50 KST 점검·사용자 3장 수신 확인
+
+대상은 이미 활성화된 설정 version22의 **2026-10-06 daily 5장**이다. 06:30 제작 시작·07:25 마감·07:30 발송을 읽기로 검증했다. 새 trial이나 보충 발송을 만들지 않았다. 5개 슬롯이 모두 종료됐으며 **3장 접수·수신 정상, 2장 제작 실패로 5장 전체 검증 미통과**다.
+
+| 항목 | 관측 결과 |
+| --- | --- |
+| 1·3번 | 초안 작성·독립 검토 후 Google 수정 단계가 각각 3회 `unavailable`로 실패해 기존 제공자/단계 예산 소진. PNG·발송 없음 |
+| 2·4·5번 | 최종 차수의 독립 검토 통과, 저장된 다른 카드와 최종 표현 비중복, PNG HTTP200·시그니처·1080×1080·버전 일치, 카드별 live 접수/발송 시도 각1회 |
+| PNG 크기 | 2번 40,823바이트·4번 55,683바이트·5번 67,055바이트 |
+| 발송 호출 시작(KST) | 4번 07:31:18.152·5번 07:31:21.571·2번 07:31:23.624 |
+| AI 호출 | 총20회: 성공12·unavailable8. 실패 중 HTTP503 7회, HTTP 상태 없는1회. 마지막1회의 통신 실패 원인은 확인되지 않음 |
+| 중복 재생성 | 거절 후보0건. 이번 실제 실행에서 해당 분기는 미관측이며 강제로 중복을 주입하지 않음 |
+| 휴대전화 | 사용자가 오늘07:31경 받은 **3장 모두 이미지·원본 링크 정상**으로 확인. 서버 기록과 수량 일치. 5장 수신 확인으로 확대하지 않음 |
+
+1·3번은 각각 수정3회 실패했다. 4·5번의 최초 초안503은 다음 시도에 성공했다. `src/automation/engine.ts`의 현재 제공자 대체는 초안 단계에만 적용되므로 수정 실패 소진은 해당 카드를 종료한다. 중복이나 제작 마감으로 실패한 결과가 아니며, 다음 개선 대상으로 남긴다. 원본 시도와 실패 이력을 수정하거나 실패 슬롯을 재실행하지 않았다.
+
+CPU 조회 구간은 실제 AI 시작을 포함한 **2026-10-05 21:29:16.921Z~22:33:23.624Z**다. 원단위 microseconds를 milliseconds로 나누어 기록했다.
+
+| 현재 버전 실행 환경 | 반환 그룹/요청 | 관측 런타임 오류 | 반환 그룹 P99의 최댓값(ms) |
+| --- | ---: | ---: | ---: |
+| 주 일반 Worker | 65/65 | 0 | 4.282 |
+| 발송 일반 Worker | 68/68 | 0 | 4.321 |
+| 자동화 DO | 67/67 | 0 | 573.855 |
+
+모든 반환 그룹은 요청1개·sampleInterval1·P50=P99이며 예상 밖 버전이나 조회 행수 상한 도달은 없었다. 다만 완전한 분63개 중 주 Worker 06:43/06:50·발송 Worker 06:57 KST 자료가 없고, 좁은 구간 재조회에도 같은 공백이 남았다. 관측 누락과 실행 시점 차이를 구별할 근거가 없어 **전체 호출 관측·전체 호출 최대 CPU·5장 성공 부하는 미검증**으로 둔다. 공백만으로 Cron 실패를 단정하지 않는다. [Cloudflare CPU 통계](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/#cpu-time-per-execution)는 표본 분위수이며 전체 최댓값이 아니다. [호출 상태](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/#invocation-statuses)의 런타임 오류0과 AI 제공자 응답 실패8회를 구분한다.
+
+최종 읽기에서 설정 원문 SHA256·version22·enabled1·매일07:30·5장·종료2027-10-31이 초기 관측과 일치했다. 다음 due는 **2026-10-07 07:30 KST**다. 진행 중 제작·활성 개별예약·claimed/sending/미해결 unknown·FK 오류0, 카카오 connected를 확인했다. 주 Worker `b0b40667-99de-4100-9aae-d0f345fe96bf`, 발송 `ea59a0a0-fa1c-4e9d-9501-a1c66a261fa1`, DO `d485cf7e-9afc-42f4-949d-e8db185e6fc0` 및 바인딩·Cron `* * * * *`은 배포 기록과 같았다. 무료 구성은 이전 승인된 구성 그대로이며 이번 점검에서 새 계정 플랜 확인이나 배포를 하지 않았다.
+
+`en-card-5` 후속 확인만 **PAUSED**로 전환하고 실제 설정 파일을 재조회했다. 제품 정규 자동화는 enabled1로 유지한다. 점검이 새로 유발한 시험 등록·AI 호출·카카오 발송·DB 이력/설정 변경·배포는 모두0이며, 표의 AI/발송은 원래 정규 예약의 실행이다. 이전 10월5일 사용자 새4장/서버trial3건 차이는 별도로 보존한다. 오늘3장 수신 확인으로 이전 차이를 해소하거나 전체 목표를 완료하지 않는다.
+
+재현용 읽기 명령(제품 상태 변경 없음):
+
+```powershell
+node backups/automation-duplicate-trial-20261006/verify-daily.mjs 2026-10-06 5 scheduled-daily
+node backups/automation-duplicate-trial-20261006/metrics.mjs 2026-10-05T21:29:16.921Z 2026-10-05T22:33:23.624Z scheduled-daily
+```
+
+공통 결과는 하루단어 `docs/releases/2026-10-06-automation-duplicate-validation.json`, 원자료는 Git 제외 동일 backups 디렉터리의 `verify-scheduled-daily.json`, `final-state.json`, `metrics-scheduled-daily.json`, `metrics-coverage.json`, `metrics-gap-audit.json`이다. 후속 문서 검사와 사용자 확인 증빙은 `phone-receipt-record-proof.json`·`documentation-verification.json`에 보존한다. 이번 변경은 문서/증빙만이며 제품 테스트·빌드·배포를 새로 수행하지 않았다. 아래 실행 대기는 00:26 당시 기록이다.
+
 ## 중복 개선 후 새5장 실제 검증 — 2026-10-06 예약 관측·실행 대기
 
 - 다음 미완료 단계 승인에 따라 읽기를 시작했다. 최초 Cloudflare401은 공식 Wrangler `whoami`로 갱신했다. 이전 version20을 전제로 한 등록 전 검사는 실제 version22를 발견하고 중단했으며 제품 DB 쓰기를 하지 않았다. 조회 SQL의 없는 인증 열을 제거하고 다시 읽어 현재 상태를 확인했다.
