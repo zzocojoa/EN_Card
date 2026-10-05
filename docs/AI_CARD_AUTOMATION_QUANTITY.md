@@ -2,7 +2,40 @@
 
 2026-10-05 `codex/automation-card-quantity`에서 정규 수량을 구현하고 `codex/automation-multi-trial`에서 별도 시험 수량을 확장했다. D1 0017·호환 Worker/DO·하루단어 v118에 반영했다. 실제 시험 결과와 미검증 범위는 [검증 기록](VERIFICATION.md), 전체 배포 상태는 [공통 출시 관리](PRODUCT_MANAGEMENT.md)를 따른다.
 
-**현재 운영 — 중복 재생성 반영:** `codex/automation-duplicate-retry@ad2e125`를 D1 0018·호환 DO/주 Worker·Site v119에 반영했다. 중복 표현은 같은 카드 자리에서 다시 작성하며 5장 시험은 최소45분이다. 기존 모든 데이터와 정규 비활성을 보존했고 신규 AI/카카오 호출0이다. 실제 재생성 부하 CPU·새5장 수신은 별도 미검증이다. 아래 0017/v118의 사용 시간·복구 설명은 당시 이력이며 현재 복구는0018 호환 코드를 사용한다.
+**운영·로컬 후보 구분:** 중복 재생성 `ad2e125`는 D1 0018·호환 DO/주 Worker·Site v119에 반영됐다. 10월6일 관측한 정규 설정은 version22·enabled1·매일07:30·5장이며, 당일 결과는3장 접수·사용자 수신 정상/수정 실패2장이다. 새 `codex/automation-revise-fallback`의 수정 제공자 대체는 로컬 후보이며 미배포다. 아래 0017/v118의 시간·복구 설명은 당시 이력이고 현재 복구는0018 호환 코드를 사용한다.
+
+## 수정 제공자 대체 — 로컬 후보·미배포
+
+- 수정(`revise`)의 현재 제공자가 해당 차수에서3회 시도를 소진하면 반대 제공자의 같은 단계/차수 잔여 시도를 확인한다. 남아 있으면 작성자·검토자를 함께 교체하고 다음 Cron에서 원래 카드·검토 지적을 사용해 수정한다. Google→Groq와 Groq→Google을 모두 지원한다. 초안의 기존 Google→Groq 정책은 유지한다.
+- 시도 기록은 삭제하거나 초기화하지 않는다. 한 수정 차수의 호출 상한은 제공자당3회, 두 제공자 합계최대6회다. 성공했지만 중복인 후보와 응답 불명으로 시작만 기록된 호출도 예산에 포함한다. 반대 제공자 예산까지 소진하면 `unavailable`로 종료하므로 반복 전환하지 않는다. 실제 한도 오류(`quota`)·인증·설정 오류는 기존처럼 전체 자동화를 중단한다.
+- 대체 수정이 성공하면 기존 검토 결과/검토 해시를 비우고 revision2를 **새 작성자와 다른 제공자**가 검토한다. 검토 자체가 실패했다고 작성자에게 자기 검토를 시키지 않는다. 두 번째 검토의 품질 기준 미달은 `review_failed`, 검토 호출 예산 소진은 `unavailable`로 종료하며 검토 없이 PNG·예약을 만들지 않는다.
+- run/카드/이미지/예약 ID, 중복 거절3회, 한 번의 수정 차수, claim·설정 version·제작 마감, 기존 발송/저장 보호를 유지한다. 이미 종료된 슬롯을 되살리거나 같은 날 부족 수량을 보충하지 않는다.
+- **추가 시험 시간의 한계:** 정규5장은 발송60분 전부터 제작하고5분 전에 마감하지만, 기존 추가5장 시험은 발송45분 전부터 제작해40분만 사용할 수 있다. 발송 시각을 더 늦게 선택해도 제작 시작은 그 시각45분 전이다. 수정 대체·503 재시도·중복이 겹치면 추가 시험의 일부 카드가 `expired`로 끝날 수 있다. 이번 변경은 시험 준비창이나 저장된 예약을 늘리지 않는다. 정규 경로의 성공을 추가 시험의5장 성공으로 대신하지 않는다.
+- 한 장 추가 시험은 발송15분 전 시작·5분 전 마감으로 실제 제작창이10분이다. 수정3회 실패 후 대체·새 검토·PNG·전파 대기를 모두 끝내기에는 부족하다. 수정 대체의 실제 검증은 정규 제작창과 구별해 계획해야 하며, 추가 시험의 준비창 확장은 별도 변경이다.
+
+예: Google 초안 → Groq 검토에서 번역 수정 요청 → Google 수정503이3회 → Groq 수정 성공 → Google의 새 검토 통과 → PNG·예약. 마지막 Google 검토가 실패하면 전송하지 않는다.
+
+추가 의존성·모델·Secret·DB 마이그레이션·화면/릴레이 API 변경은 없다. 운영 반영 대상은 자동화 DO의 실행 코드이며, 배포 전 현재 진행 중 작업·버전·무료 계정 조건을 확인한다. 변경 후 생성된 시도도 기존0018 스키마에서 읽을 수 있다. 이전 호환 코드로 복귀하면 아직 수정 중인 카드에 새 대체 정책을 적용하지 못할 수 있으므로 원본 시도/역할/이력을 재작성하지 않는다. 배포·실제 재생성/수정 대체·현재 버전 CPU·5장 수신은 로컬 검증과 구분한다.
+
+로컬 회귀: `node node_modules/vitest/vitest.mjs run tests/automation-revise-fallback.test.ts tests/automation-duplicate-retry.test.ts --file-parallelism --maxWorkers 2`. 무료 공유 한도는 [Gemini 프로젝트별 한도](https://ai.google.dev/gemini-api/docs/rate-limits)와 [Groq 한도](https://console.groq.com/docs/rate-limits)를2026-10-06 다시 확인했다. 대체 시도만큼 호출량이 늘 수 있고 실제 계정의 잔여량을 코드로 보장하지 않는다.
+
+실제 검증에서는 **최종 작성자와 최초 초안 작성자가 다를 수 있음**을 반영한다. 예전 `verify-daily.mjs`의 `draft_successes`(현재 writer의 초안 성공만 집계)는 그대로 쓰면 정상 대체 수정을 검토 실패로 오판한다. 배포 후 검증기는 최종 차수의 작성/수정 성공과 반대 제공자의 검토 성공·내용 해시 일치를 함께 확인해야 한다. revision2는 수정(revise의 시도 차수1) 또는 렌더 중복 이후 새 초안(draft의 차수2)으로 만들어질 수 있다. 읽기 SQL 예:
+
+```sql
+SELECT r.id, r.revision, r.writer, r.reviewer,
+  EXISTS(SELECT 1 FROM automation_attempts t
+    WHERE t.run_id=r.id AND t.provider=r.writer AND t.outcome='ok'
+      AND ((t.stage='draft' AND t.revision=r.revision)
+        OR (r.revision=2 AND t.stage='revise' AND t.revision=1))) AS final_write_ok,
+  EXISTS(SELECT 1 FROM automation_attempts t
+    WHERE t.run_id=r.id AND t.provider=r.reviewer AND t.outcome='ok'
+      AND t.stage='review' AND t.revision=r.revision) AS final_review_ok,
+  (r.writer!=r.reviewer AND r.content_hash IS NOT NULL
+    AND r.content_hash=r.review_hash) AS independent_review_matches
+FROM automation_runs r WHERE r.day=? AND r.kind=?;
+```
+
+위 확인에 최종 review의 모든 기준 통과, 표현 비중복, 카드/asset 버전·PNG·live 접수·진행 중/결과 불명 없음 및 사용자 실제 수신을 추가 대조한다. 시도 성공만으로 품질·수신을 확인하지 않는다.
 
 ## 사용 방식
 

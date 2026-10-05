@@ -1,5 +1,30 @@
 # 검증 근거
 
+## 수정 제공자 대체 — 2026-10-06 로컬 검증·운영 미반영
+
+- 대상: 새 `codex/automation-revise-fallback`의 `src/automation/engine.ts`, 기준 `a354e86`. Google/Groq 수정 예산 소진 후 역할 교체, 다른 제공자의 새 검토, 양쪽 시도 보존·무한 전환 차단을 구현했다. DB0018/마이그레이션·모델·의존성·Secret·API·화면·릴레이는 변경하지 않는다.
+- 수정 전 회귀에서 Google 수정3회 실패가 `skipped`로 끝나는 것을 확인했다. 수정 후 양방향 복구·두 제공자 모두 실패/잘못된 응답·새 검토 실패/장애·중복과 오류 혼합/3회 거절 상한·무료 한도/인증/설정 중단·취소/claim 교체/마감 후 늦은 응답·발송 마감을 검사했다.
+- 관련7파일 **138개 통과**. 이후 최종 작성자의 성공을 판정하는 문서 SQL을 양방향 사례에서 실행하고, trial 시간 역행을 없애며 단일 trial 만료1개를 추가한 **후속5개 통과**(13개 비선택은 이전 통과 범위). 별도 제품 SQLite DO의 실제1080 PNG 생성·검증·저장1개 통과. 중복 없이 합친 최종 결과는 **8파일140개**다. AI와 카카오 발송은 모의다.
+- 정규5장의 고정 Cron·AI/렌더1초 경과 시나리오는 실제 관측했던1·3번 수정503 각3회와4·5번 초안503을 재현했다.5개 모두 독립 검토·서로 다른 표현·예약·모의1회 발송을 완료했다. 이는 제공사 장애가 지속되거나 호출/렌더 지연이 더 길어도 성공한다는 보장이 아니다.
+- 같은 오류 패턴의 기존 추가5장 시험은40분 제작창에서3장 예약·2장 expired다. 한 장 시험의10분 창에서는 즉시 응답을 가정해도 수정3회 실패 후 대체·검토·렌더·전파 대기를 마감 전에 끝내지 못했다. 원래 deadline을 유지해 전송하지 않는 회귀를 통과했다. 제작창 확장은 이번 범위에 포함하지 않았다.
+- 최종 writer와 최초 초안 작성자가 다를 수 있어 기존 운영 검증기의 `draft_successes`만으로 성공을 판단하면 오판한다. [수량 문서의 읽기 SQL](AI_CARD_AUTOMATION_QUANTITY.md#수정-제공자-대체--로컬-후보미배포)은 stage/revision별 최종 작성·검토 성공과 해시/역할 일치를 확인하며 로컬 D1에서 양방향 성공을 검증했다. 과거 검증기/원자료는 보존했고, 다음 실제 검증 전에 이 기준을 적용한다.
+- 타입·Prettier·웹 빌드·주/발송/자동화 Worker dry-run3개·기본 및 live 구성의 `check:free` 통과. 새 유료 경로는 없고 실제 계정 잔여 무료 한도·원격 CPU는 이번에 조회하지 않았다. Google/Groq의 공유 호출/토큰 한도 문서를2026-10-06 재확인했으며 대체 호출도 사용량을 소비한다.
+- `review`의 테스트·유지보수·보안·성능4개 전문 검토, red-team, 독립 적대적 검토를 수행했다. 시험 시간창 지적을 문서/회귀로 처리하고 후속 검토 잔여 코드 지적0이다. 모두 같은 모델의 독립 문맥이다. 보조 Codex CLI0.132.0은 현재 모델을 지원하지 않아400으로 종료됐으며 검토 성공/교차 모델 검토로 집계하지 않는다. 스킬의 갱신 알림은 제품 변경과 분리했으며 도구 업그레이드는 하지 않았다.
+
+초기 신규13개 실행은12개 통과와 다중 시나리오의 로컬 테스트30초 시간 초과1개였다. 해당 시나리오의 테스트 실행 제한만60초로 늘린 뒤 단독통과·관련 전체138개·최종5개 통과를 확인했다. 첫 무료 live 구성 명령은 없는 발송 설정 파일 경로로 실패했고, 실제 `wrangler.delivery.deploy.jsonc`로 재실행해 통과했다. 실패한 실행을 통과 횟수에 합산하지 않는다.
+
+```powershell
+node node_modules/vitest/vitest.mjs run tests/automation-revise-fallback.test.ts tests/automation-duplicate-retry.test.ts tests/automation-product.test.ts tests/automation-quantity.test.ts tests/automation-trial-quantity.test.ts tests/automation-relay.test.ts tests/automation-rpc.test.ts --file-parallelism --maxWorkers 2
+node node_modules/vitest/vitest.mjs run tests/automation-product-do.test.mjs
+npm run build
+npm run check:free
+node scripts/check-free.mjs --config wrangler.live.jsonc --mode live --delivery-config wrangler.delivery.deploy.jsonc --automation-config wrangler.automation.live.jsonc --automation-active
+```
+
+증빙: Git 제외 `backups/automation-revise-fallback-{before,tests,timing,regression,final-edges,do,build,typecheck,free,free-live-config,codex-review}.log`, `backups/automation-revise-fallback-record-proof.json`. 공통 후보 기록은 하루단어 `docs/releases/2026-10-06-automation-revise-fallback.json`이다. source/tests/동작 문서 SHA256과 이전 운영·수신 기록 보존을 대조했다.
+
+이번 작업의 배포·실제 AI/카카오 호출·새 시험·제품 설정/이력·heartbeat 변경은0이며 양쪽 브랜치는 미커밋이다. 새 코드의 실제 수정 대체·중복 재생성·원격 CPU·5장 수신은 미검증이다. 다음 운영 반영 대상은 기존 `en-card-automation` DO다. 실제 반영 전 진행 중 작업·현재 버전·무료 조건을 확인하고, 이미 끝난 슬롯/원본 시도 이력을 재실행·초기화하지 않는다. 아래 오늘3장 결과는 개선 전 배포본의 실제 이력이다.
+
 ## 정규 5장 결과 — 2026-10-06 07:50 KST 점검·사용자 3장 수신 확인
 
 대상은 이미 활성화된 설정 version22의 **2026-10-06 daily 5장**이다. 06:30 제작 시작·07:25 마감·07:30 발송을 읽기로 검증했다. 새 trial이나 보충 발송을 만들지 않았다. 5개 슬롯이 모두 종료됐으며 **3장 접수·수신 정상, 2장 제작 실패로 5장 전체 검증 미통과**다.

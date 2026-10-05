@@ -98,21 +98,27 @@ async function retryDuplicate(
 async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime): Promise<void> {
   const stage = run.status as 'draft' | 'review' | 'revise';
   const provider = stage === 'review' ? run.reviewer : run.writer;
-  const count = await env.DB.prepare(
-    'SELECT count(*) AS n FROM automation_attempts WHERE run_id=? AND stage=? AND revision=? AND provider=?',
+  const counts = await env.DB.prepare(
+    'SELECT provider,count(*) AS n FROM automation_attempts WHERE run_id=? AND stage=? AND revision=? GROUP BY provider',
   )
-    .bind(run.id, stage, run.revision, provider)
-    .first<{ n: number }>();
-  const attempts = count?.n ?? 0;
+    .bind(run.id, stage, run.revision)
+    .all<{ provider: Run['writer']; n: number }>();
+  const attemptsFor = (candidate: Run['writer']) =>
+    counts.results.find((row) => row.provider === candidate)?.n ?? 0;
+  const attempts = attemptsFor(provider);
   if (attempts >= 3) {
-    if (stage === 'draft' && run.writer === 'google')
-      await progress(
-        env,
-        run,
-        runtime.clock(),
-        "writer='groq',reviewer='google',retry_at=NULL",
-        [],
-      );
+    const replacement = run.writer === 'google' ? 'groq' : 'google';
+    if (
+      (stage === 'revise' || (stage === 'draft' && run.writer === 'google')) &&
+      attemptsFor(replacement) < 3
+    )
+      // Preserve the original correction and feedback, revision, and durable budgets.
+      // The replacement writer must earn a NEW review from the opposite provider.
+      // Exhausted attempts prevent a later tick from switching back indefinitely.
+      await progress(env, run, runtime.clock(), 'writer=?,reviewer=?,retry_at=NULL', [
+        replacement,
+        run.writer,
+      ]);
     else await progress(env, run, runtime.clock(), "status='skipped',error='unavailable'", []);
     return;
   }
