@@ -1,5 +1,18 @@
 # 검증 근거
 
+## 중복 표현 재생성 — 2026-10-05 운영 배포·보존 검증
+
+- 사용자 승인 범위는 암호화 백업·0018·호환 Worker/DO·기존 Site 게시다. 소스 EN_Card `ad2e125f09f669cfd5420064d819112e6cd2bf3e`, 하루단어 `40a4671dbcae07a4b82e03ca90fcc7322a02e1f8`를 커밋했다. GitHub push/PR/병합은 하지 않았다. 아래 로컬 검증은 이 코드에 해당한다.
+- 유지보수 Worker로 요청/Cron 쓰기 중단 → D1 SQL 백업 → Windows DPAPI CurrentUser 암호화·복호화 SHA256 일치·제한 ACL·평문 제거 → 0018 적용을 확인했다. 백업149,436바이트, SQL SHA256 `39d145ea7799e566d0d5ac98957d099bf22cf796231337e7089247467c88c2f8`이다. 이력18개·FK 오류0, 새 거절 목록 기본[] 및 기존 모든 데이터 테이블의 원래 열/행 해시 보존을 적용 직후와 게시 후 두 번 확인했다.
+- DO `d485cf7e-9afc-42f4-949d-e8db185e6fc0` → 주 Worker `b0b40667-99de-4100-9aae-d0f345fe96bf` 순서로 배포했다. 발송 Worker `ea59a0a0-fa1c-4e9d-9501-a1c66a261fa1`, 바인딩/Secret 이름과 매분 Cron1개를 보존했다. 실제 live 설정 두 dry-run·유지보수 dry-run·무료 구성 검사를 통과했다.
+- 기존 Site **v119**, 게시 `appgdep_6ac3a8bea9088191a4e3a814da5a4aba`가 13:40:42 UTC에 succeeded다. 소스 `1656444de5e1a1b5cb0106577ca0e19b434decec`의 전체 tree `187b21d6605a88f304d3d1a9cbc77f63192b1f4e`는 검증한 하루단어 커밋과 같다. 환경 revision59·공개 정책4·학습 DB 마이그레이션/잠금 파일/사이트 식별자는 유지했다.
+- 실제 공개 source manifest·JS/CSS/폰트/라이선스5파일 SHA256이 일치하고 `/`200, `/cards`307, Site `/api/state`·`/api/card-studio/automation` 및 EN_Card `/api/automation`401이다. 로그인 브라우저 조작·새 AI 제작·휴대전화 검증은 이 배포에서 수행하지 않았다. 로컬 UI129개·릴레이2개 해시와 기존 출시 기록 보존도 재확인했다.
+- Sites 설치/빌드 helper의 기존 Windows npm 경로 오류는 동일 잠금 파일과 명령을 명시적 Node24/npm CLI로 실행해 통과했다. 최초 패키징은 WSL Bash 경로 오류, 다음 Git Bash는139 종료였고 Node24·Git Bash bin/usr-bin·`TAR_OPTIONS=--force-local`를 현재 프로세스에 지정한 공식 helper 재실행은 통과했다. 플러그인/전역 도구/소스 우회 수정은 없었다.
+- 13:41 UTC 마지막 조회에서 설정은 version20·enabled0·complete·next_due_at=NULL이며 활성 예약/제작/전송 중·미해결 unknown은0이다. **새 AI/카카오 호출0, 종료 시험 재실행0, 정규 재개0**이다. 과거 blocked 기록과 사용자 새4장/서버trial3건의 차이를 그대로 보존했다. 과거 CPU를 새 재생성 경로 실측으로 재사용하지 않는다.
+- 무료 구성은 통과하고 신규 유료 서비스0이다. 구독 API403으로 독립적인 계정 조회는 실패했으며 오늘 사용자의 Workers Free 확인을 근거로 유지한다. Worker/D1/KV/SQLite DO 공식 무료 구성 자료를 재확인했다. 실제 재생성 부하 CPU와 5장 전체 수신은 별도 미완료다.
+
+단일 출시 근거는 하루단어 `docs/releases/2026-10-05-automation-duplicate-rollout.json` 및 `product-status.json`, 원자료는 Git 제외 `backups/automation-duplicate-rollout-20261005/`다. 로컬 재현: `npm test -- tests/automation-duplicate-retry.test.ts tests/automation-trial-quantity.test.ts`, `npm run check:free`. 원격 마이그레이션/배포를 검증 목적으로 반복하지 않는다. 장애 시 자동화를 중지하고 **0018 호환 수정본**으로 복구하며 이력을 초기화하지 않는다. 아래는 배포 전 로컬 검증 시점의 기록이다.
+
 ## 중복 표현 재생성 — 2026-10-05 로컬 검증·미배포
 
 - 브랜치: EN_Card `codex/automation-duplicate-retry`(기준 `5bd3f88`), 하루단어 `codex/card-automation-duplicate-retry`(기준 `ae19be6`). 변경은 미커밋이며 기존 다중 시험 기능 위의 수정이다. 운영 0017/v118과 이전 시험/수신/CPU 근거는 보존했다.
