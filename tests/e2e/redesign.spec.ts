@@ -202,7 +202,7 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
             day: '2026-10-03',
             kind: view.trial_used_today ? 'trial' : 'daily',
             item_index: view.trial_used_today ? 1 : 2,
-            item_count: view.trial_used_today ? 1 : 5,
+            item_count: 5,
             not_before: Date.now() + 600000,
             due_at: Date.now(),
             status: 'revise',
@@ -242,7 +242,15 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
     if (path.endsWith('/pause'))
       view = { ...view, enabled: false, reason: 'paused', version: view.version + 1 };
     if (path.endsWith('/trial')) {
-      expect(request.postDataJSON()).toEqual({ version: view.version });
+      expect(request.postDataJSON()).toEqual({
+        version: view.version,
+        trial: {
+          cards: 5,
+          due_at: Date.parse(
+            `${new Intl.DateTimeFormat('sv-SE', { timeZone: 'Asia/Seoul' }).format(new Date())}T23:30:00+09:00`,
+          ),
+        },
+      });
       view = {
         ...view,
         enabled: true,
@@ -264,7 +272,9 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
   await expect(page.getByText('AI 검토 통과', { exact: false })).toHaveCount(0);
   await page.getByLabel('주제', { exact: true }).fill('여행 중 쓸 표현');
   await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeDisabled();
-  await expect(page.getByRole('button', { name: '오늘 한 장 시험', exact: true })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: '오늘 새 AI 카드 1장 시험', exact: true }),
+  ).toBeDisabled();
   await navigate(page, 'library');
   await navigate(page, 'automation');
   await page.locator('.automation-trial summary').click();
@@ -309,11 +319,18 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
   await expect(page.locator('.automation-status')).toHaveText('실행 중');
   await page.getByRole('button', { name: '일시정지', exact: true }).click();
   await expect(page.locator('.automation-status')).toHaveText('일시정지');
-  await page.getByRole('button', { name: '오늘 한 장 시험', exact: true }).click();
-  await expect(page.getByText('제작 시작', { exact: false })).toBeVisible();
+  await page.getByLabel('시험 카드 수', { exact: true }).selectOption('5');
+  await page.getByLabel('오늘 시험 발송 시각 (한국 시간, 선택)', { exact: true }).fill('23:30');
+  await page.getByRole('button', { name: '오늘 새 AI 카드 5장 시험', exact: true }).click();
+  await expect(page.locator('.automation-runs')).toContainText('추가 시험 1/5');
+  await expect(
+    page.locator('.automation-runs').getByText('제작 시작', { exact: false }),
+  ).toBeVisible();
   await expect(page.getByLabel('매일 받을 시각 (한국 시간)', { exact: true })).toHaveValue('08:00');
   await page.getByRole('button', { name: '일시정지', exact: true }).click();
-  await expect(page.getByRole('button', { name: '오늘 한 장 시험', exact: true })).toBeDisabled();
+  await expect(
+    page.getByRole('button', { name: '오늘 새 AI 카드 5장 시험', exact: true }),
+  ).toBeDisabled();
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

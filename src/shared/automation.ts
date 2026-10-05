@@ -3,6 +3,16 @@ import { cardSchema, scheduleSchema } from './model';
 import { nextRun } from './time';
 
 export const MAX_AUTOMATION_CARDS_PER_DAY = 5;
+export const automationTrial = z
+  .object({
+    cards: z.number().int().min(1).max(MAX_AUTOMATION_CARDS_PER_DAY).default(1),
+    due_at: z.number().int().safe().positive().optional(),
+  })
+  .strict();
+export type AutomationTrial = z.infer<typeof automationTrial>;
+export function trialLeadMinutes(cards: number): number {
+  return cards === 1 ? 25 : cards * 6 + 5;
+}
 export const automationSettings = z
   .object({
     topic: z.string().trim().min(1).max(120),

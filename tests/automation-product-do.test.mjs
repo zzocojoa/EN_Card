@@ -155,6 +155,12 @@ it('product SQLite DO renders, validates and saves a real 1080 PNG using package
         body: JSON.stringify(body),
       });
     expect((await trialRequest({ version: 1, settings: { topic: 'ignored' } })).status).toBe(400);
+    expect((await trialRequest({ version: 1, trial: { cards: 6 } })).status).toBe(400);
+    expect((await trialRequest({ version: 1, trial: { cards: '5' } })).status).toBe(400);
+    expect((await trialRequest({ version: 1, trial: { cards: 5, due_at: '20:38' } })).status).toBe(
+      400,
+    );
+    expect((await trialRequest({ version: 1, trial: { cards: 5 } })).status).toBe(503);
     expect((await trialRequest({ version: 1 })).status).toBe(503);
     expect((await mf.dispatchFetch('https://internal/api/automation/trial')).status).toBe(404);
     expect(await db.prepare('SELECT count(*) n FROM automation_runs').first('n')).toBe(1);

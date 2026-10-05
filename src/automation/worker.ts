@@ -13,6 +13,7 @@ import { readiness, type AutomationEnv } from './types';
 import { credentialToken } from './credentials';
 import { startTrial } from './trial';
 import type { TokenReply, TokenSecrets } from '../shared/token-rpc';
+import { automationTrial } from '../shared/automation';
 
 let wasmReady: Promise<unknown> | undefined;
 const fontIndex = z
@@ -113,12 +114,21 @@ export class CardAutomation extends DurableObject<AutomationEnv> {
       if (!request.headers.get('Content-Type')?.includes('application/json'))
         return new Response(null, { status: 415 });
       const body = z
-        .object({ version: z.number().int().nonnegative(), settings: z.unknown().optional() })
+        .object({
+          version: z.number().int().nonnegative(),
+          settings: z.unknown().optional(),
+          trial: automationTrial.optional(),
+        })
         .strict()
         .parse(JSON.parse(new TextDecoder().decode(await readBody(request, 4096))));
       if (action === 'trial' && Object.hasOwn(body, 'settings'))
         return Response.json(
           { error: 'AUTOMATION_INPUT', message: '시험은 저장된 설정을 사용합니다.' },
+          { status: 400 },
+        );
+      if (action !== 'trial' && Object.hasOwn(body, 'trial'))
+        return Response.json(
+          { error: 'AUTOMATION_INPUT', message: '시험 옵션은 추가 시험에서만 사용하세요.' },
           { status: 400 },
         );
       if (
@@ -130,7 +140,7 @@ export class CardAutomation extends DurableObject<AutomationEnv> {
           { error: 'AUTOMATION_CONFIG', message: '사이트의 AI 연결 설정을 확인하세요.' },
           { status: 503 },
         );
-      if (action === 'trial') await startTrial(env, body.version, Date.now());
+      if (action === 'trial') await startTrial(env, body.version, Date.now(), body.trial);
       else await changeSettings(env, action, body.version, body.settings, Date.now());
       return Response.json(await settingsView(env));
     } catch (e) {
