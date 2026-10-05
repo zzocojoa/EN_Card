@@ -1,5 +1,26 @@
 # 검증 근거
 
+## 수정 제공자 대체 운영 반영 — 2026-10-06 08:26 KST
+
+- 사용자 후속 진행에 따라 제품 커밋 `c503210cdc60b4084fe5b5c1b423ae3aa0fbe11d`을 기존 자동화 DO에만 배포했다. 생성 시각 `2026-10-05T23:26:15.86407Z`, 버전 `54882e21-0e43-4f9c-8dfb-f0fb6cce5e47`100%를 API로 확인했다. 기존 주 `b0b40667-99de-4100-9aae-d0f345fe96bf`·발송 `ea59a0a0-fa1c-4e9d-9501-a1c66a261fa1`은 동일하다. Site v119는 재게시하지 않았다. DO의 폰트 자산도 새 업로드가 없었다.
+- 아래140개 검증을 마친 source/tests/문서의 SHA256을 재대조하고 정확한 live 설정으로 DO dry-run·무료 구성 검사를 통과했다. 배포 전과08:26/08:28 최종 조회에서 D1 **19개 테이블의 전체 행 해시·행 수가 동일**했다. 설정 version22·enabled1·매일07:30·5장·종료2027-10-31·next_due_at1791325800000, 원문 해시, 오늘3장 접수·2장 skipped 이력과 사용량uploads3/sends3을 보존했다. 스키마0018·바인딩/Secret 이름·매분 Cron을 유지했다. 진행 중 제작/활성 개별예약/전송·미해결unknown/FK 오류0, 기존 별도blocked1·카카오connected는 그대로다.
+- 계정 플랜 API는403/code10000으로 재확인하지 못했다. 기존 사용자 Workers Free·Google/Groq Free 확인과 동일한 free_only 구성을 사용했다. 유료 우회·새 리소스/모델·계정/Secret 변경0이며 잔여 무료 한도와 미래 청구를 보장하지 않는다.
+- 배포 후 무작업 조회의 첫 결과는0그룹이었고, 후속 구간 `2026-10-05T23:26:22.000Z` 이후에는 현재 버전 주/발송/DO 각각1그룹·1요청·sampleInterval1·런타임 오류0이 반환됐다. 반환 그룹 P99는 **1.709/0.888/6.118ms**다(microseconds÷1000). 단일 표본과 최근 관측 지연을 고려해 전체 호출 최댓값·완전한 수집·실제5장 제작 부하 통과로 해석하지 않는다. Wrangler의 startup69ms는 호출별 CPU가 아니다.
+- 다음 관측은 기존10월7일 정규5장이다. **06:30 제작·07:25 마감·07:30 발송**, `en-card-5`를 **07:50 KST 1회 ACTIVE**로 갱신하고 저장 상태를 확인했다. 제품 설정 변경/새 시험/추가 AI·카카오 호출/DB 이력 쓰기는0이다. 실제 제공자 대체·자연 중복은 각 분기의 시도 기록이 있을 때만 확인하며 발생하지 않으면 미관측이다. 서버5장 접수와 휴대전화5개 이미지/원본링크 확인도 구분한다.
+- 새 읽기 검증기는 최종 writer의 stage/revision별 성공, 반대 제공자의 최종 검토, 내용 해시, 비중복, PNG, live1회 접수·미해결 여부를 대조한다. 제공자별 수정 시도와 순서를 별도 집계한다. 구문/운영 쿼리 확인과 제작 전0개 조회를 통과했으며0개는 예약 성공이나 실패 판정이 아니다. 과거 검증기·오늘3장 수신·10월5일 사용자4/서버3 차이를 덮어쓰지 않았다.
+
+원자료는 Git 제외 `backups/automation-revise-rollout-20261006/`의 snapshot-preflight/deployed/final, deploy-automation.log, dry-run.log, free-config.log, observe/verify/metrics 파일이다. 공통 출시 기록은 하루단어 `docs/releases/2026-10-06-automation-revise-rollout.json`이고 로컬 후보 보고서는 당시 기록으로 보존한다.
+
+```powershell
+# 기존 정규 예약을 읽기만 한다. 같은 라벨 결과가 있으면 새 라벨을 사용한다.
+node backups/automation-revise-rollout-20261006/observe.mjs scheduled-daily
+node backups/automation-revise-rollout-20261006/verify-daily.mjs 2026-10-07 5 scheduled-daily
+# verify 결과의 suggestedCpuWindow에 있는 실제 UTC 시작/끝을 사용한다.
+node backups/automation-revise-rollout-20261006/metrics.mjs <UTC-start> <UTC-end> scheduled-daily
+```
+
+복구 후보는 직전0018 호환 DO `d485cf7e-9afc-42f4-949d-e8db185e6fc0`이다. 필요할 때 진행 중 작업을 확인한 뒤 `node node_modules/wrangler/bin/wrangler.js rollback d485cf7e-9afc-42f4-949d-e8db185e6fc0 --config wrangler.automation.live.jsonc`를 사용한다(도움말 확인, 실행하지 않음). 기존 시도·역할·카드/발송 이력을 재작성하거나 DB를 되돌리지 않는다. 이전 코드는 수정 제공자 대체가 없으므로 진행 중 작업의 동작 차이를 고려한다. GitHub push/PR/병합과 실제5장 전체 검증은 이 배포 완료와 별개다.
+
 ## 수정 제공자 대체 — 2026-10-06 로컬 검증·운영 미반영
 
 - 대상: 새 `codex/automation-revise-fallback`의 `src/automation/engine.ts`, 기준 `a354e86`. Google/Groq 수정 예산 소진 후 역할 교체, 다른 제공자의 새 검토, 양쪽 시도 보존·무한 전환 차단을 구현했다. DB0018/마이그레이션·모델·의존성·Secret·API·화면·릴레이는 변경하지 않는다.
@@ -7,7 +28,7 @@
 - 관련7파일 **138개 통과**. 이후 최종 작성자의 성공을 판정하는 문서 SQL을 양방향 사례에서 실행하고, trial 시간 역행을 없애며 단일 trial 만료1개를 추가한 **후속5개 통과**(13개 비선택은 이전 통과 범위). 별도 제품 SQLite DO의 실제1080 PNG 생성·검증·저장1개 통과. 중복 없이 합친 최종 결과는 **8파일140개**다. AI와 카카오 발송은 모의다.
 - 정규5장의 고정 Cron·AI/렌더1초 경과 시나리오는 실제 관측했던1·3번 수정503 각3회와4·5번 초안503을 재현했다.5개 모두 독립 검토·서로 다른 표현·예약·모의1회 발송을 완료했다. 이는 제공사 장애가 지속되거나 호출/렌더 지연이 더 길어도 성공한다는 보장이 아니다.
 - 같은 오류 패턴의 기존 추가5장 시험은40분 제작창에서3장 예약·2장 expired다. 한 장 시험의10분 창에서는 즉시 응답을 가정해도 수정3회 실패 후 대체·검토·렌더·전파 대기를 마감 전에 끝내지 못했다. 원래 deadline을 유지해 전송하지 않는 회귀를 통과했다. 제작창 확장은 이번 범위에 포함하지 않았다.
-- 최종 writer와 최초 초안 작성자가 다를 수 있어 기존 운영 검증기의 `draft_successes`만으로 성공을 판단하면 오판한다. [수량 문서의 읽기 SQL](AI_CARD_AUTOMATION_QUANTITY.md#수정-제공자-대체--로컬-후보미배포)은 stage/revision별 최종 작성·검토 성공과 해시/역할 일치를 확인하며 로컬 D1에서 양방향 성공을 검증했다. 과거 검증기/원자료는 보존했고, 다음 실제 검증 전에 이 기준을 적용한다.
+- 최종 writer와 최초 초안 작성자가 다를 수 있어 기존 운영 검증기의 `draft_successes`만으로 성공을 판단하면 오판한다. [수량 문서의 읽기 SQL](AI_CARD_AUTOMATION_QUANTITY.md#수정-제공자-대체)은 stage/revision별 최종 작성·검토 성공과 해시/역할 일치를 확인하며 로컬 D1에서 양방향 성공을 검증했다. 과거 검증기/원자료는 보존했고, 후속 운영 검증기에 이 기준을 적용했다.
 - 타입·Prettier·웹 빌드·주/발송/자동화 Worker dry-run3개·기본 및 live 구성의 `check:free` 통과. 새 유료 경로는 없고 실제 계정 잔여 무료 한도·원격 CPU는 이번에 조회하지 않았다. Google/Groq의 공유 호출/토큰 한도 문서를2026-10-06 재확인했으며 대체 호출도 사용량을 소비한다.
 - `review`의 테스트·유지보수·보안·성능4개 전문 검토, red-team, 독립 적대적 검토를 수행했다. 시험 시간창 지적을 문서/회귀로 처리하고 후속 검토 잔여 코드 지적0이다. 모두 같은 모델의 독립 문맥이다. 보조 Codex CLI0.132.0은 현재 모델을 지원하지 않아400으로 종료됐으며 검토 성공/교차 모델 검토로 집계하지 않는다. 스킬의 갱신 알림은 제품 변경과 분리했으며 도구 업그레이드는 하지 않았다.
 
