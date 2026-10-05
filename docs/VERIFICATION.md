@@ -12,6 +12,14 @@
 
 로컬 재현: `npm run build`, `npm run check:free`. 이미 적용한 원격 0016이나 배포를 검증 목적으로 반복하지 않는다. 배포 상태의 단일 기준은 하루단어 `docs/releases/product-status.json`과 `2026-10-05-automation-quantity-rollout.json`이다. 아래는 이전 시점 기록이다.
 
+### 여러 장 실제 검증 준비 — 2026-10-05 19:10 KST
+
+`backups/automation-quantity-rollout-20261005/verify-multiple.mjs`는 지정 날짜의 고정 수량/번호/버전/발송 시각, 작성·최종 교차 검토, 카드·이미지 버전, 카드별 live 접수 1건, 완료 예약과 미해결 발송, 공개 1080 PNG를 읽기 전용으로 대조한다. 기존 10월 5일의 실제 1장을 예상 5장과 비교해 `serverEvidenceVerified=false`를 확인했다. 기존 성공 한 장을 새 다중 시험 통과로 인정하지 않으며 실제 휴대전화 확인과 CPU는 별도 미검증으로 남긴다.
+
+실행 예시는 `node backups/automation-quantity-rollout-20261005/verify-multiple.mjs 2026-10-06 5 multi-day`다. 날짜·수량은 실제 등록한 시험과 일치해야 하며 이 명령은 제작·예약·발송하지 않는다. 아직 10월 6일 다중 시험을 등록한 것은 아니다.
+
+CPU 도구는 운영 GraphQL 스키마에서 microseconds 단위를 확인하고 1,000으로 나눈다. 15분의 겹치지 않는 구간으로 조회하고 행 상한 도달 시 중단하며, 다른 배포 버전·샘플링과 표본 없음(`null`)을 기록한다. 09:43–09:53 UTC 대기 관측의 가장 높은 그룹 P99는 주 Worker 2.544ms·발송 Worker 1.799ms·DO 1.951ms다. 이것은 **다중 부하 검증이나 전체 요청 최댓값이 아니다.** 집계 CPU와 호출 오류를 따로 확인한다. [공식 GraphQL 조회](https://developers.cloudflare.com/analytics/graphql-api/tutorials/querying-workers-metrics/)와 [CPU 표본·분위수 설명](https://developers.cloudflare.com/workers/observability/metrics-and-analytics/#cpu-time-per-execution)을 기준으로 해석한다.
+
 **2026-10-04 UI 개선 검증:** 웹·아이폰을 위한 `codex/card-studio-responsive-ui`의 최종 전체 E2E60/60, Site 프록시/릴레이15/15, 타입·웹/Worker/Site 빌드·기본/live 무료 구성 검사 통과. 화면 폭375/390/430/768/1440·844×390 회전·초안/실행 상태 구분을 확인했다. 모의 API와 로컬 PNG 결과이며 새 실제 AI/발송 시험은 아니다. Site v114/주 Worker 게시 성공·운영 자산 일치·로그인 UI·14개 테이블 해시 보존을 확인했다. 실제 iPhone·Windows WebKit 가변 폰트 및 계정 플랜 재확인 한계는 [상세 결과](UI_RESPONSIVE_2026-10-04.md), 정확한 버전/행 수는 [기계 판독 근거](evidence/UI_RESPONSIVE_2026-10-04.json)에 기록했다.
 
 **2026-10-04 16:19 KST review 수정본 커밋·운영 반영:** `e088d61`을 커밋하고 DO→발송→주 Worker 및 하루단어 Site v113(소스 `22c2da2`)에 반영했다. 실제 live 설정의 세 Worker dry-run/무료 구성, Site 연동15개·타입·빌드, 공개 PNG/원본200·동일 해시·비인증 자동화401을 확인했다. 운영14개 주요 테이블의 행 수·해시, Secret 이름/바인딩/Cron, Site 공개 범위·환경 revision59를 보존했다. 화면도 **실행 중·10월5일07:00 제작·08:00 발송·당일 종료**를 확인했다. 추가 AI/카카오 시도·새 자원·마이그레이션0이다. 무료 계정 확인은 기존 기록을 유지하며 오늘 구독 API403·웹 로그인 만료로 재확인하지 못했다. 이 단계에서 새 코드의 실제 제작/발송 CPU나 내일 수신은 검증하지 않았다. [배포·보존 근거](evidence/AI_AUTOMATION_REVIEW_DEPLOY_2026-10-04.json). 아래 기록은 각 시점의 상태다.
