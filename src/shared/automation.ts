@@ -3,6 +3,8 @@ import { cardSchema, scheduleSchema } from './model';
 import { nextRun } from './time';
 
 export const MAX_AUTOMATION_CARDS_PER_DAY = 5;
+// Initial duplicate plus two replacements. Existing AI attempt budgets still apply.
+export const MAX_DUPLICATE_CANDIDATES = 3;
 export const automationTrial = z
   .object({
     cards: z.number().int().min(1).max(MAX_AUTOMATION_CARDS_PER_DAY).default(1),
@@ -11,7 +13,9 @@ export const automationTrial = z
   .strict();
 export type AutomationTrial = z.infer<typeof automationTrial>;
 export function trialLeadMinutes(cards: number): number {
-  return cards === 1 ? 25 : cards * 6 + 5;
+  // Six minute ticks for draft/review/render/KV propagation/schedule, plus
+  // two duplicate draft replacements per slot. Other failures can still expire.
+  return cards === 1 ? 25 : cards * (6 + MAX_DUPLICATE_CANDIDATES - 1) + 5;
 }
 export const automationSettings = z
   .object({
@@ -122,6 +126,8 @@ export const automationReasons: Record<string, string> = {
   expired: '제작 마감이 지나 오늘은 건너뜀',
   review_failed: '수정 후에도 검토를 통과하지 못함',
   duplicate: '이미 있는 표현',
+  duplicate_retry: '중복을 피할 다른 표현으로 다시 제작 대기',
+  duplicate_limit: `중복 표현 ${MAX_DUPLICATE_CANDIDATES}회로 재생성 한도에 도달함`,
   invalid: 'AI 응답 형식을 확인할 수 없음',
   auth: 'AI 인증 설정 확인 필요',
   quota: '무료 AI 호출 한도 확인 필요',

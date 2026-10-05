@@ -40,6 +40,7 @@ export type Run = {
   error: string | null;
   updated_at: number;
   render_attempts: number;
+  rejected_expressions: string;
 };
 export type SettingsRow = {
   settings: string;

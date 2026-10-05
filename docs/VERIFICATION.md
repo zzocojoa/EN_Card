@@ -1,5 +1,18 @@
 # 검증 근거
 
+## 중복 표현 재생성 — 2026-10-05 로컬 검증·미배포
+
+- 브랜치: EN_Card `codex/automation-duplicate-retry`(기준 `5bd3f88`), 하루단어 `codex/card-automation-duplicate-retry`(기준 `ae19be6`). 변경은 미커밋이며 기존 다중 시험 기능 위의 수정이다. 운영 0017/v118과 이전 시험/수신/CPU 근거는 보존했다.
+- 변경: D1 0018의 `rejected_expressions` 기본 `[]`·최대3개. 중복 시 같은 자리에서 재작성하고, 거절 표현을 기존 최대50개 회피 목록에 우선 포함한다. 새 카드도 독립 검토한다. 수정 차수·AI/렌더 시도·원래 카드 번호와 수량·claim/설정/마감 보호를 초기화하지 않는다. 이미 생성/수정된 리소스는 재사용하지 않는다. 이전 종료 run을 재활성화하지 않는다.
+- 수정 전 실패를 확인했다. 최초 중복 테스트는 기존 코드에서 `skipped`로 끝나 실패했고, 준비창 회귀는 매분 Cron·렌더1초·슬롯마다 중복2회에서 기존 35분으로 4/5·5/5가 마감됐다. 준비창을 45분으로 늘린 뒤 같은 회귀에서 5장 모두 독립 검토·이미지·예약까지 통과했다. 다른 장애/렌더 경합/지연 조합까지 보장하는 시험은 아니다.
+- `node node_modules/vitest/vitest.mjs run tests/automation-product.test.ts tests/automation-quantity.test.ts tests/automation-trial.test.ts tests/automation-relay.test.ts tests/automation-durable.test.mjs --fileParallelism=false`: 4파일97개 통과. `tests/automation-trial.test.ts` 패턴은 일치 파일이 없었으며 시험 수량은 다음 명령에서 별도로 검증했다.
+- `npm test -- tests/automation-duplicate-retry.test.ts tests/automation-trial-quantity.test.ts tests/automation-product-do.test.mjs tests/automation-rpc.test.ts --fileParallelism=false`와 동일한 Vitest CLI: 4파일33개 통과(신규14·다중시험11·실제 로컬 DO PNG1·RPC7). 새 테스트는 draft/revise/render 중복, 3회 종료, 오래된 표현 회피, 같은 설정에서 claim 재획득 후 늦은 응답, revision2 보존, 제공자 fallback 예산, 일시정지/마감/무료 한도 중단, 5장 모의 발송, 기존 행/FK 보존을 확인한다. 근거 `backups/automation-duplicate-regression.log`.
+- `npm run test:e2e -- tests/e2e/redesign.spec.ts --grep "AI 자동 제작"`: Chromium/WebKit 2개 통과. 중복 재작성 대기·3회 한도 문구, 최소45분, 설정/시작/일시정지/시험·화면 이동을 가상 API로 확인했다. 최초 직접 Playwright CLI 호출은 자식 서버가 PATH에서 Wrangler를 찾지 못해 실패했으며 npm script로 재실행했다. 실제 카카오/휴대전화 검증이 아니다. 근거 `backups/automation-duplicate-e2e.log`.
+- `npm run build`, `npm run check:free`, 변경 TS/TSX 서식 검사·타입 검사 통과. 웹 및 세 Worker dry-run이며 배포를 수행하지 않았다. 하루단어 정식 exporter 실행 뒤 서버/프록시19개와 타입·Node24 제품 빌드 통과. 빌드의 기존 큰 chunk 안내는 남아 있다. 근거 `backups/automation-duplicate-build.log`, 하루단어 `work/card-duplicate-retry-build.log`.
+- `review`: testing·maintainability·security·performance·data-migration 및 red-team·별도 적대적 검토. 준비창 문제1건과 revision2/동일설정 claim 회수 검증 누락2건을 반영하고 testing 재검토에서 모두 해결·새 지적0이다. 동일 모델 독립 문맥이며 적대적 검토의 테스트/fixture는 요약 모드였다. 기존 보조 CLI0.132/모델 비호환은 새 성공 검토로 집계하지 않는다.
+- 최종 내보내기 파일129개·릴레이2개의 SHA256 및 화면 원본 SHA256을 대조했고, 중앙 출시 기록에 로컬 후보를 추가하면서 기존 모든 출시 필드를 그대로 보존했다. 양쪽 `git diff --check` 통과, package/lock/운영 구성/기존 Site 식별자·학습 DB 변경0이다. `backups/record-automation-duplicate-20261005.mjs`는 이 로컬 기록/검증만 수행한다.
+- 추가 유료 구성0, 실제 AI/카카오 호출0, 운영 DB/배포/설정 변경0. 무료 구성 검사는 계정 청구나 현재 무료 자격의 재확인이 아니며 기존 사용자 확인만 유지한다. 다음은 승인 범위에서 암호화 백업/쓰기 차단 후 0018·호환 DO/화면 적용 및 별도 실제 검증이다. 기존5장 시험 미완료·새 수신4장/서버3건 차이·정규 비활성·후속 PAUSED를 그대로 유지한다.
+
 ## 21:23 예약 후속 점검 종료 — 2026-10-05
 
 - 실제 재조회: trial 1/5·3/5·4/5 각1회 live 접수/PNG/독립 검토 확인, 2/5 duplicate·5/5 expired 유지. 세 현재 Worker 버전 모두 배포 근거와 일치, FK 오류0·진행 중 제작0·활성 예약0·전송 중/결과 불명0이다. 과거 blocked1건은 유지된다. 설정은 version20·enabled0·next_due_at NULL, 원래 설정 해시와 같다. 재개 조건 미충족이므로 `--apply`를 실행하지 않았다.

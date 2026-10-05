@@ -71,7 +71,7 @@ const rows = async () =>
 
 it('five new trial cards reach separate approved images and mock sends once, preserving saved settings', async () => {
   const before = await env.DB.prepare('SELECT settings FROM automation_settings').first('settings');
-  const due = NOW + 40 * 60000;
+  const due = NOW + 50 * 60000;
   await startTrial(env, 1, now, { cards: 5, due_at: due });
   expect((await rows()).map((r) => [r.kind, r.item_index, r.item_count, r.due_at])).toEqual(
     Array.from({ length: 5 }, (_, i) => ['trial', i + 1, 5, due]),
@@ -79,7 +79,7 @@ it('five new trial cards reach separate approved images and mock sends once, pre
   expect(await env.DB.prepare('SELECT settings FROM automation_settings').first('settings')).toBe(
     before,
   );
-  now = due - 35 * 60000 - 1;
+  now = due - 45 * 60000 - 1;
   await automationTick(env, runtime);
   expect(runtime.ai).not.toHaveBeenCalled();
   const start = now + 1;
@@ -154,16 +154,16 @@ it.each([0, 6, 2.5, '5', null])(
 );
 it('validates lead time, minute precision and the actual Korean day before any allocation', async () => {
   await expect(
-    startTrial(env, 1, now, { cards: 5, due_at: NOW + 34 * 60000 }),
+    startTrial(env, 1, now, { cards: 5, due_at: NOW + 44 * 60000 }),
   ).rejects.toMatchObject({ code: 'TRIAL_TIME' });
   await expect(
-    startTrial(env, 1, now, { cards: 5, due_at: NOW + 35 * 60000 + 1 }),
+    startTrial(env, 1, now, { cards: 5, due_at: NOW + 45 * 60000 + 1 }),
   ).rejects.toMatchObject({ code: 'TRIAL_TIME' });
   await expect(
     startTrial(env, 1, now, { cards: 5, due_at: Date.parse('2026-09-29T00:00:00+09:00') }),
   ).rejects.toMatchObject({ code: 'TRIAL_DATE' });
   await expect(
-    startTrial(env, 1, Date.parse('2026-09-28T23:25:00.001+09:00'), { cards: 5 }),
+    startTrial(env, 1, Date.parse('2026-09-28T23:15:00.001+09:00'), { cards: 5 }),
   ).rejects.toMatchObject({ code: 'TRIAL_DATE' });
   expect(await rows()).toHaveLength(0);
 });

@@ -170,6 +170,7 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
     missing: [],
   };
   let delayStatus = false;
+  let runError = 'duplicate_retry';
   let releaseStatus!: () => void;
   let statusStarted!: () => void;
   let statusFinished!: () => void;
@@ -205,8 +206,8 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
             item_count: 5,
             not_before: Date.now() + 600000,
             due_at: Date.now(),
-            status: 'revise',
-            error: null,
+            status: runError === 'duplicate_limit' ? 'skipped' : 'revise',
+            error: runError,
             writer: 'google',
             reviewer: 'groq',
             revision: 1,
@@ -267,6 +268,9 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
   );
   await page.getByRole('combobox', { name: '하루 제작 수량', exact: true }).selectOption('5');
   await expect(page.locator('.automation-runs')).toContainText('매일 제작 2/5');
+  await expect(page.locator('.automation-runs')).toContainText(
+    '중복을 피할 다른 표현으로 다시 제작 대기',
+  );
   await page.locator('.automation-trial summary').click();
   await expect(page.getByText('AI 검토 미통과', { exact: false })).toBeVisible();
   await expect(page.getByText('AI 검토 통과', { exact: false })).toHaveCount(0);
@@ -320,6 +324,7 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
   await page.getByRole('button', { name: '일시정지', exact: true }).click();
   await expect(page.locator('.automation-status')).toHaveText('일시정지');
   await page.getByLabel('시험 카드 수', { exact: true }).selectOption('5');
+  await expect(page.locator('.automation-trial')).toContainText('최소 45분');
   await page.getByLabel('오늘 시험 발송 시각 (한국 시간, 선택)', { exact: true }).fill('23:30');
   await page.getByRole('button', { name: '오늘 새 AI 카드 5장 시험', exact: true }).click();
   await expect(page.locator('.automation-runs')).toContainText('추가 시험 1/5');
@@ -331,6 +336,11 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
   await expect(
     page.getByRole('button', { name: '오늘 새 AI 카드 5장 시험', exact: true }),
   ).toBeDisabled();
+  runError = 'duplicate_limit';
+  await page.getByRole('button', { name: '새로고침', exact: true }).click();
+  await expect(page.locator('.automation-runs')).toContainText(
+    '중복 표현 3회로 재생성 한도에 도달함',
+  );
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });

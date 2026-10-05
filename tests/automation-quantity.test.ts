@@ -317,23 +317,24 @@ it('keeps a trial at one card without changing the saved five-card daily setting
   await changeSettings(env, 'pause', 2, null, now);
   await expect(startTrial(env, 3, now)).rejects.toMatchObject({ code: 'TRIAL_USED' });
 });
-it('continues other cards after a duplicate and includes completed siblings in recent expressions', async () => {
+it('replaces a duplicate and includes completed siblings in recent expressions', async () => {
   const recent: string[][] = [];
   let drafts = 0;
   runtime.ai = vi.fn(async (r) => {
     if (r.stage === 'review') return good;
     recent.push(r.recent);
-    return card(++drafts <= 2 ? 1 : 3);
+    return card(++drafts === 2 ? 1 : drafts);
   });
   await prepare(3);
+  await tick();
   expect((await rows()).map((r) => [r.status, r.error])).toEqual([
     ['scheduled', null],
-    ['skipped', 'duplicate'],
+    ['scheduled', null],
     ['scheduled', null],
   ]);
   expect(recent[1]).toContain('Test expression 1');
   expect(recent[2]).toContain('Test expression 1');
-  expect(runtime.render).toHaveBeenCalledTimes(2);
+  expect(runtime.render).toHaveBeenCalledTimes(3);
 });
 it('pauses the whole batch on quota exhaustion and cancels already prepared pending schedules', async () => {
   await start(5);

@@ -489,7 +489,7 @@ it('case-folded duplicate expressions cannot be reserved', async () => {
   await saveCard({ ...SAMPLE, expression: 'TAKE YOUR TIME' }, null, null, h.env, now);
   await start();
   await tick();
-  expect((await run()).error).toBe('duplicate');
+  expect((await run()).error).toBe('duplicate_retry');
 });
 it('editing the card during rendering invalidates automatic scheduling', async () => {
   await start();

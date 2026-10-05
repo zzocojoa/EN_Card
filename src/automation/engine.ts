@@ -4,6 +4,7 @@ import {
   reviewPassed,
   reviewSchema,
   expressionKey,
+  MAX_DUPLICATE_CANDIDATES,
 } from '../shared/automation';
 import { kstDate } from '../shared/time';
 import { type CardInput } from '../shared/model';
@@ -59,6 +60,41 @@ async function pause(env: AutomationEnv, run: Run, reason: string, now: number):
     if (!(e instanceof Error && e.name === 'AUTOMATION_CHANGED')) throw e;
   }
 }
+async function retryDuplicate(
+  env: AutomationEnv,
+  run: Run,
+  expression: string,
+  now: number,
+): Promise<void> {
+  const rejected = JSON.parse(run.rejected_expressions) as string[];
+  const retry = rejected.length + 1 < MAX_DUPLICATE_CANDIDATES;
+  // A correction retains its original card and review. A render-time collision
+  // starts a fresh draft and must earn a new review before another render.
+  const correction = run.status === 'revise';
+  const changed = await env.DB.prepare(
+    `UPDATE automation_runs SET rejected_expressions=json_insert(rejected_expressions,'$[#]',?),
+      status=?,error=?,retry_at=NULL,claim_owner=NULL,claim_until=NULL,updated_at=?,
+      content=?,content_hash=?,review=?,review_hash=NULL
+      WHERE ${owned} AND json_array_length(rejected_expressions)<?
+      AND NOT EXISTS(SELECT 1 FROM cards WHERE id=automation_runs.card_id)
+      AND NOT EXISTS(SELECT 1 FROM assets WHERE id=automation_runs.asset_id)
+      AND NOT EXISTS(SELECT 1 FROM automation_expressions WHERE run_id=automation_runs.id)`,
+  )
+    .bind(
+      expression,
+      retry ? (correction ? 'revise' : 'draft') : 'skipped',
+      retry ? 'duplicate_retry' : 'duplicate_limit',
+      now,
+      correction ? run.content : null,
+      correction ? run.content_hash : null,
+      correction ? run.review : null,
+      ...guardArgs(run, now),
+      MAX_DUPLICATE_CANDIDATES,
+    )
+    .run();
+  // Never repurpose a card/asset already created or edited during rendering.
+  if (!changed.meta.changes) await progress(env, run, now, "status='skipped',error='changed'", []);
+}
 async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime): Promise<void> {
   const stage = run.status as 'draft' | 'review' | 'revise';
   const provider = stage === 'review' ? run.reviewer : run.writer;
@@ -99,7 +135,14 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
       settings,
       content: run.content ? JSON.parse(run.content) : null,
       review: run.review ? JSON.parse(run.review) : null,
-      recent: recent.results.map((r) => r.expression),
+      // Put rejections first so even an older duplicate outside the latest 50
+      // remains in the existing bounded relay request. Do not log these texts.
+      recent: [
+        ...new Set([
+          ...(JSON.parse(run.rejected_expressions) as string[]),
+          ...recent.results.map((r) => r.expression),
+        ]),
+      ].slice(0, 50),
     });
     if (stage === 'review') {
       const review = reviewSchema.parse(value);
@@ -125,15 +168,14 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
       )
         .bind(expressionKey(card.expression), expressionKey(card.expression), run.id)
         .first();
-      if (duplicate)
-        await progress(env, run, runtime.clock(), "status='skipped',error='duplicate'", []);
+      if (duplicate) await retryDuplicate(env, run, card.expression, runtime.clock());
       else
         await progress(
           env,
           run,
           runtime.clock(),
           "status='review',content=?,content_hash=?,review=NULL,review_hash=NULL,revision=?,error=NULL,retry_at=NULL",
-          [content, digest, stage === 'revise' ? 2 : 1],
+          [content, digest, stage === 'revise' ? 2 : run.revision],
         );
     }
     await env.DB.prepare("UPDATE automation_attempts SET outcome='ok' WHERE id=?").bind(id).run();
@@ -213,7 +255,7 @@ async function renderPhase(
     .first<{ state: string; bytes: number }>();
   if (!asset) {
     if (result[0]?.meta.changes === 0)
-      await progress(env, run, runtime.clock(), "status='skipped',error='duplicate'", []);
+      await retryDuplicate(env, run, card.expression, runtime.clock());
     return;
   }
   if (!['uploading', 'ready'].includes(asset.state) || asset.bytes !== png.length) {
