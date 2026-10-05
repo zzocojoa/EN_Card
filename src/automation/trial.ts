@@ -31,6 +31,7 @@ export async function startTrial(env: AutomationEnv, version: number, now: numbe
   const settings = automationSettings.parse(JSON.parse(old.settings));
   const configured = JSON.stringify({
     ...settings,
+    cards_per_day: 1,
     start_date: day,
     end_date: day,
     time: new Date(due + 9 * 3600000).toISOString().slice(11, 16),

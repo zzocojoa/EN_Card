@@ -284,7 +284,7 @@ async function schedulePhase(env: AutomationEnv, run: Run, now: number): Promise
       `INSERT INTO schedules(id,name,kind,date,time,end_date,weekdays,cards_per_occurrence,timezone,next_run_at_utc,version,cursor,enabled,mutation_id) SELECT ?,?,'once',?,?,NULL,'[]',1,'Asia/Seoul',?,1,0,1,? WHERE ${guard} AND NOT ${unresolvedSql} AND EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND status='connected') AND EXISTS(SELECT 1 FROM cards c JOIN assets a ON a.id=c.asset_id WHERE c.id=? AND c.revision=1 AND c.content=? AND c.review_source='ai' AND c.status='ready' AND a.id=? AND a.state='ready' AND a.created_at<=?) ON CONFLICT(id) DO NOTHING`,
     ).bind(
       run.schedule_id,
-      `AI ${run.day} · ${card.expression}`.slice(0, 100),
+      `AI ${run.day} · ${run.item_index}/${run.item_count} · ${card.expression}`.slice(0, 100),
       run.day,
       automationSettings.parse(JSON.parse(run.settings)).time,
       run.due_at,
@@ -321,29 +321,39 @@ export async function automationTick(
     .run();
   if (config.next_due_at !== null && config.next_due_at - 3600000 <= now) {
     const due = config.next_due_at;
-    const next = nextAutomationDue(
-      automationSettings.parse(JSON.parse(config.settings)),
-      Math.max(due, now + 300000),
-    );
+    const settings = automationSettings.parse(JSON.parse(config.settings));
+    const next = nextAutomationDue(settings, Math.max(due, now + 300000));
     const valid = due - 300000 > now;
+    const day = kstDate(due);
+    // One atomic batch freezes all slots and advances the cursor. The first legacy-compatible
+    // key anchors the day, so changing quantity/time or restarting never replenishes it.
     await env.DB.batch([
-      env.DB.prepare(
-        `INSERT INTO automation_runs(id,dedupe_key,day,config_version,settings,due_at,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,error,updated_at) SELECT ?,?,?,version,settings,?,?,?,'google','groq',?,?,?,?,?,? FROM automation_settings WHERE singleton=1 AND enabled=1 AND version=? AND next_due_at=? ON CONFLICT(dedupe_key) DO NOTHING`,
-      ).bind(
-        crypto.randomUUID(),
-        kstDate(due),
-        kstDate(due),
-        due,
-        due - 300000,
-        valid ? 'draft' : 'skipped',
-        crypto.randomUUID(),
-        crypto.randomUUID(),
-        crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', ''),
-        crypto.randomUUID(),
-        valid ? null : 'expired',
-        now,
-        config.version,
-        due,
+      ...Array.from({ length: settings.cards_per_day }, (_, index) =>
+        env.DB.prepare(
+          `INSERT INTO automation_runs(id,dedupe_key,day,item_index,item_count,config_version,settings,due_at,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,error,updated_at) SELECT ?,?,?,?,?,version,settings,?,?,?,'google','groq',?,?,?,?,?,? FROM automation_settings WHERE singleton=1 AND enabled=1 AND version=? AND next_due_at=? AND (?=1 OR EXISTS(SELECT 1 FROM automation_runs r WHERE r.kind='daily' AND r.day=? AND r.item_index=1 AND r.config_version=? AND r.due_at=? AND r.item_count=?)) ON CONFLICT DO NOTHING`,
+        ).bind(
+          crypto.randomUUID(),
+          index === 0 ? day : `${day}:${index + 1}`,
+          day,
+          index + 1,
+          settings.cards_per_day,
+          due,
+          due - 300000,
+          valid ? 'draft' : 'skipped',
+          crypto.randomUUID(),
+          crypto.randomUUID(),
+          crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', ''),
+          crypto.randomUUID(),
+          valid ? null : 'expired',
+          now,
+          config.version,
+          due,
+          index + 1,
+          day,
+          config.version,
+          due,
+          settings.cards_per_day,
+        ),
       ),
       env.DB.prepare(
         'UPDATE automation_settings SET next_due_at=?,updated_at=? WHERE singleton=1 AND enabled=1 AND version=? AND next_due_at=?',
@@ -352,7 +362,7 @@ export async function automationTick(
   }
   const owner = crypto.randomUUID();
   const run = await env.DB.prepare(
-    `UPDATE automation_runs SET claim_owner=?,claim_until=? WHERE id=(SELECT id FROM automation_runs WHERE status IN ${ACTIVE} AND ${currentGuard} AND not_before<=? AND deadline>? AND (retry_at IS NULL OR retry_at<=?) AND (claim_until IS NULL OR claim_until<=?) ORDER BY due_at LIMIT 1) AND (claim_until IS NULL OR claim_until<=?) RETURNING *`,
+    `UPDATE automation_runs SET claim_owner=?,claim_until=? WHERE id=(SELECT id FROM automation_runs WHERE status IN ${ACTIVE} AND ${currentGuard} AND not_before<=? AND deadline>? AND (retry_at IS NULL OR retry_at<=?) AND (claim_until IS NULL OR claim_until<=?) AND NOT EXISTS(SELECT 1 FROM automation_runs earlier WHERE earlier.kind=automation_runs.kind AND earlier.day=automation_runs.day AND earlier.item_index<automation_runs.item_index AND earlier.status IN ${ACTIVE}) ORDER BY due_at,item_index LIMIT 1) AND (claim_until IS NULL OR claim_until<=?) RETURNING *`,
   )
     .bind(owner, now + 120000, now, now, now, now, now)
     .first<Run>();

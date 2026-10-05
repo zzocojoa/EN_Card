@@ -15,6 +15,8 @@ export type Run = {
   day: string;
   dedupe_key: string;
   kind: 'daily' | 'trial';
+  item_index: number;
+  item_count: number;
   not_before: number;
   config_version: number;
   settings: string;

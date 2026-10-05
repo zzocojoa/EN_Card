@@ -51,21 +51,29 @@ export async function harnessThrough(lastMigration: string): Promise<Harness> {
     const sql: string = await readFile(new URL(name, directory), 'utf8');
     await env.DB.exec(sql.replaceAll('\n', ' '));
   }
-  if (lastMigration < '0011_delivery_cancellation_reason.sql') {
-    // Upgrade fixtures execute historical SQL before the new column exists.
-    // Only remove the newly added assignment; SQL parameters and old behavior stay identical.
-    let legacy = true;
+  if (lastMigration < '0014_card_automation.sql') {
+    // Upgrade fixtures replay the historical engine before the newer schema exists.
+    // Remove only newer SQL additions until their migrations run; current-schema tests use real SQL.
+    let legacyCancellation = lastMigration < '0011_delivery_cancellation_reason.sql';
+    let legacyAutomation = true;
     env.DB = new Proxy(env.DB, {
       get(target, key) {
         if (key === 'prepare')
-          return (sql: string) =>
-            target.prepare(
-              legacy ? sql.replace(/,cancellation_reason=[\s\S]+?(?=,error=)/g, '') : sql,
-            );
+          return (sql: string) => {
+            if (legacyCancellation)
+              sql = sql.replace(/,cancellation_reason=[\s\S]+?(?=,error=)/g, '');
+            if (legacyAutomation)
+              sql = sql.replace(
+                / AND \(NOT EXISTS\(SELECT 1 FROM deliveries waiting JOIN automation_runs[\s\S]+?(?= ORDER BY due_at_utc,position LIMIT 1)/,
+                '',
+              );
+            return target.prepare(sql);
+          };
         if (key === 'exec')
           return async (sql: string) => {
             const result = await target.exec(sql);
-            if (sql.includes('ADD COLUMN cancellation_reason')) legacy = false;
+            if (sql.includes('ADD COLUMN cancellation_reason')) legacyCancellation = false;
+            if (sql.includes('CREATE TABLE automation_runs')) legacyAutomation = false;
             return result;
           };
         const value: unknown = Reflect.get(target, key);

@@ -92,9 +92,12 @@ export function relayClient(env: AutomationEnv, transport: typeof fetch = fetch)
       env.COST_MODE !== 'free_only'
     )
       throw new AiError('config');
+    // Quantity belongs to the job scheduler. Keep each provider call and older Site relays
+    // on the existing one-card contract while the UI/Worker versions roll out separately.
+    const { cards_per_day: _quantity, ...settings } = input.settings;
     const value = await requestRelay(
       env,
-      { action: 'call', free: env.AI_FREE_CONFIRMED, input },
+      { action: 'call', free: env.AI_FREE_CONFIRMED, input: { ...input, settings } },
       transport,
     );
     return z.object({ result: z.unknown() }).strict().parse(value).result;

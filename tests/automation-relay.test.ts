@@ -85,6 +85,7 @@ const input: AiRequest = {
     start_date: '2026-10-03',
     end_date: null,
     time: '23:00',
+    cards_per_day: 1,
   },
   content: null,
   review: null,

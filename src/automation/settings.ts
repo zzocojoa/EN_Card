@@ -32,12 +32,14 @@ export async function settingsView(env: AutomationEnv, now = Date.now()): Promis
 }
 export async function runHistory(env: AutomationEnv): Promise<AutomationRunView[]> {
   const rows = await env.DB.prepare(
-    `SELECT r.*,a.public_id AS ready_public_id,coalesce((SELECT state FROM deliveries WHERE schedule_id=r.schedule_id ORDER BY updated_at DESC LIMIT 1),(SELECT reason FROM schedules WHERE id=r.schedule_id AND enabled=0)) AS delivery_state FROM automation_runs r LEFT JOIN assets a ON a.id=r.asset_id AND a.state='ready' ORDER BY r.day DESC,r.due_at DESC LIMIT 30`,
+    `SELECT r.*,a.public_id AS ready_public_id,coalesce((SELECT state FROM deliveries WHERE schedule_id=r.schedule_id ORDER BY updated_at DESC LIMIT 1),(SELECT reason FROM schedules WHERE id=r.schedule_id AND enabled=0)) AS delivery_state FROM automation_runs r LEFT JOIN assets a ON a.id=r.asset_id AND a.state='ready' ORDER BY r.day DESC,r.due_at DESC,r.item_index LIMIT 30`,
   ).all<Run & { ready_public_id: string | null; delivery_state: string | null }>();
   return rows.results.map((r) => ({
     id: r.id,
     day: r.day,
     kind: r.kind,
+    item_index: r.item_index,
+    item_count: r.item_count,
     not_before: r.not_before,
     due_at: r.due_at,
     status: r.status,

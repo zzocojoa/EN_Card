@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { cardSchema, scheduleSchema } from './model';
 import { nextRun } from './time';
 
+export const MAX_AUTOMATION_CARDS_PER_DAY = 5;
 export const automationSettings = z
   .object({
     topic: z.string().trim().min(1).max(120),
@@ -11,6 +12,7 @@ export const automationSettings = z
     start_date: scheduleSchema.shape.date,
     end_date: scheduleSchema.shape.end_date,
     time: scheduleSchema.shape.time,
+    cards_per_day: z.number().int().min(1).max(MAX_AUTOMATION_CARDS_PER_DAY).default(1),
   })
   .strict()
   .refine((v) => !v.end_date || v.end_date >= v.start_date, '종료일을 확인하세요.');
@@ -76,6 +78,8 @@ export type AutomationRunView = {
   id: string;
   day: string;
   kind: 'daily' | 'trial';
+  item_index: number;
+  item_count: number;
   not_before: number;
   due_at: number;
   status: AutomationStatus;

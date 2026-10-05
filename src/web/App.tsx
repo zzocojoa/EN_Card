@@ -16,7 +16,7 @@ import { AutomationPanel } from './AutomationPanel';
 
 const descriptions: Record<Page, string> = {
   home: '다음 영어 시간과 오늘 필요한 일을 확인하세요.',
-  automation: '주제와 시간을 정하면, 매일 한 장을 준비해 드려요.',
+  automation: '주제와 수량, 시간을 정하면 매일 영어 카드를 준비해 드려요.',
   editor: '직접 고른 표현을 담고, 미리보기를 확인한 뒤 저장하세요.',
   library: '준비한 표현을 찾아 편집하거나 예약에 담으세요.',
   schedules: '한국 시간으로 예약하고, 준비한 카드를 순서대로 보내세요.',

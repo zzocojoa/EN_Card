@@ -85,7 +85,7 @@ export function HomePage(): ReactElement | null {
             <strong className="next-time">{formatKst(nextDue)}</strong>
             <p>
               {showAutomatic
-                ? `${automation?.settings?.topic ?? '설정한 주제'} · 매일 한 장`
+                ? `${automation?.settings?.topic ?? '설정한 주제'} · 매일 ${automation?.settings?.cards_per_day ?? 1}장`
                 : `${next!.name} · 회차당 ${next!.cards_per_occurrence}장`}
             </p>
             {showAutomatic && (
