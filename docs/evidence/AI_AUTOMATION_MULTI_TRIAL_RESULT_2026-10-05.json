@@ -1,0 +1,395 @@
+{
+  "recordedAt": "2026-10-05T12:17:20.732Z",
+  "scope": "Actual 2026-10-05 multi-card trial result; no new sends or data changes",
+  "userReport": {
+    "text": "카드가 도착했고 정상적으로 4장이 왔다. 카드 클릭해도 이상없다.",
+    "receivedCards": 4,
+    "cardClicksNormal": true,
+    "source": "User message in this thread",
+    "receiptWindowClarification": "User explicitly confirmed four NEW cards received after 21:03 KST",
+    "allFiveReceiptConfirmed": false,
+    "pcShutdownConfirmedForThisTrial": false,
+    "receiptWindowConfirmed": true,
+    "serverCountMatchesUserReport": false,
+    "distinctCardsClarification": "User explicitly confirmed all four cards are different",
+    "fourDistinctCardsConfirmed": true
+  },
+  "server": {
+    "readAt": "2026-10-05T12:16:09.531Z",
+    "trialDay": "2026-10-05",
+    "requestedCards": 5,
+    "preparedPngs": 4,
+    "trialAcceptedCards": 3,
+    "dailyAcceptedCards": 1,
+    "totalTodayAcceptedCards": 4,
+    "deliveries": [
+      {
+        "state": "sent",
+        "mode": "live",
+        "attempts": 1,
+        "due_at_utc": 1791151200000,
+        "updated_at": 1791151276162,
+        "kind": "daily",
+        "day": "2026-10-05",
+        "item_index": 1,
+        "item_count": 1,
+        "asset_run_kind": "daily",
+        "asset_run_day": "2026-10-05",
+        "asset_run_item": 1
+      },
+      {
+        "state": "sent",
+        "mode": "live",
+        "attempts": 1,
+        "due_at_utc": 1791201780000,
+        "updated_at": 1791201888037,
+        "kind": "trial",
+        "day": "2026-10-05",
+        "item_index": 3,
+        "item_count": 5,
+        "asset_run_kind": "trial",
+        "asset_run_day": "2026-10-05",
+        "asset_run_item": 3
+      },
+      {
+        "state": "sent",
+        "mode": "live",
+        "attempts": 1,
+        "due_at_utc": 1791201780000,
+        "updated_at": 1791201889686,
+        "kind": "trial",
+        "day": "2026-10-05",
+        "item_index": 4,
+        "item_count": 5,
+        "asset_run_kind": "trial",
+        "asset_run_day": "2026-10-05",
+        "asset_run_item": 4
+      },
+      {
+        "state": "sent",
+        "mode": "live",
+        "attempts": 1,
+        "due_at_utc": 1791201780000,
+        "updated_at": 1791201891587,
+        "kind": "trial",
+        "day": "2026-10-05",
+        "item_index": 1,
+        "item_count": 5,
+        "asset_run_kind": "trial",
+        "asset_run_day": "2026-10-05",
+        "asset_run_item": 1
+      }
+    ],
+    "attempts": [
+      {
+        "started_at": 1791151274528,
+        "outcome": "sent",
+        "mode": "live",
+        "kind": "daily",
+        "day": "2026-10-05",
+        "item_index": 1
+      },
+      {
+        "started_at": 1791201886161,
+        "outcome": "sent",
+        "mode": "live",
+        "kind": "trial",
+        "day": "2026-10-05",
+        "item_index": 3
+      },
+      {
+        "started_at": 1791201888446,
+        "outcome": "sent",
+        "mode": "live",
+        "kind": "trial",
+        "day": "2026-10-05",
+        "item_index": 4
+      },
+      {
+        "started_at": 1791201890087,
+        "outcome": "sent",
+        "mode": "live",
+        "kind": "trial",
+        "day": "2026-10-05",
+        "item_index": 1
+      }
+    ],
+    "runs": [
+      {
+        "item_index": 1,
+        "status": "scheduled",
+        "error": null,
+        "updated_at": 1791200024826,
+        "retry_at": null,
+        "asset_created_at": 1791199846516,
+        "last_ai_at": 1791199784986,
+        "non_ok_ai_attempts": 0
+      },
+      {
+        "item_index": 2,
+        "status": "skipped",
+        "error": "duplicate",
+        "updated_at": 1791200090422,
+        "retry_at": null,
+        "asset_created_at": null,
+        "last_ai_at": 1791200084997,
+        "non_ok_ai_attempts": 0
+      },
+      {
+        "item_index": 3,
+        "status": "scheduled",
+        "error": null,
+        "updated_at": 1791200444845,
+        "retry_at": null,
+        "asset_created_at": 1791200266442,
+        "last_ai_at": 1791200204990,
+        "non_ok_ai_attempts": 0
+      },
+      {
+        "item_index": 4,
+        "status": "scheduled",
+        "error": null,
+        "updated_at": 1791200924821,
+        "retry_at": null,
+        "asset_created_at": 1791200745967,
+        "last_ai_at": 1791200684987,
+        "non_ok_ai_attempts": 1
+      },
+      {
+        "item_index": 5,
+        "status": "skipped",
+        "error": "expired",
+        "updated_at": 1791201524305,
+        "retry_at": 1791201466330,
+        "asset_created_at": 1791201346109,
+        "last_ai_at": 1791201284977,
+        "non_ok_ai_attempts": 2
+      }
+    ],
+    "aiAttempts": [
+      {
+        "item_index": 1,
+        "stage": "draft",
+        "provider": "google",
+        "started_at": 1791199725015,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "item_index": 1,
+        "stage": "review",
+        "provider": "groq",
+        "started_at": 1791199784986,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "item_index": 2,
+        "stage": "draft",
+        "provider": "google",
+        "started_at": 1791200084997,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "item_index": 3,
+        "stage": "draft",
+        "provider": "google",
+        "started_at": 1791200144979,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "item_index": 3,
+        "stage": "review",
+        "provider": "groq",
+        "started_at": 1791200204990,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "item_index": 4,
+        "stage": "draft",
+        "provider": "google",
+        "started_at": 1791200505039,
+        "outcome": "unavailable",
+        "http_status": 503
+      },
+      {
+        "item_index": 4,
+        "stage": "draft",
+        "provider": "google",
+        "started_at": 1791200624982,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "item_index": 4,
+        "stage": "review",
+        "provider": "groq",
+        "started_at": 1791200684987,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "item_index": 5,
+        "stage": "draft",
+        "provider": "google",
+        "started_at": 1791200984974,
+        "outcome": "unavailable",
+        "http_status": 503
+      },
+      {
+        "item_index": 5,
+        "stage": "draft",
+        "provider": "google",
+        "started_at": 1791201105000,
+        "outcome": "unavailable",
+        "http_status": 503
+      },
+      {
+        "item_index": 5,
+        "stage": "draft",
+        "provider": "google",
+        "started_at": 1791201224982,
+        "outcome": "ok",
+        "http_status": null
+      },
+      {
+        "item_index": 5,
+        "stage": "review",
+        "provider": "groq",
+        "started_at": 1791201284977,
+        "outcome": "ok",
+        "http_status": null
+      }
+    ],
+    "successfulTrialCards": [
+      1,
+      3,
+      4
+    ],
+    "eachSuccessfulTrialHasSingleAcceptedAttempt": true,
+    "successfulCardReviewAndPublicPngVerified": true,
+    "fifthCard": {
+      "reviewPassed": true,
+      "publicPngVerified": true,
+      "writer503Retries": 2,
+      "scheduleCreated": false,
+      "reason": "expired",
+      "assetCreatedAt": 1791201346109,
+      "eligibleAfterPropagationAt": 1791201466330,
+      "deadline": 1791201480000,
+      "expiredAt": 1791201524305
+    },
+    "settings": {
+      "version": 20,
+      "enabled": 0,
+      "reason": "complete",
+      "next_due_at": null
+    },
+    "regularAutomationResumed": false,
+    "recordCountDiscrepancy": {
+      "userReportedAfter2103": 4,
+      "recordedTrialAcceptances": 3,
+      "sendInvocationGroupsWithOneSubrequest": 3,
+      "dailyUsageCounterIncludingMorning": 4,
+      "cause": "unresolved; do not reinterpret the user report as including the morning message"
+    },
+    "preexistingBlockedDelivery": {
+      "count": 1,
+      "dueAt": 1790754840000,
+      "partOfCurrentTrial": false
+    },
+    "resumeGuardProblems": [
+      "five_live_acceptances_unconfirmed",
+      "active_or_unresolved_work"
+    ]
+  },
+  "cpu": {
+    "start": "2026-10-05T11:27:00Z",
+    "end": "2026-10-05T12:13:00Z",
+    "unit": "milliseconds",
+    "summary": {
+      "en-card": {
+        "worker": {
+          "groups": 50,
+          "requests": 50,
+          "errors": 0,
+          "highestGroupP99Ms": 4.783,
+          "sampledGroups": 0,
+          "singleRequestGroups": 50
+        },
+        "durable": {
+          "groups": 0,
+          "requests": 0,
+          "errors": 0,
+          "highestGroupP99Ms": null,
+          "sampledGroups": 0,
+          "singleRequestGroups": 0
+        },
+        "unexpectedVersionGroups": 0,
+        "workerGroupsP99Over10Ms": 0
+      },
+      "en-card-delivery": {
+        "worker": {
+          "groups": 47,
+          "requests": 47,
+          "errors": 0,
+          "highestGroupP99Ms": 3.931,
+          "sampledGroups": 0,
+          "singleRequestGroups": 47
+        },
+        "durable": {
+          "groups": 0,
+          "requests": 0,
+          "errors": 0,
+          "highestGroupP99Ms": null,
+          "sampledGroups": 0,
+          "singleRequestGroups": 0
+        },
+        "unexpectedVersionGroups": 0,
+        "workerGroupsP99Over10Ms": 0
+      },
+      "en-card-automation": {
+        "worker": {
+          "groups": 0,
+          "requests": 0,
+          "errors": 0,
+          "highestGroupP99Ms": null,
+          "sampledGroups": 0,
+          "singleRequestGroups": 0
+        },
+        "durable": {
+          "groups": 48,
+          "requests": 48,
+          "errors": 0,
+          "highestGroupP99Ms": 487.336,
+          "sampledGroups": 0,
+          "singleRequestGroups": 48
+        },
+        "unexpectedVersionGroups": 0,
+        "workerGroupsP99Over10Ms": 0
+      }
+    },
+    "observedWorkerCpuUnder10Ms": true,
+    "allObservedGroupsSingleUnsampledRequest": true,
+    "observedErrors": 0,
+    "interpretation": "Highest group P99 among returned Cloudflare adaptive groups, all with one request, sampleInterval 1 and P50=P99. Not a guarantee for future calls or a five-successful-card load test.",
+    "fullFiveCardSuccessLoadVerified": false
+  },
+  "outcome": "User confirms four new cards and normal card clicks after 21:03; current trial records confirm only three. One duplicate and one deadline expiry. Receipt-count discrepancy remains unresolved.",
+  "outstanding": [
+    "Identify the fourth distinct newly received card against three trial acceptance records without assuming morning inclusion or duplicate display",
+    "Improve duplicate draft handling and preparation time under AI retries before claiming five-card success",
+    "Regular daily automation remains disabled; a historical blocked delivery also prevents resume"
+  ],
+  "evidenceFiles": [
+    "receipt-audit.json",
+    "verify-receipt-confirmed.json",
+    "metrics-receipt-trial.json",
+    "receipt-discrepancy.json"
+  ],
+  "freeConfiguration": "Existing confirmed Free configuration preserved; no paid resources or account changes",
+  "updatedAt": "2026-10-05T12:21:35.034Z"
+}
