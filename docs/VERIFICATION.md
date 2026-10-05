@@ -1,5 +1,17 @@
 # 검증 근거
 
+## 수량 확장 운영 반영 — 2026-10-05
+
+- 암호화 D1 백업의 복호화 SHA-256 일치·접근 권한 제한·평문 제거를 확인했다. 유지보수 Worker와 Cron 중단으로 쓰기를 멈춘 뒤 기존 0016 SQL을 적용했다. 이전 18개 데이터 테이블의 원래 열/행 해시 일치, 과거 run의 번호/수량 1, 이력 16개, FK 오류 0을 확인했다. 원자료는 Git 제외 `backups/automation-quantity-rollout-20261005/`다.
+- 수량 지원 DO·발송 Worker·주 Worker를 배포하고 세 버전 모두 100% 적용을 읽었다. 바인딩·Secret 이름·live/free_only 설정·매분 Cron 1개는 보존했다. 기존 학습 사이트는 **v117**, 환경 59·공개 정책 4다. Sites helper 게시 커밋 `b718f538d1ff10ed4bc1c05effb4458f3a1e21a5`의 추적 트리가 GitHub 제품 기준 `85a2fba`와 일치한다.
+- `npm run build`, 운영 설정 3개 dry-run, `npm run check:free -- --config wrangler.live.jsonc --delivery-config wrangler.delivery.deploy.jsonc --automation-config wrangler.automation.live.jsonc --mode live --automation-active`, 하루단어 Sites 정식 빌드·패키징이 통과했다. Windows 설치 npm shim/Bash 선택 오류는 기존 절대 npm/Git Bash 경로로 해결했다. 플러그인·잠금 파일·전역 실행 환경은 수정하지 않았다.
+- 게시된 source manifest와 JS는 로컬 SHA-256과 일치한다. `index.html`은 정규 `/card-studio/`로 307 이동하고, HTML에 삽입된 Cloudflare 스크립트 1개를 제외한 내용이 원본과 일치했다. HTML 원시 바이트 동일성으로 기록하지 않는다. 비로그인 Site 프록시·Worker 자동화 API는 각각 401이다.
+- 09:43–09:53 UTC 대기 관측은 새 버전 Worker/DO의 오류 0이다. 적응형 집계이며 실제 다중 제작·발송 CPU 검증이 아니다. 신규 AI 호출 0·카카오 발송 0, 과거 run/usage 보존이다. 로그인 브라우저·실제 iPhone·여러 장 수신은 아직 미검증이다.
+- 배포용 일시정지(version 15)를 마치고 기존 매일 07:00·1장 운영을 재개(version 16)했다. 현재 설정을 실제 앱 스키마로 검증하고 다음 예정 시각이 그대로 10월 6일 07:00 KST인지 계산했다. 기존 D1 관리 권한으로 설정 원문·버전·다음 시각 일치, 카카오 연결, 제작/활성 예약/진행 중·결과 불명 발송 없음 조건을 원자적 UPDATE에 넣었다. 설정 원문·과거 run/usage는 변경하지 않았다. 브라우저 조작으로 기록하거나 새 인증 우회를 추가하지 않았다.
+- 오늘 기록을 수정하지 않고 다음 날짜 시험을 설정할 시각·이후 수량 선택이 남았다. 여러 장 시험은 아직 등록하지 않았다. 등록 후 실제 AI/교차 검토/PNG/예약, 현재 버전의 부하 CPU와 카드별 API 접수, 사용자 휴대전화의 이미지·원본 링크를 각각 확인한다. 운영 예전 DO로 단순 rollback하지 않고 **0016 호환 코드**로만 복구한다.
+
+로컬 재현: `npm run build`, `npm run check:free`. 이미 적용한 원격 0016이나 배포를 검증 목적으로 반복하지 않는다. 배포 상태의 단일 기준은 하루단어 `docs/releases/product-status.json`과 `2026-10-05-automation-quantity-rollout.json`이다. 아래는 이전 시점 기록이다.
+
 **2026-10-04 UI 개선 검증:** 웹·아이폰을 위한 `codex/card-studio-responsive-ui`의 최종 전체 E2E60/60, Site 프록시/릴레이15/15, 타입·웹/Worker/Site 빌드·기본/live 무료 구성 검사 통과. 화면 폭375/390/430/768/1440·844×390 회전·초안/실행 상태 구분을 확인했다. 모의 API와 로컬 PNG 결과이며 새 실제 AI/발송 시험은 아니다. Site v114/주 Worker 게시 성공·운영 자산 일치·로그인 UI·14개 테이블 해시 보존을 확인했다. 실제 iPhone·Windows WebKit 가변 폰트 및 계정 플랜 재확인 한계는 [상세 결과](UI_RESPONSIVE_2026-10-04.md), 정확한 버전/행 수는 [기계 판독 근거](evidence/UI_RESPONSIVE_2026-10-04.json)에 기록했다.
 
 **2026-10-04 16:19 KST review 수정본 커밋·운영 반영:** `e088d61`을 커밋하고 DO→발송→주 Worker 및 하루단어 Site v113(소스 `22c2da2`)에 반영했다. 실제 live 설정의 세 Worker dry-run/무료 구성, Site 연동15개·타입·빌드, 공개 PNG/원본200·동일 해시·비인증 자동화401을 확인했다. 운영14개 주요 테이블의 행 수·해시, Secret 이름/바인딩/Cron, Site 공개 범위·환경 revision59를 보존했다. 화면도 **실행 중·10월5일07:00 제작·08:00 발송·당일 종료**를 확인했다. 추가 AI/카카오 시도·새 자원·마이그레이션0이다. 무료 계정 확인은 기존 기록을 유지하며 오늘 구독 API403·웹 로그인 만료로 재확인하지 못했다. 이 단계에서 새 코드의 실제 제작/발송 CPU나 내일 수신은 검증하지 않았다. [배포·보존 근거](evidence/AI_AUTOMATION_REVIEW_DEPLOY_2026-10-04.json). 아래 기록은 각 시점의 상태다.
