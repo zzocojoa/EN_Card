@@ -1,6 +1,6 @@
 # AI 자동 제작 수량 선택
 
-2026-10-05 `codex/automation-card-quantity`에서 구현했다. 현재 운영에 반영됐다는 기록은 아니다. 배포 상태는 [공통 출시 관리](PRODUCT_MANAGEMENT.md)를 따른다.
+2026-10-05 `codex/automation-card-quantity`에서 정규 수량을 구현하고 `codex/automation-multi-trial`에서 별도 시험 수량을 확장했다. D1 0017·호환 Worker/DO·하루단어 v118에 반영했다. 실제 시험 결과와 미검증 범위는 [검증 기록](VERIFICATION.md), 전체 배포 상태는 [공통 출시 관리](PRODUCT_MANAGEMENT.md)를 따른다.
 
 ## 사용 방식
 
