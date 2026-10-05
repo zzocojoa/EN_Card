@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import {
   automationReasons,
+  MAX_AUTOMATION_CARDS_PER_DAY,
   reviewPassed,
   type AutomationSettings,
   type AutomationView,
@@ -31,6 +32,7 @@ const initial: AutomationSettings = {
   start_date: kstDate(Date.now()),
   end_date: null,
   time: '08:00',
+  cards_per_day: 1,
 };
 export function AutomationPanel() {
   const {
@@ -136,7 +138,7 @@ export function AutomationPanel() {
       <header className="automation-heading">
         <div>
           <span className="eyebrow">MY DAILY ENGLISH</span>
-          <h2>매일 한 장, 꾸준히.</h2>
+          <h2>나에게 맞는 분량으로, 꾸준히.</h2>
           <p>
             작성부터 검토, 이미지와 예약까지.
             <br />
@@ -237,6 +239,22 @@ export function AutomationPanel() {
               <h3>언제 받아볼까요?</h3>
             </div>
             <div className="automation-fields">
+              <label className="full-field">
+                하루 제작 수량
+                <select
+                  value={settings.cards_per_day ?? 1}
+                  onChange={(e) => update('cards_per_day', Number(e.target.value))}
+                  aria-describedby="automation-quantity-help"
+                >
+                  {Array.from({ length: MAX_AUTOMATION_CARDS_PER_DAY }, (_, i) => i + 1).map(
+                    (count) => (
+                      <option key={count} value={count}>
+                        {count}장
+                      </option>
+                    ),
+                  )}
+                </select>
+              </label>
               <label>
                 시작일
                 <input
@@ -265,6 +283,11 @@ export function AutomationPanel() {
                 />
               </label>
             </div>
+            <p id="automation-quantity-help" className="tiny">
+              카드마다 따로 제작·검토하고, 준비된 카드만 한 장씩 보냅니다. 일부가 실패하면 수신
+              수량이 줄 수 있고, 여러 장은 나누어 도착할 수 있습니다. 수량에 따라 무료 AI 사용량도
+              늘어납니다.
+            </p>
             <p className="tiny">
               발송 1시간 전부터 제작합니다. 준비 시간이 부족하면 다음 가능한 날짜부터 시작합니다.
             </p>
@@ -297,7 +320,8 @@ export function AutomationPanel() {
           )}
           {view?.enabled && view.settings && !error && (
             <p className="tiny">
-              현재 적용: {view.settings.topic} · {view.settings.level} · 매일 {view.settings.time}
+              현재 적용: {view.settings.topic} · {view.settings.level} · 하루{' '}
+              {view.settings.cards_per_day ?? 1}장 · 매일 {view.settings.time}
             </p>
           )}
           <div className={`automation-save-state ${dirty ? 'unsaved' : ''}`} role="status">
@@ -315,7 +339,7 @@ export function AutomationPanel() {
             <p>
               {dirty
                 ? '지금 보이는 입력은 아직 실행에 반영되지 않았습니다.'
-                : '매일 한 장을 다른 AI가 검토한 뒤 예약합니다.'}
+                : `매일 ${settings.cards_per_day ?? 1}장을 다른 AI가 각각 검토한 뒤 예약합니다.`}
             </p>
           </div>
           <fieldset disabled={busy || !view}>
@@ -357,6 +381,12 @@ export function AutomationPanel() {
             설정 저장은 실행 중인 자동 제작과 대기 예약을 중단합니다. 변경한 설정으로 보내려면 다시
             시작해 주세요.
           </p>
+          {runs.some((run) => run.kind === 'daily' && run.day === kstDate(Date.now())) && (
+            <p className="tiny">
+              오늘은 이미 제작 기록이 있습니다. 중단하거나 수량을 바꿔도 오늘 분량을 추가로 만들지
+              않으며, 변경한 수량은 다음 제작일부터 적용됩니다.
+            </p>
+          )}
           {view?.reason && <p>{automationReasons[view.reason] ?? view.reason}</p>}
           {state?.connection?.status !== 'connected' && (
             <p className="tiny">시작하려면 설정 화면에서 카카오를 먼저 연결하세요.</p>
@@ -378,7 +408,8 @@ export function AutomationPanel() {
         </summary>
         <p>
           저장한 주제로 약 10분 뒤 제작하고 25분 뒤 발송합니다. 매일 받을 일정과 기존 기록은
-          보존됩니다. 하루 한 번이며, 중단해도 다시 제작하지 않습니다.
+          보존됩니다. 선택한 일일 수량과 관계없이 한 장만 시험합니다. 하루 한 번이며, 중단해도 다시
+          제작하지 않습니다.
         </p>
         {view?.trial_used_today && <p role="status">오늘 시험은 이미 등록했습니다.</p>}
         <button
@@ -433,7 +464,10 @@ export function AutomationPanel() {
             <li key={run.id}>
               <div className="automation-run-meta">
                 <span>
-                  {run.day} · {run.kind === 'trial' ? '추가 한 장 시험' : '매일 제작'}
+                  {run.day} ·{' '}
+                  {run.kind === 'trial'
+                    ? '추가 한 장 시험'
+                    : `매일 제작 ${run.item_index ?? 1}/${run.item_count ?? 1}`}
                 </span>
                 <span className={`badge ${run.status === 'scheduled' ? 'ready' : ''}`}>
                   {stages[run.status]}
@@ -478,7 +512,10 @@ export function AutomationPanel() {
                         const response = await fetch(endpoint(`/images/${run.public_id}.png`));
                         if (!response.ok)
                           throw new Error('PNG를 내려받지 못했습니다. 잠시 후 다시 시도하세요.');
-                        downloadBlob(await response.blob(), `AI-${run.day}.png`);
+                        downloadBlob(
+                          await response.blob(),
+                          `AI-${run.day}-${run.kind}-${run.item_index ?? 1}.png`,
+                        );
                       })
                     }
                   >

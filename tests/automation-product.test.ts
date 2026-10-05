@@ -31,6 +31,7 @@ const settings: AutomationSettings = {
   start_date: '2026-09-28',
   end_date: null,
   time: '13:00',
+  cards_per_day: 1,
 };
 const draft = { ...SAMPLE, note_ko: '', base_expression: '', base_meaning_ko: '' };
 const good = {

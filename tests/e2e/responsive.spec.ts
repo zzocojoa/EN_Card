@@ -40,6 +40,7 @@ const automation: AutomationView = {
     start_date: '2026-10-05',
     end_date: '2026-10-31',
     time: '08:00',
+    cards_per_day: 1,
   },
   version: 6,
   enabled: true,
@@ -135,11 +136,12 @@ test('아이폰 입력·초안·실행 일정과 화면 회전 후 메뉴를 보
     fullPage: true,
   });
   await page.getByLabel('주제', { exact: true }).fill('여행에서 쓸 표현 '.repeat(10));
+  await page.getByRole('combobox', { name: '하루 제작 수량', exact: true }).selectOption('5');
   await page.getByLabel('시작일', { exact: true }).fill('2026-11-01');
   await page.getByLabel('종료일 (선택)', { exact: true }).fill('2026-11-30');
   await page.getByLabel('매일 받을 시각 (한국 시간)', { exact: true }).fill('09:30');
   await expect(plan).toContainText('저장하지 않은 변경이 있어요');
-  await expect(plan).toContainText('현재 적용: 영화 대사 · 초급 · 매일 08:00');
+  await expect(plan).toContainText('현재 적용: 영화 대사 · 초급 · 하루 1장 · 매일 08:00');
   await expect(plan).toContainText(`발송 예정${dueText}`);
   for (const input of await page
     .locator('.automation-fields input, .automation-fields select')
@@ -159,6 +161,9 @@ test('아이폰 입력·초안·실행 일정과 화면 회전 후 메뉴를 보
   await menu.getByRole('button', { name: '오늘의 작업실', exact: true }).click();
   await menu.getByRole('button', { name: 'AI 자동 제작', exact: true }).click();
   await expect(page.getByLabel('매일 받을 시각 (한국 시간)', { exact: true })).toHaveValue('09:30');
+  await expect(page.getByRole('combobox', { name: '하루 제작 수량', exact: true })).toHaveValue(
+    '5',
+  );
   current.failure = true;
   await page.getByRole('button', { name: '새로고침', exact: true }).click();
   await expect(page.locator('.automation-status')).toHaveText('상태 확인 실패');

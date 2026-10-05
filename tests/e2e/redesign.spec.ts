@@ -201,6 +201,8 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
             id: 'test',
             day: '2026-10-03',
             kind: view.trial_used_today ? 'trial' : 'daily',
+            item_index: view.trial_used_today ? 1 : 2,
+            item_count: view.trial_used_today ? 1 : 5,
             not_before: Date.now() + 600000,
             due_at: Date.now(),
             status: 'revise',
@@ -252,6 +254,11 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
     return route.fulfill({ json: view });
   });
   await page.goto('/#/automation');
+  await expect(page.getByRole('combobox', { name: '하루 제작 수량', exact: true })).toHaveValue(
+    '1',
+  );
+  await page.getByRole('combobox', { name: '하루 제작 수량', exact: true }).selectOption('5');
+  await expect(page.locator('.automation-runs')).toContainText('매일 제작 2/5');
   await page.locator('.automation-trial summary').click();
   await expect(page.getByText('AI 검토 미통과', { exact: false })).toBeVisible();
   await expect(page.getByText('AI 검토 통과', { exact: false })).toHaveCount(0);
@@ -262,6 +269,9 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
   await navigate(page, 'automation');
   await page.locator('.automation-trial summary').click();
   await expect(page.getByLabel('주제', { exact: true })).toHaveValue('여행 중 쓸 표현');
+  await expect(page.getByRole('combobox', { name: '하루 제작 수량', exact: true })).toHaveValue(
+    '5',
+  );
   await page.getByRole('button', { name: '설정 저장', exact: true }).click();
   await expect(page.getByRole('button', { name: '자동 제작 시작', exact: true })).toBeEnabled();
   delayStatus = true;
@@ -283,6 +293,9 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
   );
   await page.getByRole('button', { name: '자동 제작 시작', exact: true }).click();
   await expect(page.locator('.automation-status')).toHaveText('실행 중');
+  await expect(page.getByRole('complementary', { name: '현재 실행과 설정 저장' })).toContainText(
+    '하루 5장',
+  );
   // A Cron/other tab update uses the same session CSRF; the shared refresh must reload automation too.
   await expect(page.getByRole('button', { name: '새로고침', exact: true })).toBeEnabled();
   await page.getByLabel('주제', { exact: true }).fill('아직 저장하지 않은 주제');

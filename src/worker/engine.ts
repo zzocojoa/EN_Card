@@ -157,9 +157,13 @@ const eligibleSchedule: string =
   "EXISTS(SELECT 1 FROM schedules s WHERE s.id=deliveries.schedule_id AND s.version=deliveries.schedule_version AND (s.enabled=1 OR s.reason IN ('completed','content_shortage')))";
 const ordered: string =
   "NOT EXISTS(SELECT 1 FROM deliveries earlier WHERE earlier.schedule_id=deliveries.schedule_id AND ((earlier.state='unknown' AND earlier.resolution IS NULL) OR (earlier.occurrence_id=deliveries.occurrence_id AND earlier.position<deliveries.position AND earlier.state IN ('pending','claimed','sending','retry_wait','blocked'))))";
+// Waiting automatic cards must not consume the shared tick slots ahead of manual schedules.
+// The insert trigger still checks the same barrier if another invocation starts sending later.
+const automationReady: string =
+  "(NOT EXISTS(SELECT 1 FROM deliveries waiting JOIN automation_runs r ON r.schedule_id=waiting.schedule_id WHERE waiting.state='sending' OR (waiting.state='unknown' AND waiting.resolution IS NULL)) OR NOT EXISTS(SELECT 1 FROM automation_runs r WHERE r.schedule_id=deliveries.schedule_id))";
 async function claim(env: Env, now: number, owner: string): Promise<Delivery | null> {
   return env.DB.prepare(
-    `UPDATE deliveries SET state='claimed',claim_owner=?,claim_until=?,updated_at=? WHERE id=(SELECT id FROM deliveries WHERE state IN ('pending','retry_wait') AND (retry_at IS NULL OR retry_at<=?) AND (due_at_utc>=? OR manual_retry_until>=?) AND ${eligibleSchedule} AND ${ordered} ORDER BY due_at_utc,position LIMIT 1) AND state IN ('pending','retry_wait') RETURNING *`,
+    `UPDATE deliveries SET state='claimed',claim_owner=?,claim_until=?,updated_at=? WHERE id=(SELECT id FROM deliveries WHERE state IN ('pending','retry_wait') AND (retry_at IS NULL OR retry_at<=?) AND (due_at_utc>=? OR manual_retry_until>=?) AND ${eligibleSchedule} AND ${ordered} AND ${automationReady} ORDER BY due_at_utc,position LIMIT 1) AND state IN ('pending','retry_wait') RETURNING *`,
   )
     .bind(owner, now + LIMITS.claimMs, now, now, now - LIMITS.graceMs, now)
     .first<Delivery>();
@@ -344,6 +348,24 @@ export async function deliverClaimed(
   } catch (error: unknown) {
     const message: string = error instanceof Error ? error.message : String(error);
     if (message.includes('automation_send_blocked')) {
+      const authorized = await env.DB.prepare(
+        "SELECT 1 FROM automation_runs r JOIN automation_settings c ON c.singleton=1 AND c.enabled=1 AND c.version=r.config_version WHERE r.schedule_id=? AND r.status='scheduled'",
+      )
+        .bind(item.schedule_id)
+        .first();
+      if (authorized) {
+        // Another automatic card is sending or unknown. No attempt/budget was committed.
+        // Keep this unsent card recoverable; the trigger remains the final send guard.
+        await releaseBeforeCall(
+          env,
+          item,
+          owner,
+          callTime,
+          null,
+          '이전 자동 카드의 발송 결과를 기다립니다. 결과 불명은 발송 기록에서 확인해 주세요.',
+        );
+        return { processed: 0, reuseGrant: false, stop: false };
+      }
       await finish(
         env,
         item,
