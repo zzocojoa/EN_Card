@@ -22,7 +22,7 @@ AI 서버 연결은 기존 Site Secret을 사용한다. 키 오류는 사이트 
 
 카드 만들기의 **AI 카드 자동 제작 → 일시정지**는 처리 중인 제작과 아직 발송하지 않은 자동 예약을 취소한다. 무료 한도·인증·저장 오류는 원인을 해결한 뒤 시작 버튼으로 다음 가능한 날짜부터 재개한다. 지난 날짜를 몰아서 재실행하지 않는다. `unknown`은 기존 발송 기록에서 먼저 해결해야 하며 이미 접수된 메시지는 회수하지 않는다. 자동 예약을 수정하려면 기존 예약을 중지·취소한 뒤 새 예약을 만든다.
 
-주 Worker를 dry_run으로 되돌리면 새 자동 제작 시작/tick과 실제 발송을 함께 차단한다. 중단 후 DO도 dry_run/off/unconfirmed로 맞추며 구체적인 순서는 아래 복구 명령을 따른다. 이미 진행 중인 외부 요청의 취소는 보장하지 않는다. 0014~0017의 테이블·수량·시도 이력은 보존하며, 저장 오류에서 KV 파일 확인 없이 용량을 수동 반환하지 않는다. 상세 설정과 복구 경계는 [제품 연결 문서](AI_CARD_AUTOMATION_IMPLEMENTATION.md)를 따른다.
+주 Worker를 dry_run으로 되돌리면 새 자동 제작 시작/tick과 실제 발송을 함께 차단한다. 중단 후 DO도 dry_run/off/unconfirmed로 맞추며 구체적인 순서는 아래 복구 명령을 따른다. 이미 진행 중인 외부 요청의 취소는 보장하지 않는다. 0014~0018의 테이블·수량·시도·중복 거절 이력은 보존하며, 저장 오류에서 KV 파일 확인 없이 용량을 수동 반환하지 않는다. 상세 설정과 복구 경계는 [제품 연결 문서](AI_CARD_AUTOMATION_IMPLEMENTATION.md)를 따른다.
 
 ## 비공개 발송 Worker 중단·복구
 
@@ -30,7 +30,7 @@ AI 서버 연결은 기존 Site Secret을 사용한다. 키 오류는 사이트 
 
 바인딩 오류·불완전한 응답 뒤에는 주 Worker가 직접 재발송하지 않습니다. 자식이 이미 API를 호출했거나 결과를 저장했을 수 있기 때문입니다. 기한이 지난 claimed는 회수하고 sending은 unknown으로 처리합니다. 앱의 시도별 기록과 본인 채팅방을 확인한 뒤 기존 결과 확인 절차를 따르세요.
 
-현재 0017 다중 시험 지원 코드의 dry_run 복귀 명령은 다음과 같습니다. `wrangler.deploy.jsonc`와 `wrangler.automation.deploy.jsonc`는 같은 운영 D1·KV·APP_ORIGIN을 가리키고 둘 다 `SEND_MODE=dry_run`이어야 합니다. DO는 off/unconfirmed로 준비합니다. 새 파일은 [설정 절차](SETUP.md#원격-실행-절차)대로 만들며 기존 파일을 덮어쓰지 않습니다. 설정이 바뀌면 로컬 검사부터 다시 실행합니다. 신규 설치 순서와 달리 **긴급 중단은 주 Worker를 먼저 dry_run으로 배포한 뒤 DO 모드를 맞춰** live 주 Worker가 dry_run DO를 호출하는 구간을 피합니다.
+현재 0018 다중 시험·중복 재생성 호환 코드의 dry_run 복귀 명령은 다음과 같습니다. `wrangler.deploy.jsonc`와 `wrangler.automation.deploy.jsonc`는 같은 운영 D1·KV·APP_ORIGIN을 가리키고 둘 다 `SEND_MODE=dry_run`이어야 합니다. DO는 off/unconfirmed로 준비합니다. 새 파일은 [설정 절차](SETUP.md#원격-실행-절차)대로 만들며 기존 파일을 덮어쓰지 않습니다. 설정이 바뀌면 로컬 검사부터 다시 실행합니다. 신규 설치 순서와 달리 **긴급 중단은 주 Worker를 먼저 dry_run으로 배포한 뒤 DO 모드를 맞춰** live 주 Worker가 dry_run DO를 호출하는 구간을 피합니다.
 
 ```sh
 npm run automation:fonts
