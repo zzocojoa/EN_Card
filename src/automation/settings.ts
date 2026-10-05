@@ -6,7 +6,14 @@ import {
 } from '../shared/automation';
 import { appError } from '../worker/types';
 import { kstDate } from '../shared/time';
-import { ACTIVE, readiness, type AutomationEnv, type Run, type SettingsRow } from './types';
+import {
+  ACTIVE,
+  AUTOMATION_TIMING,
+  readiness,
+  type AutomationEnv,
+  type Run,
+  type SettingsRow,
+} from './types';
 
 export const unresolvedSql =
   "EXISTS(SELECT 1 FROM deliveries d JOIN automation_runs r ON r.schedule_id=d.schedule_id WHERE d.state='sending' OR (d.state='unknown' AND d.resolution IS NULL))";
@@ -95,7 +102,7 @@ export async function changeSettings(
     if (await env.DB.prepare(`SELECT 1 WHERE ${unresolvedSql}`).first())
       throw appError(409, 'AUTOMATION_UNRESOLVED', '이전 발송 결과를 먼저 확인하세요.');
   }
-  const due = nextAutomationDue(settings, now + 3600000 - 1);
+  const due = nextAutomationDue(settings, now + AUTOMATION_TIMING.preparationMs - 1);
   if (action === 'start' && due === null)
     throw appError(
       400,

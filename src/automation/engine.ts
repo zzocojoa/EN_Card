@@ -1,6 +1,5 @@
 import {
   automationSettings,
-  nextAutomationDue,
   parseAiCard,
   reviewPassed,
   reviewSchema,
@@ -13,7 +12,7 @@ import { validatePng } from '../worker/png';
 import { deleteImage, retainUploadCleanup } from '../worker/storage';
 import { AiError, type AiCall } from './providers';
 import {
-  ACTIVE,
+  AUTOMATION_TIMING,
   currentGuard,
   readiness,
   type AutomationEnv,
@@ -21,6 +20,7 @@ import {
   type SettingsRow,
 } from './types';
 import { changeSettings, unresolvedSql } from './settings';
+import { allocateDailyRuns, claimNextRun, completeAutomationIfIdle, expireRuns } from './run-queue';
 
 export type AutomationRuntime = {
   ai: AiCall;
@@ -147,7 +147,7 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
     else
       await progress(env, run, runtime.clock(), 'error=?,retry_at=?', [
         failure.code,
-        runtime.clock() + 60000,
+        runtime.clock() + AUTOMATION_TIMING.aiRetryMs,
       ]);
   }
 }
@@ -257,7 +257,14 @@ async function renderPhase(
     ).bind(run.asset_id, run.card_id, run.content, ...guardArgs(run, end), run.asset_id),
     env.DB.prepare(
       `UPDATE automation_runs SET status='schedule',claim_owner=NULL,claim_until=NULL,retry_at=?,error=NULL,updated_at=? WHERE ${owned} AND EXISTS(SELECT 1 FROM cards WHERE id=? AND revision=1 AND content=? AND asset_id=? AND review_source='ai')`,
-    ).bind(end + 120000, end, ...guardArgs(run, end), run.card_id, run.content, run.asset_id),
+    ).bind(
+      end + AUTOMATION_TIMING.imagePropagationMs,
+      end,
+      ...guardArgs(run, end),
+      run.card_id,
+      run.content,
+      run.asset_id,
+    ),
   ]);
 }
 async function schedulePhase(env: AutomationEnv, run: Run, now: number): Promise<void> {
@@ -273,10 +280,8 @@ async function schedulePhase(env: AutomationEnv, run: Run, now: number): Promise
     await pause(env, run, 'connection', now);
     return;
   }
-  const card = parseAiCard(
-    JSON.parse(run.content!),
-    automationSettings.parse(JSON.parse(run.settings)),
-  );
+  const settings = automationSettings.parse(JSON.parse(run.settings));
+  const card = parseAiCard(JSON.parse(run.content!), settings);
   const payload = JSON.stringify(makePayload(card, run.public_id, env.APP_ORIGIN));
   const guard = `EXISTS(SELECT 1 FROM automation_runs WHERE ${owned})`;
   const out = await env.DB.batch([
@@ -286,14 +291,14 @@ async function schedulePhase(env: AutomationEnv, run: Run, now: number): Promise
       run.schedule_id,
       `AI ${run.day} · ${run.item_index}/${run.item_count} · ${card.expression}`.slice(0, 100),
       run.day,
-      automationSettings.parse(JSON.parse(run.settings)).time,
+      settings.time,
       run.due_at,
       run.id,
       ...guardArgs(run, now),
       run.card_id,
       run.content,
       run.asset_id,
-      now - 120000,
+      now - AUTOMATION_TIMING.imagePropagationMs,
     ),
     env.DB.prepare(
       'INSERT INTO schedule_items(schedule_id,version,position,asset_id,payload) SELECT id,1,0,?,? FROM schedules WHERE id=? AND mutation_id=? ON CONFLICT DO NOTHING',
@@ -314,64 +319,11 @@ export async function automationTick(
     'SELECT * FROM automation_settings WHERE singleton=1 AND enabled=1',
   ).first<SettingsRow>();
   if (!config) return;
-  await env.DB.prepare(
-    `UPDATE automation_runs SET status='skipped',error='expired',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE status IN ${ACTIVE} AND deadline<=?`,
-  )
-    .bind(now, now)
-    .run();
-  if (config.next_due_at !== null && config.next_due_at - 3600000 <= now) {
-    const due = config.next_due_at;
-    const settings = automationSettings.parse(JSON.parse(config.settings));
-    const next = nextAutomationDue(settings, Math.max(due, now + 300000));
-    const valid = due - 300000 > now;
-    const day = kstDate(due);
-    // One atomic batch freezes all slots and advances the cursor. The first legacy-compatible
-    // key anchors the day, so changing quantity/time or restarting never replenishes it.
-    await env.DB.batch([
-      ...Array.from({ length: settings.cards_per_day }, (_, index) =>
-        env.DB.prepare(
-          `INSERT INTO automation_runs(id,dedupe_key,day,item_index,item_count,config_version,settings,due_at,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,error,updated_at) SELECT ?,?,?,?,?,version,settings,?,?,?,'google','groq',?,?,?,?,?,? FROM automation_settings WHERE singleton=1 AND enabled=1 AND version=? AND next_due_at=? AND (?=1 OR EXISTS(SELECT 1 FROM automation_runs r WHERE r.kind='daily' AND r.day=? AND r.item_index=1 AND r.config_version=? AND r.due_at=? AND r.item_count=?)) ON CONFLICT DO NOTHING`,
-        ).bind(
-          crypto.randomUUID(),
-          index === 0 ? day : `${day}:${index + 1}`,
-          day,
-          index + 1,
-          settings.cards_per_day,
-          due,
-          due - 300000,
-          valid ? 'draft' : 'skipped',
-          crypto.randomUUID(),
-          crypto.randomUUID(),
-          crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', ''),
-          crypto.randomUUID(),
-          valid ? null : 'expired',
-          now,
-          config.version,
-          due,
-          index + 1,
-          day,
-          config.version,
-          due,
-          settings.cards_per_day,
-        ),
-      ),
-      env.DB.prepare(
-        'UPDATE automation_settings SET next_due_at=?,updated_at=? WHERE singleton=1 AND enabled=1 AND version=? AND next_due_at=?',
-      ).bind(next, now, config.version, due),
-    ]);
-  }
-  const owner = crypto.randomUUID();
-  const run = await env.DB.prepare(
-    `UPDATE automation_runs SET claim_owner=?,claim_until=? WHERE id=(SELECT id FROM automation_runs WHERE status IN ${ACTIVE} AND ${currentGuard} AND not_before<=? AND deadline>? AND (retry_at IS NULL OR retry_at<=?) AND (claim_until IS NULL OR claim_until<=?) AND NOT EXISTS(SELECT 1 FROM automation_runs earlier WHERE earlier.kind=automation_runs.kind AND earlier.day=automation_runs.day AND earlier.item_index<automation_runs.item_index AND earlier.status IN ${ACTIVE}) ORDER BY due_at,item_index LIMIT 1) AND (claim_until IS NULL OR claim_until<=?) RETURNING *`,
-  )
-    .bind(owner, now + 120000, now, now, now, now, now)
-    .first<Run>();
+  await expireRuns(env.DB, now);
+  await allocateDailyRuns(env.DB, config, now);
+  const run = await claimNextRun(env.DB, now);
   if (!run) {
-    await env.DB.prepare(
-      `UPDATE automation_settings SET enabled=0,reason='complete',updated_at=? WHERE singleton=1 AND enabled=1 AND next_due_at IS NULL AND version=? AND NOT EXISTS(SELECT 1 FROM automation_runs WHERE status IN ${ACTIVE}) AND NOT EXISTS(SELECT 1 FROM schedules s JOIN automation_runs r ON r.schedule_id=s.id WHERE s.enabled=1) AND NOT EXISTS(SELECT 1 FROM deliveries d JOIN automation_runs r ON r.schedule_id=d.schedule_id WHERE d.state IN ('pending','claimed','sending','retry_wait','blocked') OR (d.state='unknown' AND d.resolution IS NULL))`,
-    )
-      .bind(now, config.version)
-      .run();
+    await completeAutomationIfIdle(env.DB, config.version, now);
     return;
   }
   try {

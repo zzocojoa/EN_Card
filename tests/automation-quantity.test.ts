@@ -356,6 +356,37 @@ it('pauses the whole batch on quota exhaustion and cancels already prepared pend
   await tick();
   expect(runtime.ai).toHaveBeenCalledTimes(1);
 });
+it('allocates the daily batch at the one-hour preparation boundary, not a millisecond early', async () => {
+  now = NOW - 30 * 60000;
+  await start(3);
+  const due = (await settingsView(env, now)).next_due_at;
+  expect(due).toBe(NOW + 3600000);
+  now = NOW - 1;
+  await automationTick(env, runtime);
+  expect(await rows()).toHaveLength(0);
+  expect(runtime.ai).not.toHaveBeenCalled();
+  expect((await settingsView(env, now)).next_due_at).toBe(due);
+  now++;
+  await automationTick(env, runtime);
+  expect(await rows()).toHaveLength(3);
+  expect(runtime.ai).toHaveBeenCalledTimes(1);
+});
+it.each([-1, 0])(
+  'honors the five-minute deadline for a late first tick: offset %i ms',
+  async (offset) => {
+    await start(3);
+    now = NOW + 55 * 60000 + offset;
+    await automationTick(env, runtime);
+    const runs = await rows();
+    expect(runs).toHaveLength(3);
+    expect(runs.every((run) => run.deadline === NOW + 55 * 60000)).toBe(true);
+    expect(runtime.ai).toHaveBeenCalledTimes(offset < 0 ? 1 : 0);
+    expect(runs.map((run) => run.status)).toEqual(
+      offset < 0 ? ['review', 'draft', 'draft'] : ['skipped', 'skipped', 'skipped'],
+    );
+    expect(runtime.render).not.toHaveBeenCalled();
+  },
+);
 it('expires the remaining slots without creating a catch-up burst', async () => {
   await start(5);
   await tick();

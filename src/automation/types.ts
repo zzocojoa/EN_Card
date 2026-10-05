@@ -51,6 +51,14 @@ export type SettingsRow = {
 };
 export const ACTIVE = "('draft','review','revise','render','schedule')";
 export const currentGuard = `EXISTS(SELECT 1 FROM automation_settings c WHERE c.singleton=1 AND c.enabled=1 AND c.version=automation_runs.config_version)`;
+// Application timing policy, not provider limits. Keep the claim lease and KV wait independent.
+export const AUTOMATION_TIMING = {
+  preparationMs: 60 * 60_000,
+  deadlineMarginMs: 5 * 60_000,
+  claimMs: 2 * 60_000,
+  imagePropagationMs: 2 * 60_000,
+  aiRetryMs: 60_000,
+} as const;
 export function readiness(env: AutomationEnv): string[] {
   return [
     env.COST_MODE === 'free_only' ? null : 'COST_MODE',

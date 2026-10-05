@@ -1,7 +1,13 @@
 import { automationSettings } from '../shared/automation';
 import { kstDate } from '../shared/time';
 import { appError } from '../worker/types';
-import { ACTIVE, readiness, type AutomationEnv, type SettingsRow } from './types';
+import {
+  ACTIVE,
+  AUTOMATION_TIMING,
+  readiness,
+  type AutomationEnv,
+  type SettingsRow,
+} from './types';
 import { unresolvedSql } from './settings';
 
 export async function startTrial(env: AutomationEnv, version: number, now: number): Promise<void> {
@@ -55,7 +61,7 @@ export async function startTrial(env: AutomationEnv, version: number, now: numbe
       due - 15 * 60000,
       configured,
       due,
-      due - 5 * 60000,
+      due - AUTOMATION_TIMING.deadlineMarginMs,
       crypto.randomUUID(),
       crypto.randomUUID(),
       crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', ''),

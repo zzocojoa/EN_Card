@@ -21,6 +21,23 @@
 
 한 tick에서 기존과 같이 한 run의 한 단계만 처리한다. 같은 날짜의 앞 카드가 끝나거나 건너뛰어야 다음 카드를 시작한다. AI relay에는 수량을 보내지 않아 기존 한 장짜리 strict 계약과 호환되며, 카드별 요청·검토·이미지 크기 상한도 유지한다.
 
+## 내부 구조와 리팩토링 검증
+
+2026-10-05 후속 리팩토링에서 `src/automation/run-queue.ts`로 만료 처리, 일일 묶음 생성, 다음 작업 claim, 유휴 상태의 완료 판정을 분리했다. `engine.ts`는 설정 확인 → 만료 → 일일 생성 → claim → AI/이미지/예약 단계 실행의 순서를 담당한다. 기존 SQL 28개와 바인딩 순서·batch 경계·설정 버전/claim 보호를 유지한다. 일일 생성과 다음 시각 이동은 계속 하나의 batch이며 새 DB 조회나 마이그레이션을 추가하지 않았다.
+
+`types.ts`의 `AUTOMATION_TIMING`에는 준비 60분, 제작 마감 여유 5분, claim 2분, 이미지 전파 대기 2분, AI 재시도 1분을 정의한다. claim과 이미지 대기는 값이 같아도 목적이 다르므로 별도 항목으로 유지한다. 설정 시작과 일일 생성은 준비 시간을, 일일 생성과 추가 시험은 제작 마감 여유를 공유하며 실제 값은 바꾸지 않았다. 예약 단계에서 같은 설정을 두 번 파싱하던 부분은 한 번으로 줄였다.
+
+유지보수 예: 시간 정책을 수정할 때는 `AUTOMATION_TIMING`과 사용자 안내를 함께 검토하고, `automation-quantity.test.ts`의 준비 시작 1ms 전/정각 및 제작 마감 1ms 전/정각 검사를 실행한다. 이 검사는 정책 상수를 그대로 가져와 기대값을 계산하지 않고 기존 사용자 동작을 고정한다.
+
+이번 리팩토링 검증은 **4파일 78개 통과**다. 수량 27개(시간 경계 3개 추가)·제품 43개·이미지 RPC 7개와 별도 제품 DO 1개를 실행했다. DO 검사는 로컬 workerd·D1/KV에서 실제 1080 PNG 생성/검증/저장을 확인하며 실제 AI·카카오 발송은 아니다. 타입·Prettier·웹 빌드·세 Worker dry-run·무료 구성 검사도 통과했다. DO dry-run은 런타임 테스트 준비 단계에서 실행했다. 로그는 `backups/automation-quantity-refactor-{tests,runtime,build,free}.log`다.
+
+하루단어 화면 원본 해시와 릴레이 원본/메모리 재빌드 결과가 기존 생성물과 같아 재내보내기는 필요하지 않았다. UI·API·스키마·배포 설정·의존성 변경은 없다. 위 검증은 커밋 전 로컬 변경을 대상으로 수행했으며, 후속 커밋·PR 상태는 [공통 출시 관리](PRODUCT_MANAGEMENT.md)를 따른다. 앞선 PR 커밋의 리뷰/CI를 이 리팩토링의 검증으로 표시하지 않는다. 원격 CPU·실제 다중 수신은 여전히 별도 검증이다.
+
+```powershell
+node node_modules/vitest/vitest.mjs run tests/automation-quantity.test.ts tests/automation-product.test.ts tests/automation-rpc.test.ts --file-parallelism --maxWorkers 2
+node node_modules/vitest/vitest.mjs run tests/automation-product-do.test.mjs --file-parallelism --maxWorkers 2
+```
+
 ## 비용과 검증 범위
 
 5장 상한은 앱의 보호 설정이다. 제공사가 5장 무료를 보장하는 값이 아니다. 재시도 없는 정상 5장은 작성 5회·검토 5회·PNG 5개·발송 5회를 사용한다. 검토 후 수정·재시도는 호출량을 늘리며 제공자·단계별 기존 시도 상한, 발송 일일 20회(재시도 포함), 저장 한도를 유지한다. 한도 오류에서 유료 경로로 우회하지 않는다.
