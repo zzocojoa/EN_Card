@@ -1,5 +1,15 @@
 # 검증 근거
 
+**18:31 시험 결과 — 5장 모두 서버 접수, 정규 예약 재개:** version33의5개 모두 최종 작성·반대 제공자 독립검토/내용해시·비중복·1080 PNG를 확인했고 **18:31:46~18:33:45 각1회 live 접수**됐다.2번은 두 번째 수정까지 뜻 검토에 탈락한 뒤0021 새 후보(revision4)로 전환해 다른 표현·최종 검토·발송을 통과했다.2·5번의 자연 중복 거절/재생성도 최종 성공했다. 같은 수정 차수의 제공자 장애 대체는 발생하지 않았다.
+
+실제 AI22회 중 응답처리 성공20·일시 unavailable2회다(HTTP503 한 번,HTTP상태 없는 실패 한 번). CPU 반환 그룹P99 최고는 주 Worker **5.882ms**·발송 **5.901ms**·DO **341.400ms**다. 관측 런타임 오류0·sampleInterval1·현재 버전 일치를 확인했으나 발송 Worker의17:43/17:52/17:59/18:02 KST 분별 자료는 좁은 재조회에도 비었다. 분 경계 이후로 밀리는 호출도 있으므로 빈4분을 누락4호출로 단정하지 않는다. 전체 호출 최대나 CPU 관측 완료로 표시하지 않으며 병합 조건도 미완료다.
+
+시험 종료·동일설정·연결정상·진행 중/미해결0을 확인하고 **18:43 KST version34·매일07:30·5장 활성, 다음10월7일07:30**으로 재개했다. 설정 외18개 D1 테이블 해시·FK0·활성 버전/바인딩/Cron을 보존했다.오늘 발송20/20·업로드21/100이며 예산을 변경하지 않았다. `en-card-5` 점검만 PAUSED이고 제품 정규 제작은 활성이다. 새 시험·추가 AI·재발송·배포·이력 초기화0이다.
+
+이번5장 휴대전화 이미지·원본 링크는 사용자 답변 대기다. 두 PR은 서버5건 통과에도 사용자 수신과 CPU 관측 공백 확인이 남아 미병합이며 전체 목표도 완료 처리하지 않았다. 무료 구성을 유지했고 계정 플랜/공유 잔여량을 새로 확인한 것은 아니다. 이전 시험과10월5일 사용자4/서버3 차이는 별도로 보존한다. 아래 등록·미배포·이전 설정은 당시 기록이다.
+
+근거는 `backups/automation-replacement-trial-20261006/`의 verify-scheduled-trial·metrics-scheduled-trial·metrics-coverage-recheck·result-detail·resumed·audit-after-resume JSON과 하루단어 `docs/releases/2026-10-06-automation-replacement-trial.json`이다. 완료한 resume은 재실행하지 않는다. 추가 읽기 조회 예: `node backups/automation-replacement-trial-20261006/observe.mjs after-confirmation`(새 라벨 사용). observe의 expectedVersionMatch=false는 등록version33과 재개version34 차이이며 resumed.json과 직접 대조했다.
+
 **새 후보 운영 반영·가장 빠른5장 시험 — 2026-10-06 17:31 KST:** 사용자 승인에 따라 D1 `0021_automation_quality_replacement.sql`, 자동화 DO `0edb3eb3-52ae-4800-b7ae-9ff21530e599`, 하루단어 Site v121을 반영했다. 최종 품질 탈락 시 시간/호출 예산 안에서 다른 표현의 새 후보를 한 번 작성·독립 검토한다. 아래 미배포/이전 예약 안내는 각 당시 기록이다.
 
 쓰기·Cron 차단 후 DB DPAPI 암호화/복호화 왕복·제한 ACL·평문 제거를 확인했다.0021의7문장과 이력 INSERT를 원자 적용하고 기존18개 데이터 테이블 해시·FK0·version31 설정을 보존했다. 호환 DO→Site 게시 후 주 Worker/매분 Cron을 복원했으며 실제 배포 바인딩과 공개 manifest/5파일 해시·비로그인401을 확인했다. 기본·정확한live 무료 구성 및 DO dry-run/사이트 빌드는 통과했다. 유료 자원 추가0이며 계정 플랜은 기존 사용자 Free 확인 근거다(구독 API403, 새 플랜 재확인 아님).
