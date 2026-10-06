@@ -29,6 +29,39 @@ export async function registerTrial(
   now: number,
   options: unknown = {},
 ): Promise<void> {
+  await registerTrialBatch(db, version, now, options);
+}
+
+// Privileged maintenance only, after explicit operator approval of one extra
+// five-card verification. This is not exposed through the public trial API.
+// Reusing the same authorization ID never creates another batch.
+export async function registerVerificationTrial(
+  db: D1Database,
+  version: number,
+  now: number,
+  authorizationId: string,
+  dueAt?: number,
+): Promise<void> {
+  if (
+    !/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(authorizationId)
+  )
+    throw appError(400, 'VERIFICATION_ID', '검증 승인 식별자를 확인하세요.');
+  await registerTrialBatch(
+    db,
+    version,
+    now,
+    { cards: 5, due_at: dueAt },
+    `verification:${authorizationId}`,
+  );
+}
+
+async function registerTrialBatch(
+  db: D1Database,
+  version: number,
+  now: number,
+  options: unknown,
+  verificationKey?: string,
+): Promise<void> {
   const trial = automationTrial.parse(options);
   const old = await db
     .prepare('SELECT * FROM automation_settings WHERE singleton=1')
@@ -48,13 +81,17 @@ export async function registerTrial(
   const day = kstDate(now);
   if (kstDate(due) !== day)
     throw appError(400, 'TRIAL_DATE', '오늘 안에 준비·발송할 시간이 부족합니다. 내일 시험하세요.');
-  if (
-    await db.prepare("SELECT 1 FROM automation_runs WHERE day=? AND kind='trial'").bind(day).first()
-  )
+  const unused = verificationKey
+    ? 'NOT EXISTS(SELECT 1 FROM automation_runs WHERE dedupe_key=?)'
+    : "NOT EXISTS(SELECT 1 FROM automation_runs WHERE kind='trial' AND day=?)";
+  const trialIdentity = verificationKey ?? day;
+  if (!(await db.prepare(`SELECT 1 WHERE ${unused}`).bind(trialIdentity).first()))
     throw appError(
       409,
       'TRIAL_USED',
-      '오늘의 추가 시험은 이미 사용했습니다. 중단해도 다시 생성하지 않습니다.',
+      verificationKey
+        ? '이미 사용한 검증 승인입니다. 같은 요청으로 다시 생성하지 않습니다.'
+        : '오늘의 추가 시험은 이미 사용했습니다. 중단해도 다시 생성하지 않습니다.',
     );
   const settings = automationSettings.parse(JSON.parse(old.settings));
   const configured = JSON.stringify({
@@ -78,12 +115,14 @@ export async function registerTrial(
           `INSERT INTO automation_runs(id,dedupe_key,day,kind,item_index,item_count,not_before,config_version,settings,due_at,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,updated_at)
       SELECT ?,?,?,'trial',?,?,?,version+1,?,?,?,'draft','google','groq',?,?,?,?,?
       FROM automation_settings WHERE singleton=1 AND version=? AND enabled=0 AND ${connected}
-      AND ((?=1 AND ${idle} AND NOT EXISTS(SELECT 1 FROM automation_runs WHERE kind='trial' AND day=?))
+      AND ((?=1 AND ${idle} AND ${unused})
         OR (? > 1 AND EXISTS(SELECT 1 FROM automation_runs WHERE id=? AND config_version=?)))`,
         )
         .bind(
           id,
-          index === 0 ? `trial:${day}` : `trial:${day}:${index + 1}`,
+          index === 0
+            ? (verificationKey ?? `trial:${day}`)
+            : `${verificationKey ?? `trial:${day}`}:${index + 1}`,
           day,
           index + 1,
           trial.cards,
@@ -98,7 +137,7 @@ export async function registerTrial(
           now,
           version,
           index + 1,
-          day,
+          trialIdentity,
           index + 1,
           ids[0],
           version + 1,

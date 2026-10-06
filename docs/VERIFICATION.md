@@ -1,5 +1,26 @@
 # 검증 근거
 
+**즉시 새5장 검증 등록 — 2026-10-06:** 사용자 요청에 따라 기존 하루 한 번 시험 기록을 보존하는 관리자 전용 검증 회차를 추가했다. **version27·trial5개,11:41 제작·12:36 마감·12:41부터 순차 발송·12:51 점검**이다. 일반 API의 하루 한 번 제한·일일 발송20회·PNG2분 대기는 유지한다. 저장된 매일07:30/5장·종료2027-10-31 설정값을 보존했고 시험 중next_due_at=NULL이다. 종료·동일설정·미해결없음 조건에서 원래10월7일07:30 정규 예약만 재개한다.
+
+0019 인덱스를 원자적으로 적용하며 암호화 백업·복호화 검증, 기존18개 데이터 테이블 해시/FK 보존을 확인했다. 기존 DO가 저장된60분 준비/55분 제작을 처리하므로 Worker·Site 재배포는 없다. **사이트 일반 등록은 아직45분 정책**이며 이번 시험은 새 화면 배포 검증이 아니다. 제품23개·정규재개15개·등록중단복구14개 로컬 검사와 타입·무료 구성·DO dry-run을 통과했다. 검토에서 발견한 등록 중단 후 정규예약 복구 경로를 보완했다. 실제5장 접수·휴대전화 수신·CPU와 자연 제공자 대체/중복은 대기다. 아래 version25/내일 첫 점검은 이전 기록이다. **11:41:16 KST 실제 첫 AI 호출 후 초안 성공·검토 단계 진입**을 읽기 확인했다. 새5개만 조회됐고 운영 Worker/바인딩/Cron과 저장 설정 해시가 일치한다. 재개 도구는 현재 제작 중이므로 ready=false로 안전하게 거부했다.
+
+
+## 이번 검증의 조회·재개 명령
+
+같은 날 trial이 두 회차이므로 **day/kind/config_version=27**을 함께 사용한다. 기존09:49 시험 version24의4장과 섞지 않는다. 이전 디렉터리의 등록/복구 도구를 재실행하지 않는다. 파일 라벨이 있으면 새 라벨로 읽고 덮어쓰지 않는다.
+
+```powershell
+node backups/automation-now-trial-20261006/observe.mjs scheduled-trial
+node backups/automation-now-trial-20261006/verify.mjs 2026-10-06 5 scheduled-trial trial
+# verify 결과 suggestedCpuWindow의 실제 UTC 시작·끝 사용
+node backups/automation-now-trial-20261006/metrics.mjs <UTC_START> <UTC_END> scheduled-trial
+# 시험 종료 후 읽기 보호검사. ready=true이고 intent/resumed가 없을 때만 --apply
+node backups/automation-now-trial-20261006/resume.mjs
+node backups/automation-now-trial-20261006/resume.mjs --apply
+```
+
+재개는 version28·원래10월7일07:30인지 확인하고 `en-card-5`를10월7일07:50에 다시 예약한다. 재개 후에는 같은 폴더의 `verify.mjs 2026-10-07 5 scheduled-daily daily`를 사용한다. 현재 신규등록/재발송/추가AI/배포 명령은 실행하지 않는다. 서버5건 접수와 사용자5장 수신은 별도 조건이며 CPU는 microseconds÷1000, 그룹P99와 전체 최댓값을 구분한다. 실제 수정 대체·중복이 없으면 미관측으로 남긴다.
+
 ## 새5장 시험 준비창60분 — 2026-10-06 로컬 후보
 
 - 공유 `trialLeadMinutes(5)`를45→60분으로 변경했다. 기본/지정 발송 시각과 시작 시각이 같은 함수를 사용하며 실제 제작창은55분이다. 1~4장, 기존 run의 저장 시각, 정규 예약과5분 마감·PNG2분 대기는 유지한다. 변경 전 새60분 기대값 검사는45분 실제값으로 실패했고, 수정 후 통과했다.

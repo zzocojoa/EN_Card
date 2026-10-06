@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { harness, harnessThrough, NOW, SAMPLE, type Harness } from './helpers';
 import { validPng } from './png-fixture';
-import { startTrial } from '../src/automation/trial';
+import { registerVerificationTrial, startTrial } from '../src/automation/trial';
 import { changeSettings, settingsView } from '../src/automation/settings';
 import { automationTick, type AutomationRuntime } from '../src/automation/engine';
 import type { AutomationEnv, Run } from '../src/automation/types';
@@ -189,6 +189,123 @@ it('accepts the last same-day five-card slot at exactly sixty minutes', async ()
   expect((await rows()).every((r) => r.due_at === Date.parse('2026-09-28T23:59:00+09:00'))).toBe(
     true,
   );
+});
+it('an explicitly authorized second trial prepares five new cards without changing prior history', async () => {
+  await startTrial(env, 1, now, { cards: 5 });
+  await changeSettings(env, 'pause', 2, null, now);
+  const previous = await rows();
+  const saved = await env.DB.prepare('SELECT settings FROM automation_settings').first('settings');
+  await registerVerificationTrial(env.DB, 3, now, crypto.randomUUID());
+  const added = (await rows()).filter((r) => r.config_version === 4);
+  expect(added).toHaveLength(5);
+  expect(added.every((r) => r.day === '2026-09-28' && r.due_at === NOW + 60 * 60000)).toBe(true);
+  expect(added.every((r) => r.deadline - r.not_before === 55 * 60000)).toBe(true);
+  for (let minute = 0; minute < 55; minute++) {
+    now = NOW + minute * 60000;
+    await automationTick(env, runtime);
+  }
+  expect(
+    (await rows()).filter((r) => r.config_version === 4).every((r) => r.status === 'scheduled'),
+  ).toBe(true);
+  expect((await rows()).filter((r) => r.config_version !== 4)).toEqual(previous);
+  expect(await env.DB.prepare('SELECT settings FROM automation_settings').first('settings')).toBe(
+    saved,
+  );
+  expect(await settingsView(env, now)).toMatchObject({ trial_used_today: true, next_due_at: null });
+  now = NOW + 60 * 60000;
+  const sender = vi.fn(async () => ({
+    outcome: 'mock_sent' as const,
+    detail: 'verification mock',
+  }));
+  for (let tick = 0; tick < 5; tick++) {
+    await prepareEngine(h.env, now, 'mock');
+    await runEngine(h.env, { mode: 'mock', clock: () => now, token: async () => 'mock', sender });
+    now += 60000;
+  }
+  expect(sender).toHaveBeenCalledTimes(5);
+  expect((await rows()).filter((r) => r.config_version !== 4)).toEqual(previous);
+}, 60000);
+it('verification authorization is consumed once even after settings version changes', async () => {
+  const authorization = crypto.randomUUID();
+  await registerVerificationTrial(env.DB, 1, now, authorization);
+  await changeSettings(env, 'pause', 2, null, now);
+  await expect(registerVerificationTrial(env.DB, 3, now, authorization)).rejects.toMatchObject({
+    code: 'TRIAL_USED',
+  });
+  await expect(startTrial(env, 3, now, { cards: 5 })).rejects.toMatchObject({ code: 'TRIAL_USED' });
+  expect(await rows()).toHaveLength(5);
+});
+it('concurrent distinct verification authorizations cannot activate two batches', async () => {
+  const result = await Promise.allSettled([
+    registerVerificationTrial(env.DB, 1, now, crypto.randomUUID()),
+    registerVerificationTrial(env.DB, 1, now, crypto.randomUUID()),
+  ]);
+  expect(result.filter((r) => r.status === 'fulfilled')).toHaveLength(1);
+  expect(await rows()).toHaveLength(5);
+});
+it('verification rejects invalid identities, short preparation and public API override fields', async () => {
+  await expect(
+    registerVerificationTrial(env.DB, 1, now, 'verification:override'),
+  ).rejects.toMatchObject({ code: 'VERIFICATION_ID' });
+  await expect(
+    registerVerificationTrial(env.DB, 1, now, crypto.randomUUID(), now + 59 * 60000),
+  ).rejects.toMatchObject({ code: 'TRIAL_TIME' });
+  await expect(
+    startTrial(env, 1, now, { cards: 5, authorizationId: crypto.randomUUID() }),
+  ).rejects.toThrow();
+  expect(await rows()).toHaveLength(0);
+});
+it('verification keeps the paused, connected and idle guards and rolls back a middle-slot failure', async () => {
+  await changeSettings(env, 'start', 1, null, now);
+  await expect(
+    registerVerificationTrial(env.DB, 2, now, crypto.randomUUID()),
+  ).rejects.toMatchObject({ code: 'AUTOMATION_ACTIVE' });
+  await changeSettings(env, 'pause', 2, null, now);
+  await env.DB.prepare("UPDATE credentials SET status='needs_reconnect'").run();
+  await expect(
+    registerVerificationTrial(env.DB, 3, now, crypto.randomUUID()),
+  ).rejects.toMatchObject({ code: 'TRIAL_UNAVAILABLE' });
+  expect(await rows()).toHaveLength(0);
+  await env.DB.prepare("UPDATE credentials SET status='connected'").run();
+  await env.DB.exec(
+    "CREATE TRIGGER fail_verification BEFORE INSERT ON automation_runs WHEN NEW.item_index=3 BEGIN SELECT RAISE(ABORT,'injected'); END;",
+  );
+  await expect(registerVerificationTrial(env.DB, 3, now, crypto.randomUUID())).rejects.toThrow();
+  expect(await rows()).toHaveLength(0);
+  expect(await settingsView(env, now)).toMatchObject({ version: 3, enabled: false });
+});
+it('0019 changes indexes only and preserves the existing normal trial uniqueness', async () => {
+  const old = await harnessThrough('0018_automation_duplicate_retry.sql');
+  try {
+    const legacy = { ...env, DB: old.env.DB, CARD_IMAGES: old.env.CARD_IMAGES };
+    await legacy.DB.prepare(
+      "INSERT INTO credentials(singleton,owner_id,expires_at,refresh_expires_at,version,status) VALUES(1,'owner',?,?,1,'connected')",
+    )
+      .bind(NOW + 86400000, NOW + 86400000)
+      .run();
+    await changeSettings(legacy, 'save', 0, settings, now);
+    await startTrial(legacy, 1, now, { cards: 5 });
+    const before = (await legacy.DB.prepare('SELECT * FROM automation_runs ORDER BY id').all())
+      .results;
+    await legacy.DB.exec(
+      (await readFile('migrations/0019_automation_verification_trials.sql', 'utf8')).replaceAll(
+        '\n',
+        ' ',
+      ),
+    );
+    expect(
+      (await legacy.DB.prepare('SELECT * FROM automation_runs ORDER BY id').all()).results,
+    ).toEqual(before);
+    await expect(
+      legacy.DB.prepare(
+        `INSERT INTO automation_runs(id,dedupe_key,day,kind,item_index,item_count,config_version,settings,due_at,not_before,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,updated_at)
+      SELECT 'illegal-normal','trial:second-normal',day,kind,item_index,item_count,config_version,settings,due_at,not_before,deadline,status,writer,reviewer,'other-card','other-asset','other-public','other-schedule',updated_at FROM automation_runs WHERE item_index=1`,
+      ).run(),
+    ).rejects.toThrow();
+    expect((await legacy.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([]);
+  } finally {
+    await old.mf.dispose();
+  }
 });
 it('0017 preserves existing five-card daily rows, single trial, attempts and expression references', async () => {
   const old = await harnessThrough('0016_automation_quantity.sql');
