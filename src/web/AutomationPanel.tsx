@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import {
   automationReasons,
   MAX_AUTOMATION_CARDS_PER_DAY,
+  trialLeadMinutes,
   reviewPassed,
   type AutomationSettings,
   type AutomationView,
@@ -17,7 +18,7 @@ import { downloadBlob } from './canvas';
 const stages: Record<string, string> = {
   draft: '초안 작성',
   review: '교차 검토',
-  revise: '한 번 수정',
+  revise: '내용 수정',
   render: '이미지 저장',
   schedule: '예약 준비',
   scheduled: '예약 등록 완료',
@@ -52,6 +53,8 @@ export function AutomationPanel() {
   const setSettings = setAutomationDraft;
   const [runs, setRuns] = useState<AutomationRunView[]>([]);
   const [error, setError] = useState('');
+  const [trialCards, setTrialCards] = useState(1);
+  const [trialTime, setTrialTime] = useState('');
   const dirtyRef = useRef(dirty);
   const statusRequest = useRef<AbortController | null>(null);
   const editRequest = useRef<AbortController | null>(null);
@@ -111,7 +114,20 @@ export function AutomationPanel() {
       const next = (await api(
         action === 'save' ? '/api/automation' : `/api/automation/${action}`,
         action === 'save' ? 'PUT' : 'POST',
-        { version: view?.version ?? 0, ...(action === 'save' ? { settings } : {}) },
+        {
+          version: view?.version ?? 0,
+          ...(action === 'save' ? { settings } : {}),
+          ...(action === 'trial'
+            ? {
+                trial: {
+                  cards: trialCards,
+                  ...(trialTime
+                    ? { due_at: Date.parse(`${kstDate(Date.now())}T${trialTime}:00+09:00`) }
+                    : {}),
+                },
+              }
+            : {}),
+        },
         csrf,
       )) as AutomationView;
       setView(next);
@@ -129,7 +145,7 @@ export function AutomationPanel() {
             : action === 'start'
               ? '자동 제작을 시작했습니다.'
               : action === 'trial'
-                ? '오늘의 추가 한 장 시험을 등록했습니다. 아래 제작·발송 시각을 확인하세요. PC를 꺼도 진행됩니다.'
+                ? `오늘의 새 AI 카드 ${trialCards}장 시험을 등록했습니다. 아래 제작·발송 시각을 확인하세요. PC를 꺼도 진행됩니다.`
                 : '자동 제작과 대기 중인 자동 예약을 중단했습니다.',
       });
     });
@@ -404,13 +420,47 @@ export function AutomationPanel() {
       </div>
       <details className="automation-trial">
         <summary>
-          먼저 한 장 받아보고 싶다면 <span>추가 시험</span>
+          새 AI 카드를 먼저 받아보고 싶다면 <span>추가 시험</span>
         </summary>
         <p>
-          저장한 주제로 약 10분 뒤 제작하고 25분 뒤 발송합니다. 매일 받을 일정과 기존 기록은
-          보존됩니다. 선택한 일일 수량과 관계없이 한 장만 시험합니다. 하루 한 번이며, 중단해도 다시
-          제작하지 않습니다.
+          저장한 주제로 새 카드를 작성·검토하고 이미지를 준비합니다. 매일 받을 설정과 기존 기록은
+          보존됩니다. 시험은 하루 한 번 1~5장이며, 중단해도 다시 제작하지 않습니다. 시험 후 매일
+          자동 제작은 직접 다시 시작하세요.
         </p>
+        <label>
+          시험 카드 수
+          <select
+            aria-label="시험 카드 수"
+            value={trialCards}
+            disabled={busy}
+            onChange={(e) => setTrialCards(Number(e.target.value))}
+          >
+            {Array.from({ length: MAX_AUTOMATION_CARDS_PER_DAY }, (_, i) => (
+              <option key={i + 1} value={i + 1}>
+                {i + 1}장
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          오늘 시험 발송 시각 (한국 시간, 선택)
+          <input
+            type="time"
+            value={trialTime}
+            disabled={busy}
+            onChange={(e) => setTrialTime(e.target.value)}
+          />
+        </label>
+        <p>
+          최소 {trialLeadMinutes(trialCards)}분의 준비 시간이 필요합니다. 시각을 비워 두면 가장 빠른
+          시간으로 예약합니다. 여러 장은 순차 발송됩니다.
+        </p>
+        {trialCards === 5 && (
+          <p>
+            5장은 발송 60분 전부터 5분 전까지 제작합니다. 이미지 준비 후 2분 대기를 포함하며, 재시도
+            상황에 따라 일부 카드가 제외될 수 있습니다.
+          </p>
+        )}
         {view?.trial_used_today && <p role="status">오늘 시험은 이미 등록했습니다.</p>}
         <button
           className="secondary"
@@ -427,7 +477,7 @@ export function AutomationPanel() {
           }
           onClick={() => act('trial')}
         >
-          오늘 한 장 시험
+          오늘 새 AI 카드 {trialCards}장 시험
         </button>
       </details>
       <section className="automation-history" aria-label="최근 제작 기록">
@@ -466,7 +516,7 @@ export function AutomationPanel() {
                 <span>
                   {run.day} ·{' '}
                   {run.kind === 'trial'
-                    ? '추가 한 장 시험'
+                    ? `추가 시험 ${run.item_index ?? 1}/${run.item_count ?? 1}`
                     : `매일 제작 ${run.item_index ?? 1}/${run.item_count ?? 1}`}
                 </span>
                 <span className={`badge ${run.status === 'scheduled' ? 'ready' : ''}`}>
@@ -489,7 +539,7 @@ export function AutomationPanel() {
                   {reviewPassed(run.review)
                     ? 'AI 검토 통과'
                     : run.review.issues.join(' · ') || 'AI 검토 미통과'}{' '}
-                  · 수정본 {run.revision}
+                  · 내용 버전 {run.revision}
                 </p>
               )}
               {run.delivery_state && <p>발송: {label(run.delivery_state)}</p>}

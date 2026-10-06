@@ -409,7 +409,7 @@ it('settings changes cancel already prepared automatic schedules and preserve ma
   expect(await env.DB.prepare('SELECT count(*) AS n FROM cards').first('n')).toBe(2);
   expect((await settingsView(env)).enabled).toBe(false);
 });
-it('one correction must be independently reviewed, a second failed review skips the day', async () => {
+it('two corrections require independent reviews and a third failed review starts one fresh candidate', async () => {
   await start();
   runtime.ai = vi.fn(async (r) => (r.stage === 'review' ? bad : draft));
   await tick();
@@ -418,7 +418,11 @@ it('one correction must be independently reviewed, a second failed review skips 
   await tick(60000);
   expect((await run()).revision).toBe(2);
   await tick(60000);
-  expect((await run()).error).toBe('review_failed');
+  expect((await run()).status).toBe('revise');
+  await tick(60000);
+  expect((await run()).revision).toBe(3);
+  await tick(60000);
+  expect(await run()).toMatchObject({ status: 'draft', revision: 4, error: 'quality_replacement' });
   expect(runtime.render).not.toHaveBeenCalled();
   expect((await settingsView(env)).enabled).toBe(true);
 });
@@ -489,7 +493,7 @@ it('case-folded duplicate expressions cannot be reserved', async () => {
   await saveCard({ ...SAMPLE, expression: 'TAKE YOUR TIME' }, null, null, h.env, now);
   await start();
   await tick();
-  expect((await run()).error).toBe('duplicate');
+  expect((await run()).error).toBe('duplicate_retry');
 });
 it('editing the card during rendering invalidates automatic scheduling', async () => {
   await start();

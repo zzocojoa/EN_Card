@@ -4,6 +4,7 @@ import {
   reviewPassed,
   reviewSchema,
   expressionKey,
+  MAX_DUPLICATE_CANDIDATES,
 } from '../shared/automation';
 import { kstDate } from '../shared/time';
 import { type CardInput } from '../shared/model';
@@ -13,6 +14,9 @@ import { deleteImage, retainUploadCleanup } from '../worker/storage';
 import { AiError, type AiCall } from './providers';
 import {
   AUTOMATION_TIMING,
+  MAX_AUTOMATION_AI_ATTEMPTS,
+  MAX_CORRECTED_REVISION,
+  REPLACEMENT_REVISION,
   currentGuard,
   readiness,
   type AutomationEnv,
@@ -59,33 +63,90 @@ async function pause(env: AutomationEnv, run: Run, reason: string, now: number):
     if (!(e instanceof Error && e.name === 'AUTOMATION_CHANGED')) throw e;
   }
 }
+async function retryDuplicate(
+  env: AutomationEnv,
+  run: Run,
+  expression: string,
+  now: number,
+): Promise<void> {
+  const rejected = JSON.parse(run.rejected_expressions) as string[];
+  const retry = rejected.length + 1 < MAX_DUPLICATE_CANDIDATES;
+  // A correction retains its original card and review. A render-time collision
+  // starts a fresh draft and must earn a new review before another render.
+  const correction = run.status === 'revise';
+  const changed = await env.DB.prepare(
+    `UPDATE automation_runs SET rejected_expressions=json_insert(rejected_expressions,'$[#]',?),
+      status=?,error=?,retry_at=NULL,claim_owner=NULL,claim_until=NULL,updated_at=?,
+      content=?,content_hash=?,review=?,review_hash=NULL
+      WHERE ${owned} AND json_array_length(rejected_expressions)<?
+      AND NOT EXISTS(SELECT 1 FROM cards WHERE id=automation_runs.card_id)
+      AND NOT EXISTS(SELECT 1 FROM assets WHERE id=automation_runs.asset_id)
+      AND NOT EXISTS(SELECT 1 FROM automation_expressions WHERE run_id=automation_runs.id)`,
+  )
+    .bind(
+      expression,
+      retry ? (correction ? 'revise' : 'draft') : 'skipped',
+      retry ? 'duplicate_retry' : 'duplicate_limit',
+      now,
+      correction ? run.content : null,
+      correction ? run.content_hash : null,
+      correction ? run.review : null,
+      ...guardArgs(run, now),
+      MAX_DUPLICATE_CANDIDATES,
+    )
+    .run();
+  // Never repurpose a card/asset already created or edited during rendering.
+  if (!changed.meta.changes) await progress(env, run, now, "status='skipped',error='changed'", []);
+}
 async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime): Promise<void> {
   const stage = run.status as 'draft' | 'review' | 'revise';
   const provider = stage === 'review' ? run.reviewer : run.writer;
-  const count = await env.DB.prepare(
-    'SELECT count(*) AS n FROM automation_attempts WHERE run_id=? AND stage=? AND revision=? AND provider=?',
+  const counts = await env.DB.prepare(
+    'SELECT stage,revision,provider,count(*) AS n FROM automation_attempts WHERE run_id=? GROUP BY stage,revision,provider',
   )
-    .bind(run.id, stage, run.revision, provider)
-    .first<{ n: number }>();
-  const attempts = count?.n ?? 0;
+    .bind(run.id)
+    .all<{ stage: string; revision: number; provider: Run['writer']; n: number }>();
+  const totalAttempts = counts.results.reduce((total, row) => total + row.n, 0);
+  if (totalAttempts >= MAX_AUTOMATION_AI_ATTEMPTS) {
+    await progress(env, run, runtime.clock(), "status='skipped',error='ai_limit'", []);
+    return;
+  }
+  const attemptsFor = (candidate: Run['writer']) =>
+    counts.results.find(
+      (row) => row.provider === candidate && row.stage === stage && row.revision === run.revision,
+    )?.n ?? 0;
+  const attempts = attemptsFor(provider);
   if (attempts >= 3) {
-    if (stage === 'draft' && run.writer === 'google')
-      await progress(
-        env,
-        run,
-        runtime.clock(),
-        "writer='groq',reviewer='google',retry_at=NULL",
-        [],
-      );
+    const replacement = run.writer === 'google' ? 'groq' : 'google';
+    if (
+      (stage === 'revise' || (stage === 'draft' && run.writer === 'google')) &&
+      attemptsFor(replacement) < 3
+    )
+      // Preserve the original correction and feedback, revision, and durable budgets.
+      // The replacement writer must earn a NEW review from the opposite provider.
+      // Exhausted attempts prevent a later tick from switching back indefinitely.
+      await progress(env, run, runtime.clock(), 'writer=?,reviewer=?,retry_at=NULL', [
+        replacement,
+        run.writer,
+      ]);
     else await progress(env, run, runtime.clock(), "status='skipped',error='unavailable'", []);
     return;
   }
   const id = crypto.randomUUID();
   const now = runtime.clock();
   const reserved = await env.DB.prepare(
-    `INSERT INTO automation_attempts(id,run_id,stage,revision,provider,started_at,outcome) SELECT ?,id,?,?,?,?,'started' FROM automation_runs WHERE ${owned} RETURNING id`,
+    `INSERT INTO automation_attempts(id,run_id,stage,revision,provider,started_at,outcome) SELECT ?,id,?,?,?,?,'started' FROM automation_runs WHERE ${owned}
+      AND (SELECT count(*) FROM automation_attempts WHERE run_id=automation_runs.id)<? RETURNING id`,
   )
-    .bind(id, stage, run.revision, provider, now, ...guardArgs(run, now))
+    .bind(
+      id,
+      stage,
+      run.revision,
+      provider,
+      now,
+      ...guardArgs(run, now),
+      MAX_AUTOMATION_AI_ATTEMPTS,
+    )
     .first();
   if (!reserved) return;
   try {
@@ -93,29 +154,97 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
       "SELECT json_extract(content,'$.expression') AS expression FROM cards ORDER BY created_at DESC LIMIT 50",
     ).all<{ expression: string }>();
     const settings = automationSettings.parse(JSON.parse(run.settings));
+    const replacedExpression = run.replacement_origin
+      ? (JSON.parse(run.replacement_origin) as { content: CardInput }).content.expression
+      : null;
+    const rejectedExpressions = [
+      ...(replacedExpression ? [replacedExpression] : []),
+      ...(JSON.parse(run.rejected_expressions) as string[]),
+    ];
     const value = await runtime.ai({
       provider,
       stage,
       settings,
       content: run.content ? JSON.parse(run.content) : null,
       review: run.review ? JSON.parse(run.review) : null,
-      recent: recent.results.map((r) => r.expression),
+      // Put rejections first so even an older duplicate outside the latest 50
+      // remains in the existing bounded relay request. Do not log these texts.
+      recent: [
+        ...new Set([...rejectedExpressions, ...recent.results.map((r) => r.expression)]),
+      ].slice(0, 50),
     });
     if (stage === 'review') {
       const review = reviewSchema.parse(value);
       const passed = reviewPassed(review);
-      await progress(
-        env,
-        run,
-        runtime.clock(),
-        'status=?,review=?,review_hash=?,error=?,retry_at=NULL',
-        [
-          passed ? 'render' : run.revision === 1 ? 'revise' : 'skipped',
-          JSON.stringify(review),
-          passed ? run.content_hash : null,
-          passed || run.revision === 1 ? null : 'review_failed',
-        ],
-      );
+      const reviewedAt = runtime.clock();
+      // Include the current reserved review. A correction must leave room for
+      // a fresh independent review; stage/provider retry limits still apply.
+      const enoughCalls = totalAttempts + 1 <= MAX_AUTOMATION_AI_ATTEMPTS - 2;
+      const canCorrect =
+        run.revision < MAX_CORRECTED_REVISION &&
+        enoughCalls &&
+        (run.revision === 1 ||
+          run.deadline - reviewedAt > AUTOMATION_TIMING.additionalCorrectionMs);
+      const changeCorrector = !passed && canCorrect && run.revision === 2;
+      const canReplace =
+        !passed &&
+        run.revision === MAX_CORRECTED_REVISION &&
+        !run.replacement_origin &&
+        enoughCalls &&
+        run.deadline - reviewedAt > AUTOMATION_TIMING.replacementCandidateMs;
+      if (canReplace) {
+        // Save the failed candidate and its actual final review in the same
+        // guarded write that clears approval and starts the single fresh draft.
+        // Never recycle a run with an existing card/image/reservation/schedule.
+        const changed = await env.DB.prepare(
+          `UPDATE automation_runs SET replacement_origin=?,revision=?,status='draft',
+            writer='google',reviewer='groq',content=NULL,content_hash=NULL,review=NULL,review_hash=NULL,
+            error='quality_replacement',retry_at=NULL,claim_owner=NULL,claim_until=NULL,updated_at=?
+            WHERE ${owned} AND status='review' AND revision=? AND replacement_origin IS NULL
+            AND (SELECT count(*) FROM automation_attempts WHERE run_id=automation_runs.id)<=?
+            AND NOT EXISTS(SELECT 1 FROM cards WHERE id=automation_runs.card_id)
+            AND NOT EXISTS(SELECT 1 FROM assets WHERE id=automation_runs.asset_id)
+            AND NOT EXISTS(SELECT 1 FROM automation_expressions WHERE run_id=automation_runs.id)
+            AND NOT EXISTS(SELECT 1 FROM schedules WHERE id=automation_runs.schedule_id)`,
+        )
+          .bind(
+            JSON.stringify({
+              content: JSON.parse(run.content!),
+              content_hash: run.content_hash,
+              review,
+              writer: run.writer,
+              reviewer: run.reviewer,
+              revision: run.revision,
+              rejected_at: reviewedAt,
+            }),
+            REPLACEMENT_REVISION,
+            reviewedAt,
+            ...guardArgs(run, reviewedAt),
+            MAX_CORRECTED_REVISION,
+            MAX_AUTOMATION_AI_ATTEMPTS - 2,
+          )
+          .run();
+        if (!changed.meta.changes)
+          await progress(env, run, reviewedAt, "status='skipped',error='changed'", []);
+      } else
+        await progress(
+          env,
+          run,
+          reviewedAt,
+          'status=?,review=?,review_hash=?,error=?,writer=?,reviewer=?,retry_at=NULL',
+          [
+            passed ? 'render' : canCorrect ? 'revise' : 'skipped',
+            JSON.stringify(review),
+            passed ? run.content_hash : null,
+            passed || canCorrect
+              ? null
+              : run.revision >= MAX_CORRECTED_REVISION || enoughCalls
+                ? 'review_failed'
+                : 'ai_limit',
+            changeCorrector ? run.reviewer : run.writer,
+            changeCorrector ? run.writer : run.reviewer,
+          ],
+        );
     } else {
       const card = parseAiCard(value, settings);
       const content = JSON.stringify(card);
@@ -125,15 +254,20 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
       )
         .bind(expressionKey(card.expression), expressionKey(card.expression), run.id)
         .first();
-      if (duplicate)
-        await progress(env, run, runtime.clock(), "status='skipped',error='duplicate'", []);
+      if (
+        duplicate ||
+        rejectedExpressions.some(
+          (expression) => expressionKey(expression) === expressionKey(card.expression),
+        )
+      )
+        await retryDuplicate(env, run, card.expression, runtime.clock());
       else
         await progress(
           env,
           run,
           runtime.clock(),
           "status='review',content=?,content_hash=?,review=NULL,review_hash=NULL,revision=?,error=NULL,retry_at=NULL",
-          [content, digest, stage === 'revise' ? 2 : 1],
+          [content, digest, stage === 'revise' ? run.revision + 1 : run.revision],
         );
     }
     await env.DB.prepare("UPDATE automation_attempts SET outcome='ok' WHERE id=?").bind(id).run();
@@ -213,7 +347,7 @@ async function renderPhase(
     .first<{ state: string; bytes: number }>();
   if (!asset) {
     if (result[0]?.meta.changes === 0)
-      await progress(env, run, runtime.clock(), "status='skipped',error='duplicate'", []);
+      await retryDuplicate(env, run, card.expression, runtime.clock());
     return;
   }
   if (!['uploading', 'ready'].includes(asset.state) || asset.bytes !== png.length) {
