@@ -14,6 +14,8 @@ import { deleteImage, retainUploadCleanup } from '../worker/storage';
 import { AiError, type AiCall } from './providers';
 import {
   AUTOMATION_TIMING,
+  MAX_AUTOMATION_AI_ATTEMPTS,
+  MAX_AUTOMATION_REVISION,
   currentGuard,
   readiness,
   type AutomationEnv,
@@ -99,12 +101,19 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
   const stage = run.status as 'draft' | 'review' | 'revise';
   const provider = stage === 'review' ? run.reviewer : run.writer;
   const counts = await env.DB.prepare(
-    'SELECT provider,count(*) AS n FROM automation_attempts WHERE run_id=? AND stage=? AND revision=? GROUP BY provider',
+    'SELECT stage,revision,provider,count(*) AS n FROM automation_attempts WHERE run_id=? GROUP BY stage,revision,provider',
   )
-    .bind(run.id, stage, run.revision)
-    .all<{ provider: Run['writer']; n: number }>();
+    .bind(run.id)
+    .all<{ stage: string; revision: number; provider: Run['writer']; n: number }>();
+  const totalAttempts = counts.results.reduce((total, row) => total + row.n, 0);
+  if (totalAttempts >= MAX_AUTOMATION_AI_ATTEMPTS) {
+    await progress(env, run, runtime.clock(), "status='skipped',error='ai_limit'", []);
+    return;
+  }
   const attemptsFor = (candidate: Run['writer']) =>
-    counts.results.find((row) => row.provider === candidate)?.n ?? 0;
+    counts.results.find(
+      (row) => row.provider === candidate && row.stage === stage && row.revision === run.revision,
+    )?.n ?? 0;
   const attempts = attemptsFor(provider);
   if (attempts >= 3) {
     const replacement = run.writer === 'google' ? 'groq' : 'google';
@@ -125,9 +134,18 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
   const id = crypto.randomUUID();
   const now = runtime.clock();
   const reserved = await env.DB.prepare(
-    `INSERT INTO automation_attempts(id,run_id,stage,revision,provider,started_at,outcome) SELECT ?,id,?,?,?,?,'started' FROM automation_runs WHERE ${owned} RETURNING id`,
+    `INSERT INTO automation_attempts(id,run_id,stage,revision,provider,started_at,outcome) SELECT ?,id,?,?,?,?,'started' FROM automation_runs WHERE ${owned}
+      AND (SELECT count(*) FROM automation_attempts WHERE run_id=automation_runs.id)<? RETURNING id`,
   )
-    .bind(id, stage, run.revision, provider, now, ...guardArgs(run, now))
+    .bind(
+      id,
+      stage,
+      run.revision,
+      provider,
+      now,
+      ...guardArgs(run, now),
+      MAX_AUTOMATION_AI_ATTEMPTS,
+    )
     .first();
   if (!reserved) return;
   try {
@@ -153,16 +171,32 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
     if (stage === 'review') {
       const review = reviewSchema.parse(value);
       const passed = reviewPassed(review);
+      const reviewedAt = runtime.clock();
+      // Include the current reserved review. A correction must leave room for
+      // a fresh independent review; stage/provider retry limits still apply.
+      const enoughCalls = totalAttempts + 1 <= MAX_AUTOMATION_AI_ATTEMPTS - 2;
+      const canCorrect =
+        run.revision < MAX_AUTOMATION_REVISION &&
+        enoughCalls &&
+        (run.revision === 1 ||
+          run.deadline - reviewedAt > AUTOMATION_TIMING.additionalCorrectionMs);
+      const changeCorrector = !passed && canCorrect && run.revision === 2;
       await progress(
         env,
         run,
-        runtime.clock(),
-        'status=?,review=?,review_hash=?,error=?,retry_at=NULL',
+        reviewedAt,
+        'status=?,review=?,review_hash=?,error=?,writer=?,reviewer=?,retry_at=NULL',
         [
-          passed ? 'render' : run.revision === 1 ? 'revise' : 'skipped',
+          passed ? 'render' : canCorrect ? 'revise' : 'skipped',
           JSON.stringify(review),
           passed ? run.content_hash : null,
-          passed || run.revision === 1 ? null : 'review_failed',
+          passed || canCorrect
+            ? null
+            : run.revision >= MAX_AUTOMATION_REVISION || enoughCalls
+              ? 'review_failed'
+              : 'ai_limit',
+          changeCorrector ? run.reviewer : run.writer,
+          changeCorrector ? run.writer : run.reviewer,
         ],
       );
     } else {
@@ -181,7 +215,7 @@ async function aiPhase(env: AutomationEnv, run: Run, runtime: AutomationRuntime)
           run,
           runtime.clock(),
           "status='review',content=?,content_hash=?,review=NULL,review_hash=NULL,revision=?,error=NULL,retry_at=NULL",
-          [content, digest, stage === 'revise' ? 2 : run.revision],
+          [content, digest, stage === 'revise' ? run.revision + 1 : run.revision],
         );
     }
     await env.DB.prepare("UPDATE automation_attempts SET outcome='ok' WHERE id=?").bind(id).run();

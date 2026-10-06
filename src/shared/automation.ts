@@ -136,6 +136,7 @@ export const automationReasons: Record<string, string> = {
   quota: '무료 AI 호출 한도 확인 필요',
   config: '무료 실행 설정 확인 필요',
   unavailable: 'AI 연결 실패',
+  ai_limit: '카드 한 장의 AI 호출 예산이 부족함',
   storage: '이미지 저장 실패·저장량 확인 필요',
   layout: '내용이 이미지 분량을 초과함',
   unresolved: '이전 발송 결과 확인 필요',

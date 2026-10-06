@@ -1,5 +1,25 @@
 # 검증 근거
 
+## 품질 불합격 추가 수정 — 2026-10-06 로컬 후보
+
+- 기존 제품/제공자 대체/중복3파일75개와 신규 품질 재시도17개의 최종 결과가 통과했다(총92개, 여러 실행 합산의 고유 검사 수). 두 번째 수정의 반대 작성자·새 독립검토, 반복 불합격 종료,6분 경계,모든 실패/started 포함24회 상한,마지막 호출에서 최종 품질 실패 사유,인증/쿼터/설정 오류와 늦은 응답 차단을 확인했다.0020은 기존 revision/부모 ID/자식 참조·FK·고정 마감 보호를 유지하고3만 추가 허용한다.
+- 최초4파일 실행은90통과/1실패, 최종 품질 파일 재실행은16통과/동일1실패였다. 원인은 daily의 `not_before=0`을 모의 시작 시각으로 사용한 테스트 오류다. `Math.max(NOW, initial.not_before)`로 시간 역행을 고친 후 해당 daily/trial2개가53.39초에 통과했다. 각5장이55분 제작창 안에 예약되고 각1회 모의 발송됐다. 실제 AI·1080 렌더·휴대전화 수신을 검증한 것으로 계산하지 않는다(PNG는 유효한1080 fixture).
+- 타입·서식·웹/세Worker dry-run 및 마지막 종료사유 변경 후 DO dry-run, 기본/실제 운영 설정 무료 구성 검사 통과. live 구성 검사 첫 시도는 존재하지 않는 설정 파일명으로 실패했고 실제 `wrangler.delivery.deploy.jsonc`를 지정해 통과했다. 무료 계정·공유 잔여량·원격CPU를 새로 확인한 것은 아니다.
+- 하루단어 연동19개·타입·빌드 통과. 정식 exporter129개 화면/2개 릴레이 파일, UI 원본 해시와 릴레이 메모리 재빌드를 대조했다. 릴레이 바이트 변경은 `ai_limit` 안내 문자열 추가뿐이다. UI 해시 `223256e3276ac1dff18279c316a611c38afde5831e7bdb9979e02345bb392f48`, 릴레이 원본 해시 `8add38baa25c57aecca0b0f86e9738ac75627a6e746e145a9329a43152234455`다. 레이아웃/입력 흐름 변경이 없어 이번에는 브라우저 검사를 추가하지 않았다.
+- `review`의 테스트·보안/유지보수·마이그레이션 전문 검토와 독립 red-team/adversarial 후 남은 코드 지적0. 충돌 fixture·모의 시각·예산 부족 안내·최종 차수의 품질 실패 사유를 수정했다. 같은 모델의 독립 문맥이며 adversarial의 테스트 검토는 요약 모드다. 기존 보조CLI 비호환을 교차 모델 성공으로 계산하지 않는다.
+- 코드/스키마는 미배포이며 운영0019·DO/Worker/Site·설정version28을 변경하지 않았다. Git 제외 현재 읽기 검증기의 최종 작성 조회만 revision3을 지원하도록 일반화하고 구문 검사했다. 과거 결과 파일·이미 끝난 등록/재개 도구는 실행/변경하지 않았다. 새 시험·AI·재발송·이력 변경0이다. 실제5장 수신과 새 재수정/자연중복 분기의 실측은 남아 있다.
+
+재현 명령:
+
+```powershell
+node node_modules/vitest/vitest.mjs run tests/automation-quality-retry.test.ts tests/automation-revise-fallback.test.ts tests/automation-duplicate-retry.test.ts tests/automation-product.test.ts
+npm run build
+npm run check:free
+node scripts/export-haru.mjs --target 'C:/Users/user/Documents/ChatGPT/하루단어'
+```
+
+로그: `backups/automation-quality-{tests,final-tests,five-tests,build,final-dryrun,typecheck,free-live,export}.log` 및 `automation-quality-artifacts.json`, 하루단어 `outputs/automation-quality-{proxy,typecheck,build}.log`.0020 원격 적용은 [설치](SETUP.md)·[복구](OPERATIONS.md)의 차단/백업/호환 DO 절차를 따른다. 아래 실제 시험 결과는 기존 운영 코드의 이력이다.
+
 **12:41 시험 종료 — 4장 접수·1장 품질 검토 탈락:** 새trial version27의1·3·4·5번은 서로 다른 표현·독립검토·1080 PNG를 거쳐12:41~12:42 각1회 live접수됐다.2번은 수정 후 Groq 최종 검토에서 뜻/번역이 불합격이어서11:52:19에 `review_failed`로 종료됐다. 마감12:36까지 시간이 남았으며 현재 수정1회 후 재검토 실패는 추가수정/대체 없이 제외하는 정책이다.55분 준비만으로5장 성공이 검증된 것은 아니다. 사용자는 도착 및4장으로 추정한다고 보고했고 영어 문구를 대조 중이다. 정확한 수량·이미지/원본 링크 정상 확인은 아직 대기다.
 
 AI17회 중 응답처리 성공16·Google503실패1이며 검토 응답 성공과 품질 통과는 다르다. 수정 제공자 전환과 자연중복은 발생하지 않았다. CPU 반환 그룹P99 최고는 주6.859ms·발송3.418ms·DO324.196ms,관측 런타임 오류0·sampleInterval1이다. 주Worker11:58/12:01 분별 자료는 좁은 재조회에도 없어 전체호출최대/완전관측으로 해석하지 않는다.

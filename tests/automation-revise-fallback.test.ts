@@ -203,7 +203,7 @@ it.each(['rejected', 'unavailable'] as const)(
     await tick(24);
     expect(await run()).toMatchObject({
       status: 'skipped',
-      revision: 2,
+      revision: outcome === 'rejected' ? 3 : 2,
       error: outcome === 'rejected' ? 'review_failed' : 'unavailable',
     });
     const reviews = vi
@@ -213,7 +213,7 @@ it.each(['rejected', 'unavailable'] as const)(
           r.stage === 'review' &&
           (r.content as { expression: string }).expression === 'Fallback correction',
       );
-    expect(reviews).toHaveLength(outcome === 'rejected' ? 1 : 3);
+    expect(reviews).toHaveLength(outcome === 'rejected' ? 2 : 3);
     expect(reviews.every(([r]) => r.provider === 'google')).toBe(true);
     expect(runtime.render).not.toHaveBeenCalled();
     expect(await env.DB.prepare('SELECT count(*) n FROM schedules').first('n')).toBe(0);

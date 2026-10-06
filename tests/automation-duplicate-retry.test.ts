@@ -245,27 +245,29 @@ it('a late duplicate cannot overwrite a newer candidate after same-version claim
   expect(await env.DB.prepare('SELECT count(*) n FROM automation_attempts').first('n')).toBe(2);
 });
 
-it('a render collision after correction cannot restore another revision allowance', async () => {
+it('a render collision cannot reset the two-correction allowance', async () => {
   await start();
   let reviews = 0,
-    drafts = 0;
+    drafts = 0,
+    corrections = 0;
   runtime.ai = vi.fn(async (r) => {
     if (r.stage === 'review')
       return ++reviews === 2 ? good : { ...good, translation: false, issues: ['번역 수정'] };
-    if (r.stage === 'revise') return card('Corrected candidate');
+    if (r.stage === 'revise')
+      return card(++corrections === 1 ? 'Corrected candidate' : 'Second corrected candidate');
     return card(++drafts === 1 ? 'Original candidate' : 'Replacement candidate');
   });
   for (let i = 0; i < 4; i++) await tick();
   expect((await rows())[0]).toMatchObject({ status: 'render', revision: 2 });
   await existing('Corrected candidate');
-  for (let i = 0; i < 4; i++) await tick();
+  for (let i = 0; i < 5; i++) await tick();
   expect((await rows())[0]).toMatchObject({
     status: 'skipped',
-    revision: 2,
+    revision: 3,
     error: 'review_failed',
   });
-  expect(vi.mocked(runtime.ai).mock.calls.filter(([r]) => r.stage === 'revise')).toHaveLength(1);
-  expect(await env.DB.prepare('SELECT count(*) n FROM automation_attempts').first('n')).toBe(6);
+  expect(vi.mocked(runtime.ai).mock.calls.filter(([r]) => r.stage === 'revise')).toHaveLength(2);
+  expect(await env.DB.prepare('SELECT count(*) n FROM automation_attempts').first('n')).toBe(8);
   expect(await env.DB.prepare('SELECT count(*) n FROM schedules').first('n')).toBe(0);
 });
 

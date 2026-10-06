@@ -4,6 +4,19 @@
 
 **현재 운영:** D1 0019·DO `54882e21`·Site v119를 유지한다. 10월6일12:41 별도5장 시험은4장 접수·1장 수정후 품질불합격으로 종료됐다. 시간 부족은 아니며 현재 추가수정/대체 정책이 없어5장 목표는 미완료다.12:44에version28·매일07:30/5장·다음10월7일07:30으로 재개했고07:50 읽기 점검을 예약했다. 사용자 수량/이미지/링크 확인은 대기다. 일반 사이트 시험은45분 정책이며 이번55분 제작은 관리자 도구의 저장 시각으로 검증했다.
 
+## 품질 불합격 추가 수정 — 0020 후보·미배포
+
+초안과 첫 수정본이 모두 품질 검토에서 탈락하면 **반대 제공자가 한 번 더 수정**한다. 총 수정은 최대2회(revision1→2→3)이며 최종 작성자와 다른 제공자의 독립 검토를 다시 통과해야 PNG·예약을 만든다. 예: Google 초안 → Groq 불합격 → Google 첫 수정 → Groq 불합격 → Groq 추가 수정 → Google 통과 → PNG·예약. 품질 실패를 통과로 바꾸거나 새 run을 만들어 수량을 채우지 않는다.
+
+- 추가 수정은 원래 제작 마감까지 **6분 초과**가 남고, 수정·재검토에 최소2회 호출 여유가 있을 때만 시작한다. 6분은 Cron 단계·PNG2분 대기를 고려한 앱 보호값이며 제공자 장애나 지연에도 완료된다는 보장은 아니다. 저장된 시작·마감·발송 시각은 연장하지 않는다.
+- 제공자별 단계/차수3회 제한을 유지하며, 모든 단계·차수·제공자를 합쳐 **카드당 총24회**의 명시적 상한을 추가한다. 실패·중복·`started` 상태의 예약 호출도 포함하고 SQL 예약에서 원자적으로 제한한다. 기존 예산을 초기화하지 않는다. 상한/잔여 호출 부족은 `ai_limit`으로 종료한다. 5장 회차의 이론적 상한은120회이며 실제 무료 잔여량을 보장하지 않는다. quota·auth·config·storage 중단 정책은 유지한다.
+- 추가 수정에서도 일시적 제공자 실패는 기존 제한 안에서 제공자를 전환한다. 검토자가 최종 작성자와 같아지는 경로는 허용하지 않는다. revision3의 품질 불합격은 `review_failed`로 종료한다. 중복3회 제한과 렌더 충돌 후 남은 수정 차수도 유지한다.
+- 0020은 `automation_runs.revision` 제약만1~3으로 넓히고 기존 ID·revision·시도/표현 참조를 보존한다. run의 수정 차수와 저장 카드/asset 버전은 서로 다르다. 이미 종료한 카드의 재제작·추가 발송은 하지 않는다.
+
+배포 순서는 유휴·동일 설정 확인 → 쓰기/Cron 차단·진행 호출 종료 → 암호화 백업 →0020 전체 원자 적용·기존 행/FK 대조 →0020 호환 DO 100% 확인 →정식 exporter 화면 게시 →쓰기/Cron 복원이다. 0019 인덱스만 적용할 때의 무중단 예외를 사용하지 않는다. 복구는0020 제약과 이력을 유지하는 호환 코드로 한다. 구 DO는 수정 결과 차수를2로 고정하므로 추가 수정/차수3이 진행 중인 상태에서 구버전으로 되돌리지 않는다. 과거 DB 복원이나 차수/시도 초기화로 우회하지 않는다.
+
+현재 운영은 위의0019/기존 수정1회 정책이다. 이 후보의 새 검증은 최종 작성 성공을 `revise.revision = run.revision - 1` 또는 같은 차수의 draft로 확인한다. 로컬 모의5장 성공과 실제 서버5건 접수·휴대전화5장 수신을 구분한다. 재현: `node node_modules/vitest/vitest.mjs run tests/automation-quality-retry.test.ts`.
+
 ## 별도 관리자 검증 회차 — 0019
 
 일반 시험 API는 계속 KST 하루 한 번만 허용한다. 관리자 도구의 `registerVerificationTrial`만 명시적인 사용자 승인 UUID로 정확히 새5장을 만들며 공개 API 필드는 추가하지 않는다. 같은 UUID 재사용은 거부하고 설정 version·연결·유휴 상태·미확정 전송 보호를 재사용한다. 0019는 일반 trial의 day/item_index 인덱스를 유지하면서 검증 회차를 day/config_version/item_index로 구분한다. 기존 행이나 일일 예산은 초기화하지 않는다.
@@ -28,7 +41,7 @@
 
 복구는0018 호환 직전 DO·Site 소스를 사용한다. 되돌려도 이미 등록한60분 run의 저장 시각은 유지되며, 과거 DB 백업으로 이력을 덮어쓰지 않는다. 검증 명령과 결과는 [검증 기록](VERIFICATION.md)을 따른다.
 
-## 수정 제공자 대체
+## 수정 제공자 대체 — 현재 운영0019의 정책
 
 - 수정(`revise`)의 현재 제공자가 해당 차수에서3회 시도를 소진하면 반대 제공자의 같은 단계/차수 잔여 시도를 확인한다. 남아 있으면 작성자·검토자를 함께 교체하고 다음 Cron에서 원래 카드·검토 지적을 사용해 수정한다. Google→Groq와 Groq→Google을 모두 지원한다. 초안의 기존 Google→Groq 정책은 유지한다.
 - 시도 기록은 삭제하거나 초기화하지 않는다. 한 수정 차수의 호출 상한은 제공자당3회, 두 제공자 합계최대6회다. 성공했지만 중복인 후보와 응답 불명으로 시작만 기록된 호출도 예산에 포함한다. 반대 제공자 예산까지 소진하면 `unavailable`로 종료하므로 반복 전환하지 않는다. 실제 한도 오류(`quota`)·인증·설정 오류는 기존처럼 전체 자동화를 중단한다.
@@ -43,14 +56,14 @@
 
 로컬 회귀: `node node_modules/vitest/vitest.mjs run tests/automation-revise-fallback.test.ts tests/automation-duplicate-retry.test.ts --file-parallelism --maxWorkers 2`. 무료 공유 한도는 [Gemini 프로젝트별 한도](https://ai.google.dev/gemini-api/docs/rate-limits)와 [Groq 한도](https://console.groq.com/docs/rate-limits)를2026-10-06 다시 확인했다. 대체 시도만큼 호출량이 늘 수 있고 실제 계정의 잔여량을 코드로 보장하지 않는다.
 
-실제 검증에서는 **최종 작성자와 최초 초안 작성자가 다를 수 있음**을 반영한다. 예전 `verify-daily.mjs`의 `draft_successes`(현재 writer의 초안 성공만 집계)는 그대로 쓰면 정상 대체 수정을 검토 실패로 오판한다. 배포 후 검증기는 최종 차수의 작성/수정 성공과 반대 제공자의 검토 성공·내용 해시 일치를 함께 확인해야 한다. revision2는 수정(revise의 시도 차수1) 또는 렌더 중복 이후 새 초안(draft의 차수2)으로 만들어질 수 있다. 읽기 SQL 예:
+실제 검증에서는 **최종 작성자와 최초 초안 작성자가 다를 수 있음**을 반영한다. 예전 `verify-daily.mjs`의 `draft_successes`(현재 writer의 초안 성공만 집계)는 그대로 쓰면 정상 대체 수정을 검토 실패로 오판한다. 배포 후 검증기는 최종 차수의 작성/수정 성공과 반대 제공자의 검토 성공·내용 해시 일치를 함께 확인해야 한다. revision2는 수정(revise의 시도 차수1) 또는 렌더 중복 이후 새 초안(draft의 차수2)으로 만들어질 수 있다. 아래 읽기 SQL은0020 후보의 revision3도 지원한다:
 
 ```sql
 SELECT r.id, r.revision, r.writer, r.reviewer,
   EXISTS(SELECT 1 FROM automation_attempts t
     WHERE t.run_id=r.id AND t.provider=r.writer AND t.outcome='ok'
       AND ((t.stage='draft' AND t.revision=r.revision)
-        OR (r.revision=2 AND t.stage='revise' AND t.revision=1))) AS final_write_ok,
+        OR (r.revision>1 AND t.stage='revise' AND t.revision=r.revision-1))) AS final_write_ok,
   EXISTS(SELECT 1 FROM automation_attempts t
     WHERE t.run_id=r.id AND t.provider=r.reviewer AND t.outcome='ok'
       AND t.stage='review' AND t.revision=r.revision) AS final_review_ok,
@@ -61,7 +74,7 @@ FROM automation_runs r WHERE r.day=? AND r.kind=?;
 
 위 확인에 최종 review의 모든 기준 통과, 표현 비중복, 카드/asset 버전·PNG·live 접수·진행 중/결과 불명 없음 및 사용자 실제 수신을 추가 대조한다. 시도 성공만으로 품질·수신을 확인하지 않는다. 배포 후 Git 제외 `backups/automation-revise-rollout-20261006/verify-daily.mjs`에 이 조건과 제공자별 수정 시도 관측을 적용했고 운영 읽기 쿼리를 실행했다. 제작 전0개 조회는 성공 판정이 아니다. 정규5장은10월7일06:30 제작·07:25 마감·07:30 발송 예정이며07:50에 실제 결과를 확인한다.
 
-## 사용 방식
+## 사용 방식 — 현재 운영0019
 
 - AI 자동 제작에서 **하루 제작 수량 1~5장**을 선택하고 설정 저장 → 자동 제작 시작을 누른다. 수량이 없는 기존 설정은 1장이다.
 - 각 카드가 작성 → 교차 검토 → 필요하면 한 번 수정 → PNG 저장 → 개별 예약을 거친다. 카드마다 피드 메시지 한 개이며 사진 묶음 전송이 아니다. 제작 기록에 `1/5`처럼 번호와 그날의 전체 수량을 표시한다.
