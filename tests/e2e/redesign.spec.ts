@@ -324,7 +324,8 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
   await page.getByRole('button', { name: '일시정지', exact: true }).click();
   await expect(page.locator('.automation-status')).toHaveText('일시정지');
   await page.getByLabel('시험 카드 수', { exact: true }).selectOption('5');
-  await expect(page.locator('.automation-trial')).toContainText('최소 45분');
+  await expect(page.locator('.automation-trial')).toContainText('최소 60분');
+  await expect(page.locator('.automation-trial')).toContainText('발송 60분 전부터 5분 전까지');
   await page.getByLabel('오늘 시험 발송 시각 (한국 시간, 선택)', { exact: true }).fill('23:30');
   await page.getByRole('button', { name: '오늘 새 AI 카드 5장 시험', exact: true }).click();
   await expect(page.locator('.automation-runs')).toContainText('추가 시험 1/5');

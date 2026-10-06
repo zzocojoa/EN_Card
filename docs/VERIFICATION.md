@@ -1,5 +1,63 @@
 # 검증 근거
 
+## 새5장 시험 준비창60분 — 2026-10-06 로컬 후보
+
+- 공유 `trialLeadMinutes(5)`를45→60분으로 변경했다. 기본/지정 발송 시각과 시작 시각이 같은 함수를 사용하며 실제 제작창은55분이다. 1~4장, 기존 run의 저장 시각, 정규 예약과5분 마감·PNG2분 대기는 유지한다. 변경 전 새60분 기대값 검사는45분 실제값으로 실패했고, 수정 후 통과했다.
+- Vitest3파일49개 통과: 시험 수량17개, 수정 제공자 대체와 중복 재생성 포함. 최소60분·분 정밀도·KST 당일/자정 경계·동시 등록·원자적 실패·기존 이력 보존을 확인했다. Google503·수정 제공자 대체·재검토·렌더1초 경과·고정 분 단위 tick을 섞은 daily/trial 모두5개 독립 검토·PNG·예약·각1회 모의 발송을 완료했다. 이것은 오늘 실제 데이터를 재실행한 결과나 모든 장애 패턴의 보장이 아니다.
+- Chromium/WebKit2개에서5장 최소60분/제작 구간 안내·설정 저장/시작/중단·초안 보존을 확인했다. 최초 직접 Playwright 실행은 PATH에wrangler가 없어 시작 실패했고, package.json의 `npm run test:e2e`로 실행해 통과했다. 휴대전화 실기기 검사가 아니다.
+- 타입·Prettier·웹/세Worker dry-run·무료 구성 검사, 하루단어 연동19개·타입·제품 빌드를 통과했다. 정식 exporter의화면129개·릴레이2개 파일 SHA256, UI 원본과 릴레이 메모리 재빌드를 대조했다. UI source SHA256 `cb6fe9a99003081597fed113957f734a23a4da98917df02ba2bc9d79184ae7da`; 릴레이 source SHA256 `3cc9b08b1304855f4af93fa5a8a19f5a872debc267df85454408311bd0178207`이다. 릴레이 생성 코드의 동작은 변경되지 않았다.
+- `review`는 이전 전체 검토 HEAD `24238d4` 이후 변경을 대상으로 전문4개(testing/maintainability/performance/design)·독립 adversarial을 실행했다. 배포 순서를 DO 100% 확인→Site 게시→시험 등록으로 명확히 했다. 같은 모델의 독립 문맥이며 adversarial의 테스트/fixture는stat 요약 검토다. 기존 CLI0.132/model 비호환 때문에 교차 모델 검토로 집계하지 않는다. 미해결 코드 지적0이며 과거 전체PR 검토와 이번 증분 검토를 구별한다.
+- 새 배포·마이그레이션·Secret/계정 변경·AI/카카오 호출·제품 예약 변경0이다. `check:free`는 구성 검사이며 계정 플랜 재확인이나 CPU 실측이 아니다. Site v119/기존DO의 추가시험45분과 정규version25 매일07:30/5장은 그대로다. 10월7일 정규5장 결과/CPU/실제 휴대전화 확인 후 PR 병합·후속 배포한다. 새60분 추가시험 실측, 제공자 교체/자연중복 발생 시 실측은 별도 미완료다.
+
+```powershell
+node node_modules/vitest/vitest.mjs run tests/automation-trial-quantity.test.ts tests/automation-revise-fallback.test.ts tests/automation-duplicate-retry.test.ts
+npm run test:e2e -- tests/e2e/redesign.spec.ts --grep "자동 제작"
+npm run build
+npm run check:free
+node scripts/export-haru.mjs --target 'C:/Users/user/Documents/ChatGPT/하루단어'
+# 하루단어에서 실행
+node --experimental-strip-types --test tests/card-studio.test.mjs tests/card-automation.test.mjs
+npm run typecheck
+npm run build
+```
+
+로그: Git 제외 `backups/trial-window-{before-fix,tests,e2e,build,free,export}.log`, `trial-window-artifacts.json`, 하루단어 `outputs/trial-window-{proxy,typecheck,build}.log`. 신규 배포 명령은 위 코드/화면 검증과 실제 수신 조건을 확인한 뒤 기존 절차로 실행한다.
+
+## 빠른5장 시험 결과·실제4장 수신·정규 재개 — 2026-10-06 10:01 KST
+
+- 10월6일trial·version24·5개중1~4번은최종작성/수정과반대제공자독립검토·내용해시·표현비중복·1080PNG·각1회live접수·예약완료를확인했다.카카오호출시각은09:49:18.726/09:49:21.175/09:50:18.519/09:50:20.606 KST다.사용자가**새4장모두이미지·원본링크정상**으로답해접수4건과수신4장이일치한다.전체5장성공은아니다.
+- 5번은내용검토/PNG가정상이지만09:42:17.844이미지ready,예약단계retry_at09:44:18.071,deadline09:44:00이었다.09:44:16.027에`expired`로종료돼예약/카카오호출0이다.이미지전파대기2분이시험의제작창40분을넘겼다는코드/시각근거이며강제로마감이나기존run을바꾸지않았다.정규제작창55분의전체성공을대신입증하지않는다.
+- AI17회중12성공·5실패다.Google초안503×4,수정503×1이며Google수정은같은제공자의2번째시도에성공했다.수정단계에서3회실패하지않아새수정대체분기는미관측,중복거절0으로재생성도미관측이다.그룹CPU의런타임오류0과AI503실패5회는다른지표다.
+- CPU관측UTC00:03:16.701~00:52:20.606,현재버전주51요청·발송54요청·DO52요청.반환그룹P99최댓값은각**4.588/3.323/508.134ms**,오류0·sampleInterval1·일반Worker관측그룹10ms초과0이다.모든요청의최대값으로표현하지않는다.주Worker09:29/09:30 KST자료가없어UTC00:28~00:32를재조회했지만계속누락됐다.발송/DO는확인구간의완전한분48개에서분별누락이없었지만전체호출수집을증명하지는않는다.첫GraphQL401은공식Wrangler whoami갱신후해결했다.
+- `resume.mjs`읽기검사ready=true후승인된`--apply`1회,10:01:38 UTC+9에version25 enabled1·next_due_at1791325800000을확인했다.저장원문해시/매일07:30/5장/종료2027-10-31은같다.재개전후19개D1테이블을대조해설정외18개행수·해시불변,FK0,진행중/미해결0,카카오connected와세Worker버전/바인딩/Cron동일을확인했다.부분실패이력·미발송PNG는보존했고재발송/보충생성하지않았다.
+- 기존`en-card-5`를10월7일07:50 KST 1회ACTIVE로갱신했다.다음대상daily5장version25는06:30시작·07:25마감·07:30발송이다.`resumed.json`의observedDaily를쓰는검증기를실행해제작전0개/미검증상태를확인했으며성공으로집계하지않았다.미관측분기를강제로호출하거나새시험을등록하지않는다.
+- 새배포/마이그레이션/계정변경0,기존Free확인과구성유지(신규계정플랜확인없음).무료공유한도·5장실제성공은미확인이다.다음개선검토대상은제작창과이미지대기/분단위처리의시간여유이며이번관측에서코드를변경하지않았다.원자료는`backups/automation-fast-trial-20261006/`의verify/metrics-scheduled-trial·metrics-coverage/trial-gap-recheck·audit-before/after-resume·resumed/observe-resumed·closeout다.출시기록에사용자4장확인을별도보존했다.
+
+```powershell
+# 다음 정규 예약 읽기 검증. 이미 실행한 trial 등록/resume은 다시 실행하지 않는다.
+node backups/automation-fast-trial-20261006/observe.mjs scheduled-daily
+node backups/automation-fast-trial-20261006/verify.mjs 2026-10-07 5 scheduled-daily daily
+node backups/automation-fast-trial-20261006/metrics.mjs <UTC-start> <UTC-end> scheduled-daily
+```
+
+## 가장 빠른1시간 이내 새 AI5장 시험 — 2026-10-06
+
+- 사용자 요청을 받아 09:49 KST 발송을 등록했다. 현재 배포 소스/버전/바인딩·무료 모드/Cron을 읽고 일시정지와 `registerTrial` 제품 트랜잭션을 사용했다. version22→23→24, day2026-10-06·kindtrial·item_index1~5/item_count5·09:04 시작·09:44 마감이다. 기존 매일07:30/5장 설정 원문 SHA256, 이전 run 행·등록 시 사용량 불변을 확인했다. 현재 시험만 활성이고next_due_at=NULL이다. 직접 AI/카카오를 호출한 등록 도구가 아니며 이후 제작/발송은 기존 클라우드 Cron이 수행한다.
+- 제공자 실패와 자연중복을 강제 주입하지 않는다. 실제 추가시험 제작창40분은 정규55분보다 짧다. 준비 전 조회에서5개draft/AI시도0 확인은 등록 검증이며 제작/접수 성공이 아니다. 운영 코드·배포·DB마이그레이션·이력 초기화·기존 카드 재발송0, Free 계정은 기존 확인을 유지하고 새 청구 검증은 하지 않았다. OAuth401은 공식Wrangler whoami로 갱신했다.
+- 읽기 검증기는 최종 draft/revise 차수·작성자와 독립 검토자·비중복·1080PNG·각live접수를 대조한다. 재개 도구는 실행 전 읽기 모드에서 `before_trial_due`·활성제작으로 정상 거부했다. 동일 실제 재개SQL의 로컬SQLite14사례가 통과했다: 정상/종료된부분실패만허용,version/설정변경·일시정지·이미재개·제작중·활성예약·전송중/결과불명·대기발송·취소·quota·연결해제거부,이전이력/무관한수동blocked보존. 이 검사는 실제 예약 재개가 아니다.
+- 기존후속 `en-card-5`를09:59 KST 1회ACTIVE로 변경·파일확인했다. 시험 종료·설정보존·미해결없음·중대한중단없음이면 원래10월7일07:30·5장만재개한다. 이미resume-intent/resumed가있으면 현재상태를 먼저대조하고맹목재시도하지않는다. 부분시험성공과정규재개를구별하며빈수량보충/재발송하지않는다. 재개성공후같은후속을10월7일07:50 정규읽기검증으로복귀한다.
+- 원자료: Git제외 `backups/automation-fast-trial-20261006/`의 registration-intent/registration·observe-registered·verify-registered·resume-guard-test·state-deployed. 공통기록: 하루단어 `docs/releases/2026-10-06-automation-fast-trial.json`. 휴대전화5개이미지/원본링크 확인전 전체목표미완료이며 이전3장수신·4/3차이 기록을보존한다.
+
+```powershell
+node backups/automation-fast-trial-20261006/observe.mjs scheduled-trial
+node backups/automation-fast-trial-20261006/verify.mjs 2026-10-06 5 scheduled-trial trial
+# verify 결과의 실제 UTC 구간을 사용한다. 그룹 P99는 전체 호출 최댓값이 아니다.
+node backups/automation-fast-trial-20261006/metrics.mjs <UTC-start> <UTC-end> scheduled-trial
+node backups/automation-fast-trial-20261006/resume.mjs
+# ready=true이고 기존 intent/결과가 없는 것을 확인한 뒤에만 원래 정규 예약 재개
+node backups/automation-fast-trial-20261006/resume.mjs --apply
+```
+
 ## 두 저장소 PR 전체 변경 재검토 — 2026-10-06
 
 - 범위: EN_Card `origin/master@b9e7d31` 이후 다중 trial·0017, 중복 재생성·0018, 수정 제공자 대체와 관련 검증/문서; 하루단어 `github/main@85a2fba` 이후 대응 생성물과 출시 기록. 기존 운영 반영과 GitHub 병합을 구분한다.

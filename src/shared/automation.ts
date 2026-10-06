@@ -13,6 +13,9 @@ export const automationTrial = z
   .strict();
 export type AutomationTrial = z.infer<typeof automationTrial>;
 export function trialLeadMinutes(cards: number): number {
+  // Five-card trials use the regular schedule's full hour, including its
+  // five-minute cutoff. Stored runs keep their original preparation window.
+  if (cards === 5) return 60;
   // Six minute ticks for draft/review/render/KV propagation/schedule, plus
   // two duplicate draft replacements per slot. Other failures can still expire.
   return cards === 1 ? 25 : cards * (6 + MAX_DUPLICATE_CANDIDATES - 1) + 5;

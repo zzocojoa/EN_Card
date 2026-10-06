@@ -381,21 +381,16 @@ it.each(['daily', 'trial'] as const)(
       now += 1000;
       return validPng();
     });
-    const preparationMinutes = kind === 'daily' ? 55 : 40;
+    const preparationMinutes = 55;
     for (let at = NOW; at <= NOW + preparationMinutes * 60000; at += 60000) {
       now = at;
       await automationTick(env, runtime);
     }
     const result = await rows();
-    // The existing minimum trial has only 40 preparation minutes versus daily's 55.
-    // Retries cannot extend either deadline or silently replenish expired slots.
-    const expectedCount = kind === 'daily' ? 5 : 3;
-    expect(result.map((r) => r.status)).toEqual(
-      kind === 'daily'
-        ? Array(5).fill('scheduled')
-        : ['scheduled', 'scheduled', 'scheduled', 'skipped', 'skipped'],
-    );
-    if (kind === 'trial') expect(result.slice(3).every((r) => r.error === 'expired')).toBe(true);
+    // New five-card trials retain the same 55-minute window as daily runs.
+    // The two-minute image wait and fixed deadline remain enforced.
+    const expectedCount = 5;
+    expect(result.map((r) => r.status)).toEqual(Array(5).fill('scheduled'));
     const prepared = result.filter((r) => r.status === 'scheduled');
     expect(new Set(prepared.map((r) => JSON.parse(r.content!).expression)).size).toBe(
       expectedCount,

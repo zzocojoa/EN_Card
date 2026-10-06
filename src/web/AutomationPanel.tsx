@@ -455,6 +455,12 @@ export function AutomationPanel() {
           최소 {trialLeadMinutes(trialCards)}분의 준비 시간이 필요합니다. 시각을 비워 두면 가장 빠른
           시간으로 예약합니다. 여러 장은 순차 발송됩니다.
         </p>
+        {trialCards === 5 && (
+          <p>
+            5장은 발송 60분 전부터 5분 전까지 제작합니다. 이미지 준비 후 2분 대기를 포함하며, 재시도
+            상황에 따라 일부 카드가 제외될 수 있습니다.
+          </p>
+        )}
         {view?.trial_used_today && <p role="status">오늘 시험은 이미 등록했습니다.</p>}
         <button
           className="secondary"
