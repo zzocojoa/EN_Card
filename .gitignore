@@ -4,6 +4,7 @@ dist/
 dist-haru/
 .wrangler/
 .worker-build/
+.worker-maintenance-build/
 .worker-delivery-build/
 .automation-png/
 .dev.vars*
