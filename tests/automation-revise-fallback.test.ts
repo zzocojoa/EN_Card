@@ -200,7 +200,11 @@ it.each(['rejected', 'unavailable'] as const)(
       }
       return original(r);
     });
-    await tick(24);
+    for (let i = 0; i < 24; i++) {
+      const active = await run();
+      if (active?.status === 'review' && active.revision === 3) now = active.deadline - 360000;
+      await tick();
+    }
     expect(await run()).toMatchObject({
       status: 'skipped',
       revision: outcome === 'rejected' ? 3 : 2,

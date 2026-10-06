@@ -409,7 +409,7 @@ it('settings changes cancel already prepared automatic schedules and preserve ma
   expect(await env.DB.prepare('SELECT count(*) AS n FROM cards').first('n')).toBe(2);
   expect((await settingsView(env)).enabled).toBe(false);
 });
-it('two corrections require independent reviews and a third failed review skips the day', async () => {
+it('two corrections require independent reviews and a third failed review starts one fresh candidate', async () => {
   await start();
   runtime.ai = vi.fn(async (r) => (r.stage === 'review' ? bad : draft));
   await tick();
@@ -422,7 +422,7 @@ it('two corrections require independent reviews and a third failed review skips 
   await tick(60000);
   expect((await run()).revision).toBe(3);
   await tick(60000);
-  expect((await run()).error).toBe('review_failed');
+  expect(await run()).toMatchObject({ status: 'draft', revision: 4, error: 'quality_replacement' });
   expect(runtime.render).not.toHaveBeenCalled();
   expect((await settingsView(env)).enabled).toBe(true);
 });

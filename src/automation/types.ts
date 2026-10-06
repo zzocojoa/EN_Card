@@ -41,6 +41,7 @@ export type Run = {
   updated_at: number;
   render_attempts: number;
   rejected_expressions: string;
+  replacement_origin: string | null;
 };
 export type SettingsRow = {
   settings: string;
@@ -55,7 +56,10 @@ export const currentGuard = `EXISTS(SELECT 1 FROM automation_settings c WHERE c.
 // Application cap, separate from provider quotas. Every reserved call counts,
 // including failures and duplicate candidates; no revision resets this total.
 export const MAX_AUTOMATION_AI_ATTEMPTS = 24;
-export const MAX_AUTOMATION_REVISION = 3;
+export const MAX_CORRECTED_REVISION = 3;
+// One fresh candidate after both corrections fail. Revision never resets, so
+// attempts and the two-correction allowance cannot be reused by a replacement.
+export const REPLACEMENT_REVISION = 4;
 // Application timing policy, not provider limits. Keep the claim lease and KV wait independent.
 export const AUTOMATION_TIMING = {
   preparationMs: 60 * 60_000,
@@ -65,6 +69,7 @@ export const AUTOMATION_TIMING = {
   aiRetryMs: 60_000,
   // Next ticks: correction, review, render, then two-minute image wait/schedule.
   additionalCorrectionMs: 6 * 60_000,
+  replacementCandidateMs: 6 * 60_000,
 } as const;
 export function readiness(env: AutomationEnv): string[] {
   return [

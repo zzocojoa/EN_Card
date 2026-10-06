@@ -18,7 +18,7 @@ import { downloadBlob } from './canvas';
 const stages: Record<string, string> = {
   draft: '초안 작성',
   review: '교차 검토',
-  revise: '한 번 수정',
+  revise: '내용 수정',
   render: '이미지 저장',
   schedule: '예약 준비',
   scheduled: '예약 등록 완료',
@@ -539,7 +539,7 @@ export function AutomationPanel() {
                   {reviewPassed(run.review)
                     ? 'AI 검토 통과'
                     : run.review.issues.join(' · ') || 'AI 검토 미통과'}{' '}
-                  · 수정본 {run.revision}
+                  · 내용 버전 {run.revision}
                 </p>
               )}
               {run.delivery_state && <p>발송: {label(run.delivery_state)}</p>}

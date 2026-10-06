@@ -128,6 +128,7 @@ export const automationReasons: Record<string, string> = {
   changed: '설정 변경으로 중단',
   expired: '제작 마감이 지나 오늘은 건너뜀',
   review_failed: '수정 후에도 검토를 통과하지 못함',
+  quality_replacement: '품질 검토에 탈락해 다른 표현으로 새 후보 제작 대기',
   duplicate: '이미 있는 표현',
   duplicate_retry: '중복을 피할 다른 표현으로 다시 제작 대기',
   duplicate_limit: `중복 표현 ${MAX_DUPLICATE_CANDIDATES}회로 재생성 한도에 도달함`,

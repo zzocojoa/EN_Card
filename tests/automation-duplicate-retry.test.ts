@@ -260,7 +260,9 @@ it('a render collision cannot reset the two-correction allowance', async () => {
   for (let i = 0; i < 4; i++) await tick();
   expect((await rows())[0]).toMatchObject({ status: 'render', revision: 2 });
   await existing('Corrected candidate');
-  for (let i = 0; i < 5; i++) await tick();
+  for (let i = 0; i < 4; i++) await tick();
+  now = (await rows())[0]!.deadline - 360000;
+  await tick();
   expect((await rows())[0]).toMatchObject({
     status: 'skipped',
     revision: 3,

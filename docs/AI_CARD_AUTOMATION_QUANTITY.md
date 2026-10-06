@@ -2,7 +2,21 @@
 
 2026-10-05 `codex/automation-card-quantity`에서 정규 수량을 구현하고 `codex/automation-multi-trial`에서 별도 시험 수량을 확장했다. D1 0017·호환 Worker/DO·하루단어 v118에 반영했다. 실제 시험 결과와 미검증 범위는 [검증 기록](VERIFICATION.md), 전체 배포 상태는 [공통 출시 관리](PRODUCT_MANAGEMENT.md)를 따른다.
 
-**현재 운영:** 2026-10-06 13:31 KST D1 0020·DO `941191a8`·Site v120을 반영했다. 품질 추가 수정과 새5장 시험60분 준비창이 활성 코드다. 기존 version28·매일07:30/5장·다음10월7일 및 이력을 보존했다.07:50 읽기 점검에서 새5장 서버/CPU와 실제 수신을 검증한 뒤 두 PR을 병합한다. 이전12:41시험4장 접수/1장 품질 제외는 개선 전 이력이다.
+**현재 운영:** D1 0020·DO `941191a8`·Site v120이다. 10월6일14:47 시험은4장 접수·휴대전화 이미지/원본 링크 정상,1장 최종 비교 검토 탈락으로 종료됐다. version31·매일07:30/5장·다음10월7일 설정을 재개했고 후속 점검만 PAUSED다. 아래0021은 새 로컬 후보이며 운영 적용·실제5장·새 CPU 검증 전이다.
+
+## 최종 품질 탈락의 새 후보 — 0021 후보
+
+두 번 수정한 내용(revision3)이 최종 검토에 탈락하면 같은 카드 자리에서 **한 번만 다른 표현의 새 초안(revision4)**을 작성한다. 새 초안은 Google 우선과 기존 Groq 장애 대체, 최종 작성자 반대 제공자의 독립 검토를 거친다. 대체 후보에는 추가 수정이나 두 번째 품질 대체를 허용하지 않는다. 최종 불합격은 `review_failed`로 종료한다.
+
+- 원래 마감까지6분 초과와 초안/검토 최소2회 호출 여유가 필요하다. 단일 run의24회, 단계/차수/제공자별3회, 중복3회, 렌더3회 제한과 이미지2분 대기는 초기화하지 않는다. 제공사 지연까지 보장하는 시간값은 아니다.
+- run ID·번호/수량·카드/asset/예약 ID·설정·발송/마감 시각은 유지한다. 새 run이나 추가 발송을 만들지 않으며 이미 종료된 실패 기록은 재개하지 않는다.
+- `replacement_origin`에 실패한 내용·해시·마지막 검토·작성자/검토자·차수·시각을 보존하고, 승인 해시를 지우면서 새 초안으로 전환하는 UPDATE를 원자적으로 실행한다. claim·현재 설정·마감·잔여 호출과 기존 카드/이미지/표현 예약/개별 예약이 없음을 함께 확인한다. 스냅샷은 공개 응답·로그로 보내지 않는다.
+- 거절된 표현은 기존 중복 목록과 함께 AI 회피 목록의 앞에 넣는다. 라이브러리에 아직 없는 실패 표현도 정규화해서 직접 차단한다. 재작성 중 중복 거절도 기존3회에 합산한다.
+- 예:5/5가 두 번 수정 후 탈락 → 같은5/5에서 다른 표현을 작성 → 새 독립 검토 통과 → PNG/예약. 이 후보도 탈락하거나 여유가 부족하면1~4번만 보낸다.5장 성공을 보장하지 않는다.
+
+0021은 revision 제약을1~4로 넓히고 nullable 비공개 스냅샷만 추가하며 기존 행·차수·시도·참조를 보존한다. 배포는 유휴/사용자 설정 보존 확인 → 쓰기/Cron 차단·진행 호출 종료 → 암호화 백업/복호화 확인 →0021 전체와 이력의 원자 적용 →기존 모든 열/행·참조/FK 대조 →0021 호환 DO100% →정식 exporter 화면 게시 →차단 해제 순서다. **이번 로컬 개선은 배포하지 않았고 기존 정규 설정을 바꾸지 않았다.**
+
+복구도0021 스키마와 스냅샷·시도 이력을 보존하는 호환 코드로만 한다. revision4를3으로 축소하거나 이력을 삭제하지 않는다. 현재0020 운영과 신규0021 설치를 구분한다. 검증 명령: `node node_modules/vitest/vitest.mjs run tests/automation-quality-replacement.test.ts`.
 
 ## 품질 불합격 추가 수정 — 0020 운영
 
@@ -63,7 +77,7 @@ SELECT r.id, r.revision, r.writer, r.reviewer,
   EXISTS(SELECT 1 FROM automation_attempts t
     WHERE t.run_id=r.id AND t.provider=r.writer AND t.outcome='ok'
       AND ((t.stage='draft' AND t.revision=r.revision)
-        OR (r.revision>1 AND t.stage='revise' AND t.revision=r.revision-1))) AS final_write_ok,
+        OR (r.revision BETWEEN 2 AND 3 AND t.stage='revise' AND t.revision=r.revision-1))) AS final_write_ok,
   EXISTS(SELECT 1 FROM automation_attempts t
     WHERE t.run_id=r.id AND t.provider=r.reviewer AND t.outcome='ok'
       AND t.stage='review' AND t.revision=r.revision) AS final_review_ok,

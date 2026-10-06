@@ -142,12 +142,16 @@ it.each(['google', 'groq'] as const)(
   },
 );
 
-it('ends repeated quality rejection after two corrections without rendering', async () => {
+it('ends repeated quality rejection after two corrections and one fresh candidate without rendering', async () => {
   await start();
-  runtime.ai = vi.fn(async (r) => (r.stage === 'review' ? bad : card()));
+  runtime.ai = vi.fn(async (r) =>
+    r.stage === 'review'
+      ? bad
+      : card((await run()).revision === 4 ? 'Fresh candidate' : 'Candidate'),
+  );
   await tick(15);
-  expect(await run()).toMatchObject({ status: 'skipped', error: 'review_failed', revision: 3 });
-  expect(runtime.ai).toHaveBeenCalledTimes(6);
+  expect(await run()).toMatchObject({ status: 'skipped', error: 'review_failed', revision: 4 });
+  expect(runtime.ai).toHaveBeenCalledTimes(8);
   expect(runtime.render).not.toHaveBeenCalled();
   expect(await env.DB.prepare('SELECT count(*) n FROM schedules').first('n')).toBe(0);
 });
