@@ -8,6 +8,19 @@ const original = JSON.parse(
 it('accepts the complete recorded reference manifest', () => {
   expect(() => validateReferenceManifest(original)).not.toThrow();
 });
+it('requires the shared layout in version 2 without accepting a legacy or missing dependency', () => {
+  const current = structuredClone(original);
+  current.source_manifest_version = 2;
+  expect(() => validateReferenceManifest(current)).toThrow();
+  const layout = current.sources.find((entry) => entry.file === 'src/web/canvas.ts');
+  layout.file = 'src/shared/card-layout.ts';
+  expect(() => validateReferenceManifest(current)).not.toThrow();
+  current.sources = current.sources.filter((entry) => entry !== layout);
+  expect(() => validateReferenceManifest(current)).toThrow();
+});
+it('rejects unknown source manifest versions', () => {
+  expect(() => validateReferenceManifest({ ...original, source_manifest_version: 3 })).toThrow();
+});
 it.each(['sources', 'assets', 'scriptHashes', 'probe_sha256'])(
   'rejects missing %s evidence',
   (field) => {

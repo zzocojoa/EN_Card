@@ -9,6 +9,7 @@ import {
   type AutomationRunView,
 } from '../shared/automation';
 import { formatKst, kstDate } from '../shared/time';
+import { CARD_WEEKDAYS } from '../shared/card-stamp';
 import { api } from './api';
 import { endpoint } from './environment';
 import { useStudio } from './studio';
@@ -307,6 +308,20 @@ export function AutomationPanel() {
             <p className="tiny">
               발송 1시간 전부터 제작합니다. 준비 시간이 부족하면 다음 가능한 날짜부터 시작합니다.
             </p>
+            <div className="automation-card-stamp">
+              <strong>카드에서 날짜를 바로 확인하세요</strong>
+              <p className="tiny">
+                새 AI 카드에 최초 발송 예정 연·월·일, 요일과 시각을 한국 시간으로 표시합니다. 실제
+                도착 시각은 다를 수 있습니다. 저장된 이미지의 날짜는 재예약해도 바뀌지 않습니다.
+              </p>
+              <ul aria-label="카드 요일별 색상">
+                {[...CARD_WEEKDAYS.slice(1), CARD_WEEKDAYS[0]].map((day) => (
+                  <li key={day.name} style={{ color: day.color, backgroundColor: day.background }}>
+                    {day.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </fieldset>
         </form>
         <aside className="automation-plan" aria-label="현재 실행과 설정 저장">

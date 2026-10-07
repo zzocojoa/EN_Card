@@ -25,7 +25,7 @@ const sourceFiles = [
   'probe.ts',
   'research-binary-workerd.mjs',
 ].map((name) => 'experiments/automation-png/' + name);
-sourceFiles.push('src/worker/png.ts', 'src/web/canvas.ts', 'src/shared/model.ts');
+sourceFiles.push('src/worker/png.ts', 'src/shared/card-layout.ts', 'src/shared/model.ts');
 const sources = [];
 for (const file of sourceFiles) sources.push({ file, sha256: hash(await readFile(file)) });
 // Build both inputs from the same decoded pages. Equality to an older preserved

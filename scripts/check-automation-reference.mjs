@@ -9,7 +9,7 @@ const variants = ['copy_scalar', 'ref_scalar', 'copy_native', 'ref_native'];
 const scopes = ['assembly', 'full'];
 const average = (xs) => xs.reduce((sum, x) => sum + x, 0) / xs.length;
 const close = (a, b) => assert.ok(Math.abs(a - b) < 1e-9, `${a} != ${b}`);
-const expectedSources = [
+const legacySources = [
   ...[
     'atlas.ts',
     'atlas-blit.ts',
@@ -32,6 +32,9 @@ const expectedSources = [
   'src/shared/model.ts',
   'package-lock.json',
 ].sort();
+const currentSources = legacySources
+  .map((file) => (file === 'src/web/canvas.ts' ? 'src/shared/card-layout.ts' : file))
+  .sort();
 const requiredAssets = [
   '.automation-png/atlas-optimized/800/metrics.data',
   '.automation-png/atlas-optimized/800/common.bin',
@@ -45,6 +48,10 @@ const digest = (value) =>
 export function validateReferenceManifest(evidence) {
   assert.ok(evidence && typeof evidence === 'object' && !Array.isArray(evidence));
   assert.ok(Array.isArray(evidence.sources), 'Missing source manifest');
+  // Preserve the recorded pre-refactor evidence; new runs hash the shared layout.
+  const version = evidence.source_manifest_version ?? 1;
+  assert.ok(version === 1 || version === 2, 'Unsupported source manifest version');
+  const expectedSources = version === 1 ? legacySources : currentSources;
   assert.deepEqual(evidence.sources.map((entry) => entry.file).sort(), expectedSources);
   for (const entry of evidence.sources) digest(entry.sha256);
   assert.ok(

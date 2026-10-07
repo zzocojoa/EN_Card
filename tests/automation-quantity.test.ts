@@ -81,6 +81,16 @@ async function prepare(count: number) {
 const mockSender = () =>
   vi.fn(async () => ({ outcome: 'mock_sent' as const, detail: 'mock only' }));
 
+it('all five images use one due time and their own sequence number', async () => {
+  await prepare(5);
+  const items = await rows();
+  expect(items).toHaveLength(5);
+  expect(items.every((r) => r.status === 'scheduled')).toBe(true);
+  expect(vi.mocked(runtime.render).mock.calls.map(([, due, number]) => [due, number])).toEqual(
+    items.map((r) => [r.due_at, r.item_index]),
+  );
+});
+
 it.each([3, 5])(
   'waiting automatic cards do not delay a later manual schedule: %i cards',
   async (count) => {

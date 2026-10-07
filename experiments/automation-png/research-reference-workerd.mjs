@@ -38,7 +38,7 @@ for (const file of [
     'wrangler.atlas-reference.jsonc',
   ].map((name) => 'experiments/automation-png/' + name),
   'src/worker/png.ts',
-  'src/web/canvas.ts',
+  'src/shared/card-layout.ts',
   'src/shared/model.ts',
   'package-lock.json',
 ])
@@ -131,6 +131,7 @@ async function run(instance, renderer, scope, input) {
 const verification = {
   measured_at_utc: new Date().toISOString(),
   qualification: 'local_workerd_only',
+  source_manifest_version: 2,
   sources,
   scriptHashes,
   probe_sha256: hash(probe),
@@ -288,6 +289,7 @@ for (const [file, expected] of assetHashes) assert.equal(hash(await readFile(fil
 const result = {
   measured_at_utc: new Date().toISOString(),
   qualification: 'local_elapsed_not_cloudflare_cpu',
+  source_manifest_version: 2,
   method:
     '4 cyclic position-balanced rounds x 10 inputs x 4 variants x 2 scopes = 320 fresh instances. Each first +2 settling +10 warm. Setup/common module initialization excluded and separately recorded. Assembly excludes preparation/collector; full includes real assets/preparation/collector/assembly. No profiler. Response read included; byte equality checks excluded from timer. Copy controls include the shared optional-source renderer branch. Native means extracted painter plus native CRC; compare within painter pairs. No remote calls or parallel benchmarks.',
   sources,

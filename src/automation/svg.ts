@@ -1,6 +1,7 @@
 import { create, type Font } from 'fontkit';
 import { cardSchema, type CardInput } from '../shared/model';
-import { layoutCard } from '../web/canvas';
+import { layoutCard, layoutCardHeader } from '../shared/card-layout';
+import { cardDeliveryStamp } from '../shared/card-stamp';
 
 // Used only by the private automation Durable Object.
 // Reuse the shipped font subsets, weights and layout; outline glyphs so resvg does
@@ -94,9 +95,30 @@ export class CardFonts {
   }
 }
 
-export function cardSvg(input: CardInput, fonts: CardFonts, number = 1): string {
+export function cardSvg(
+  input: CardInput,
+  fonts: CardFonts,
+  number = 1,
+  scheduledAt?: number,
+): string {
   const card = cardSchema.parse(input);
-  const layout = layoutCard((text, css) => fonts.measure(text, css), card);
-  const header = `${String(number).padStart(3, '0')}  /  ${card.template === 'comparison' ? '표현 비교' : '오늘의 표현'}`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080"><rect width="1080" height="1080" fill="#fff"/><rect x="88" y="83" width="38" height="5" fill="#214de5"/>${fonts.outline(header, 146, 72, 22, 600, '#657080')}${layout.dividerY === null ? '' : `<rect x="88" y="${layout.dividerY}" width="904" height="2" fill="#e3e7ef"/>`}${layout.lines.map((line) => fonts.outline(line.text, line.x, line.y, line.size, line.weight, line.color)).join('')}${fonts.outline('하루 한 표현', 88, 1015, 20, 400, '#7b8492')}</svg>`;
+  const measure = (text: string, css: string) => fonts.measure(text, css);
+  const layout = layoutCard(measure, card);
+  const stamp = scheduledAt === undefined ? null : cardDeliveryStamp(scheduledAt);
+  const header = layoutCardHeader(measure, card, number, stamp);
+  const rectangles = header.rects
+    .map(
+      (rect) =>
+        `<rect x="${rect.x}" y="${rect.y}" width="${rect.width}" height="${rect.height}" rx="${rect.radius}" fill="${rect.color}"/>`,
+    )
+    .join('');
+  const divider =
+    layout.dividerY === null
+      ? ''
+      : `<rect x="88" y="${layout.dividerY}" width="904" height="2" fill="#e3e7ef"/>`;
+  const text = [...header.lines, ...layout.lines]
+    .map((line) => fonts.outline(line.text, line.x, line.y, line.size, line.weight, line.color))
+    .join('');
+  const footer = fonts.outline('하루 한 표현', 88, 1015, 20, 400, '#7b8492');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080" viewBox="0 0 1080 1080"><rect width="1080" height="1080" fill="#fff"/>${rectangles}${divider}${text}${footer}</svg>`;
 }

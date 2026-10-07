@@ -42,7 +42,7 @@ DO는 같은 Cloudflare 계정에서 실행하고 기존 D1을 업무 상태의 
 
 구현 시 재사용·변경 범위:
 
-- `src/web/canvas.ts`의 `layoutCard`와 카드 스키마, 폰트·라이선스를 재사용한다. DO에는 DOM/Canvas가 있다고 가정하지 않는다.
+- `layoutCard`와 카드 스키마, 폰트·라이선스를 재사용한다. 조사 당시 `src/web/canvas.ts`에 있던 배치 계산은 2026-10-07 리팩토링에서 `src/shared/card-layout.ts`로 분리했다. DO에는 DOM/Canvas가 있다고 가정하지 않는다.
 - `experiments/automation-png/svg.ts`, `raster.ts`의 SVG/Resvg 경로를 출발점으로 삼는다. 폰트 처리의 Worker 호환성과 전체 입력 경로는 별도 검증한다.
 - 폰트 준비·Wasm 초기화·그리기·PNG 압축·`src/worker/png.ts` 검증을 DO 실행 경로에 둔다. 무거운 초기화를 일반 Worker의 최상위 초기화로 공유하지 않는다.
 - `new_sqlite_classes`로 SQLite 기반 DO를 구성한다. 이 설정의 마이그레이션과 기존 D1 SQL 마이그레이션을 구별한다. [DO 시작 안내](https://developers.cloudflare.com/durable-objects/get-started/)

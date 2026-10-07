@@ -90,6 +90,13 @@ async function completed() {
   await tick(120000);
   return run();
 }
+it('stamps the fixed daily due time instead of the earlier rendering clock', async () => {
+  const row = await completed();
+  expect(row.status).toBe('scheduled');
+  expect(runtime.render).toHaveBeenCalledWith(expect.any(Object), row.due_at, 1);
+  expect(row.due_at).toBeGreaterThan(now);
+  expect(JSON.parse(row.content!)).not.toHaveProperty('scheduledAt');
+});
 it.each(['disconnect', 'invalid'] as const)(
   '%s revokes future automation even after reconnecting before creation',
   async (reason) => {
@@ -258,6 +265,7 @@ it('an extra trial preserves sent history and saved daily settings, waits, and s
   await tick(60000);
   await tick(60000);
   await tick(120000);
+  expect(runtime.render).toHaveBeenLastCalledWith(expect.any(Object), trial.due_at, 1);
   expect(
     await env.DB.prepare('SELECT status FROM automation_runs WHERE id=?')
       .bind(trial.id)

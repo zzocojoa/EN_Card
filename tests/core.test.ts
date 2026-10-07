@@ -4,7 +4,7 @@ import { kstToUtc, nextRun } from '../src/shared/time';
 import { decrypt, encrypt } from '../src/worker/crypto';
 import { kakaoOwner, makePayload, sendKakao, validatePayload } from '../src/worker/kakao';
 import { validatePng } from '../src/worker/storage';
-import { layoutCard } from '../src/web/canvas';
+import { layoutCard } from '../src/shared/card-layout';
 import { SAMPLE, png } from './helpers';
 
 describe('입력·시간·암호화', () => {

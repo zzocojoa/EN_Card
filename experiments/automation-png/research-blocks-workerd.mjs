@@ -32,7 +32,7 @@ const sourceFiles = [
 sourceFiles.push(
   'scripts/prepare-automation-blocks.mjs',
   'src/worker/png.ts',
-  'src/web/canvas.ts',
+  'src/shared/card-layout.ts',
   'src/shared/model.ts',
 );
 const sources = [];

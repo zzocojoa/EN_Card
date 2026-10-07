@@ -28,7 +28,11 @@ import { allocateDailyRuns, claimNextRun, completeAutomationIfIdle, expireRuns }
 
 export type AutomationRuntime = {
   ai: AiCall;
-  render: (card: CardInput) => Promise<Uint8Array<ArrayBuffer>>;
+  render: (
+    card: CardInput,
+    scheduledAt: number,
+    number: number,
+  ) => Promise<Uint8Array<ArrayBuffer>>;
   clock: () => number;
 };
 const owned = `id=? AND claim_owner=? AND claim_until>? AND deadline>? AND ${currentGuard}`;
@@ -310,7 +314,7 @@ async function renderPhase(
   // Parse stored approved content again. A human edit to this card never gets silently overwritten.
   let png: Uint8Array<ArrayBuffer>;
   try {
-    png = await runtime.render(card);
+    png = await runtime.render(card, run.due_at, run.item_index);
     validatePng(png);
   } catch (error) {
     if (error instanceof RangeError)

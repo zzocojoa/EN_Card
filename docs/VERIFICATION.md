@@ -1,5 +1,13 @@
 # 검증 근거
 
+**2026-10-07 날짜 이미지 운영 실측 대기:** DO `7f17ec46` 배포 전후 기존19개 테이블 해시·설정 원문·바인딩/Cron과 주/발송 Worker 버전이 일치한다. D1 백업은 Windows DPAPI 암호화·복호화 해시 대조·접근권한 제한을 확인했고 평문을 제거했다. 실제 live 구성 무료 검사와 dry-run 통과, 계정 구독 조회는403으로 기존 사용자 Free 확인을 보존한다. 한 장 trial(version36,09:14)은 제품 등록 로직으로 생성했고 이전 이력/정규 설정을 보존했다. 재개 SQL15개 로컬 보호 검사 통과. 주·발송·DO의 필터링한 실시간 CPU 수집을 제작 전에 시작했다. 서버 접수·PNG 날짜·CPU 부하·휴대전화 확인은 아직 미완료다. 사이트 게시 소스776개는 줄바꿈 차이만 있고 카드 생성물은 바이트 동일하며 새 게시 작업 공간 빌드를 통과했다. Sites helper의 Windows 의존성/포장 오류는 기본 npm 설치와 검증한 빌드의 Windows tar 포장으로 복구해 v122 저장까지 완료했다. 이후 공개 배포는 자동 승인 검토에서 거절되어 미실시다. 근거는 위 두 Git 제외 폴더와 하루단어 `2026-10-07-card-date-rollout.json`·`2026-10-07-card-date-trial.json`이다.
+
+**2026-10-07 리팩토링 검증:** 날짜/PNG·core·로컬 제품 DO 3파일 62개, reference/DO 근거 검증 2파일 20개, Chromium/WebKit 브라우저 6개, 하루단어 연동 19개 통과. 기존 review의 검사 수와 합산하지 않는다. 표현형·비교형 각 7요일 및 날짜 없는 예제 2개, 총 16개 로컬 SVG/Resvg PNG가 변경 전후 바이트/SHA256 동일(최대 60,222 bytes)이다. 브라우저 PNG 저장·복원·긴 문장과 자동화 UI를 확인했다. 두 저장소 타입/빌드, EN_Card 3개 Worker dry-run·무료 구성, exporter 생성 파일 131개·런타임 해시 8개·기존 출시 상태 보존도 통과했다. 소스 경로를 수정한 실험 스크립트 5개는 `node --check`로 확인했으며 성능 실험 자체는 다시 실행하지 않았다. 로그와 비교 JSON은 Git 제외 `backups/card-date-refactor-20261007/`, 재현 명령은 [리팩토링 기록](CARD_DATE_TIME.md#2026-10-07-리팩토링)에 있다. 실제 AI/카카오·원격 CPU·무료 계정 재확인·배포는 미실시이며 새 gstack review 결과가 아니다.
+
+**2026-10-07 날짜·요일색 review 재검증:** PNG/날짜 13개, 정규·추가 시험·5장 시각/번호 전달 3개, 하루단어 연동 19개, Chromium/WebKit/아이폰 크기 에뮬레이션 5개 통과. 앞선 86개 전체 결과에 중복 합산하지 않는다. 별도 로컬 모바일 브라우저에서 요일 7개·설명·가로 넘침 없음·페이지 오류 0을 확인했고, 생성 파일 131개와 런타임 해시 7개·기존 출시 상태 보존을 대조했다. 주 검토와 별도 문맥 적대적 검토의 코드 지적 0개. 직접 Playwright 진입의 PATH 오류, 스킬 브라우저 및 앱 브라우저 초기화 실패는 도구 실패로 보존하며 제품 통과로 세지 않는다. 기존 npm 검사와 설치된 Playwright 브라우저로 필요한 검증을 마쳤다. 외부 Claude Code CLI 미설치, 원격 CPU·실제 휴대전화 수신은 미검증이다. 근거: Git 제외 `backups/card-date-review-20261007/`, [검토 기록](CARD_DATE_TIME.md#2026-10-07-review). 커밋·배포·실제 AI/발송·제품 설정 변경은 없다.
+
+**2026-10-07 날짜·요일색 후보:** `tests/card-stamp.test.ts`와 자동화 product/quantity/DO 관련 4파일 86개 통과. UTC/KST 날짜 경계와 윤일, 7색 대비, 표현/비교형 14개 실제 1080 PNG의 잘림 방지·본문 픽셀 동일성·용량을 검사했다. 두 PNG를 직접 확인했으며 예제는 Git 제외 `backups/card-date-time-preview/`에 있다. 정규/추가 시험 due_at 및 5장 번호 전달을 확인했다. Chromium/WebKit 자동화 UI 2개와 하루단어 연동 19개·타입·빌드, EN_Card 타입·웹/3개 Worker dry-run·기본 무료 구성도 통과했다. 예제 내용과 AI·발송은 로컬 모의이며 새 운영 CPU·실제 카카오 수신은 미검증이다. 운영 설정·이미지·발송·Site v121은 변경하지 않았다. [전체 범위](CARD_DATE_TIME.md), `backups/card-date-time/{en-build,browser}.log`. 아래는 이전 운영 결과다.
+
 **2026-10-06 23:06 KST 병합 완료:** [EN_Card PR11](https://github.com/zzocojoa/EN_Card/pull/11)은 `master`의 `1027812`, [하루단어 PR32](https://github.com/zzocojoa/haru-word/pull/32)는 `main`의 `9bc1d8d`로 병합했다. 최종 소스 커밋과 충돌 없음을 확인했고 하루단어 Node 22/24 push·PR 검사 4개가 통과했다. 사용자는 5장 이미지·원본 링크 정상 수신을 확인하고, 과거 제작 준비 CPU 관측 공백을 미검증으로 남기는 조건으로 병합을 승인했다. 실제 발송 5건 CPU 3.612~5.028ms와 새 후보·자연 중복 재생성 성공 근거를 보존한다. 전체 호출 CPU 검증이나 수정 제공자 장애 대체 실측을 완료로 바꾸지 않는다. 이번 추가 배포·발송·설정 변경은 없으며 기존 0021·Site v121과 마지막 확인된 version34 매일 07:30/5장 설정을 유지한다. 아래 날짜별 미병합·대기 설명은 당시 기록이다.
 
 **2026-10-06 20:46 KST 사용자5장 수신 확인:** 사용자가 이번18:31시험의5장 모두 정상 도착했고 이미지·원본 링크가 잘 열린다고 확인했다. 서버5건과 일치하며 새 후보2번·자연중복2/5번의 최종 성공을 포함한다.
@@ -1659,3 +1667,13 @@ PNG 자동 검사에는 기본/대체 압축의 RGBA 픽셀 일치, 구조·CRC�
 - 재검증 명령: `npx vitest run tests/token-refresh-verification.test.ts tests/refresh-cpu.test.ts tests/token-rpc-guards.test.ts tests/token-rpc-runtime.test.mjs`, `npm run typecheck`. 실제 재시험은 [검증 절차](../experiments/token-refresh-verification/README.md)에 따라 현재 상태를 새로 확인하며 자동 반복하지 않는다. 정상 운영 배포 명령은 `npx wrangler deploy --config wrangler.live.jsonc`이고 이번에는 기존 버전 복원으로 종료했다.
 
 핵심 무인 제작·교차 검토·1080 PNG·예약·본인 수신 및 실제 인증 갱신 검증을 완료했다. 정상 예약 엔진 전체 갱신 회차의 원격 CPU는 이번 별도 probe 측정과 구분한다. 다음 자동 제작은 켜지 않았으며 사용자가 일정을 정해 시작할 수 있다.
+# 2026-10-07 날짜·요일색 한 장 실제 검증
+
+**10:14 KST Site v122 게시 후 확인:** native 배포 성공과 공개 source manifest·JS/CSS/폰트 등5개 SHA256 일치를 확인했다. `/`200, 비로그인 `/cards`307·상태/자동화 API401이다. 환경59·공개정책4·정규version37 설정 해시·19개 테이블·활성Worker/바인딩/Cron·일일예산·FK0이 게시 전후 동일하다. 게시 대상 소스는 `0e88f1fc12bb61f68e0286941c91e7477283d81f`이며 이후 GitHub 변경은 검증/PR 기록 문서다. 새 AI·카카오 호출은0이고 실제 수신 검증은 아래09:14 시험을 재사용한다. Git 제외 rollout 폴더의 site-deployment, public-verification, site-config-preservation, site-data-preservation에 근거를 보존했다. 로그인된 운영 화면을 별도 브라우저로 검사한 것으로 표시하지 않는다. 아래 게시 대기는 당시 기록이다.
+
+- 대상: 일반 제품 trial version36, 제작08:59·마감09:09·발송예정09:14 KST. 기존 정규5장과 합산하지 않는다. 실제 작성/독립검토2회·렌더1회·카카오 live접수1회, 미해결0. 강제 오류/중복·추가 보충·재발송은 없다.
+- 원본: 1080×1080 PNG 93,223바이트, SHA256 `f8a722d8eee61d13d99e52b2793caaf5e53de20e14fd8f4896317ecc30ed0e7d`. 승인 내용·고정 due_at·동일 폰트로 로컬 생성한 이미지와 바이트 일치. 연월일/수요일/09:14와 녹색 배지 및 잘림 없음을 확인했다. 사용자가 이번 한 장의 날짜·요일색·이미지·원본 링크 모두 정상을 확인했다.
+- CPU: 실제 AI 시작 이전부터 발송 후2분까지 UTC `2026-10-06T23:58:43.778Z`~`2026-10-07T00:16:45.569Z`. 일반 Worker `max.cpuTime` 관측 최고는 주5.967ms·발송4.697ms. DO의 렌더 단일 호출 집계는590.185ms(tail 정수590ms). 일반 Worker와 DO 기준을 구분하며 그룹P99를 전체 호출 최댓값으로 설명하지 않는다.
+- 관측: 주 tail24/집계23, 발송20/20, DO20/20; 매분 Cron19개 연속·샘플링 계수1·오류0. AI2회·렌더·live 발송은 시각/현재 버전으로 두 자료에 대응하며 trace ID 대조는 아니다. 주09:03:01 원본 확인용 조회1건은 집계 공백이지만 tail2ms·오류0으로 관측됐다. 전체 고정밀 집계 완전성 또는 미래/5장 부하로 확대하지 않는다. 수집기 파싱 실패·버퍼 유실·미완성 문자0이며 측정창 종료 후 작업 소유 tail만 정리했다.
+- 복원: 09:15 version37·매일07:30/5장·다음10월8일07:30 활성. 저장 설정 해시, 설정 외18개 테이블, 바인딩/Cron·FK0을 대조했다. 완료한 resume은 재실행하지 않는다.
+- 근거: Git 제외 `backups/card-date-trial-20261007/`의 stamp-proof, phone-confirmation, verify-sent-check, metrics-coverage-recheck, cpu-maximum-coverage-recheck, cpu-assessment-final, resumed 및 rollout 폴더 resume-preservation. 로컬 준비 시험과 실제 운영 검증을 구분한다. Site v122 공개 게시 승인은 별도 대기이며 v121을 유지한다.
