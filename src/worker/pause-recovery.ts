@@ -8,6 +8,7 @@ import {
 import { kstDate, kstToUtc } from '../shared/time';
 import { appError, type Env } from './types';
 import { readPage, type Page } from './pagination';
+import { connectionGuard, requireConnection } from './connection';
 
 type Source = {
   id: string;
@@ -189,19 +190,14 @@ export async function decideRecovery(
     data.recover_ids.includes(item.delivery_id),
   );
   let due: number = now;
+  let connectionVersion: number | null = null;
   if (recovering.length) {
     if (!data.date || !data.time)
       throw appError(400, 'RECOVERY_TIME', '미발송 카드의 새 날짜와 시각을 선택하세요.');
     due = kstToUtc(data.date, data.time);
     if (due < now + LIMITS.propagationMs)
       throw appError(400, 'RECOVERY_TIME', '복구 예약은 현재부터 최소 2분 이후여야 합니다.');
-    if (
-      env.SEND_MODE === 'live' &&
-      !(await env.DB.prepare(
-        "SELECT singleton FROM credentials WHERE singleton=1 AND status='connected'",
-      ).first())
-    )
-      throw appError(409, 'NEEDS_RECONNECT', '카카오를 연결한 뒤 복구 예약을 만드세요.');
+    if (env.SEND_MODE === 'live') connectionVersion = await requireConnection(env);
     const views = await recoveryItems(recovering, env);
     for (let index = 0; index < recovering.length; index++) {
       const item = recovering[index]!;
@@ -217,8 +213,16 @@ export async function decideRecovery(
   const mutation: string = crypto.randomUUID();
   const statements: D1PreparedStatement[] = [
     env.DB.prepare(
-      "UPDATE schedules SET mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason IN ('paused','cancelled') AND NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND (d.state='sending' OR (d.state='unknown' AND d.resolution IS NULL))) AND (SELECT count(*) FROM pause_recovery_candidates p WHERE p.schedule_id=schedules.id AND p.decision IS NULL AND p.delivery_id IN (SELECT value FROM json_each(?)))=?",
-    ).bind(mutation, id, data.version, JSON.stringify(ids), ids.length),
+      `UPDATE schedules SET mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason IN ('paused','cancelled') AND NOT EXISTS(SELECT 1 FROM deliveries d WHERE d.schedule_id=schedules.id AND (d.state='sending' OR (d.state='unknown' AND d.resolution IS NULL))) AND (SELECT count(*) FROM pause_recovery_candidates p WHERE p.schedule_id=schedules.id AND p.decision IS NULL AND p.delivery_id IN (SELECT value FROM json_each(?)))=? AND ${connectionGuard}`,
+    ).bind(
+      mutation,
+      id,
+      data.version,
+      JSON.stringify(ids),
+      ids.length,
+      connectionVersion,
+      connectionVersion,
+    ),
   ];
   const scheduleIds: string[] = [];
   for (let start: number = 0; start < recovering.length; start += LIMITS.cardsPerOccurrence) {
