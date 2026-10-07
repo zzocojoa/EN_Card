@@ -52,8 +52,8 @@ export async function route(request: Request, env: Env): Promise<Response> {
     });
   if (path === '/auth/start' && request.method === 'POST') return beginOAuth(request, env, now);
   if (path === '/auth/studio' && request.method === 'GET') {
-    await consumeStudioOAuth(request, env, now);
-    return prepareOAuth(env, now, true);
+    const ticket = await consumeStudioOAuth(request, env, now);
+    return prepareOAuth(env, now, true, ticket.credentialVersion);
   }
   if (path === '/auth/callback' && request.method === 'GET')
     return finishOAuth(request, env, now, nativeTransport);

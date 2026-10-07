@@ -42,7 +42,7 @@ EN_Card의 예약·발송, 인증, AI 자동 제작, 저장, 복구·시간, 한
 | 영역 | 읽은 핵심 소스·계약 | 회귀 근거 | 현재 판정 |
 | --- | --- | --- | --- |
 | 예약·발송 | `worker/engine.ts`, `delivery-service.ts`, `schedules.ts`; 회차 UNIQUE, 조건부 claim, 내구 sending, 호출 직전 취소/버전/연결, unknown 재발송 차단 | `engine`, `delivery-service`, `schedules`, `pause-race`, `r1-r2`, `cancellation-provenance` 테스트 | C-01 수정. 나머지 조사 범위에서 추가 P0/P1 미발견 |
-| 인증·접근 제어 | `auth.ts`, `crypto.ts`, `studio-bridge.ts`, `durable-token.ts`, `automation/credentials.ts`; 고정 소유자, 브라우저에 묶인 1회 OAuth state, 세션/Origin/CSRF, 암호화, 갱신 잠금·버전 | `auth`, `credential-storage`, `studio-bridge`, `token-recovery`, `token-rpc-guards`, `token-rpc-runtime` 테스트 | C-01의 연결 경계 보완. 나머지 조사 범위에서 추가 P0/P1 미발견 |
+| 인증·접근 제어 | `auth.ts`, `crypto.ts`, `studio-bridge.ts`, `durable-token.ts`, `automation/credentials.ts`; 고정 소유자, 브라우저에 묶인 1회 OAuth state, 세션/Origin/CSRF, 암호화, 갱신 잠금·버전 | `auth`, `oauth-completion-race`, `credential-storage`, `studio-bridge`, `token-recovery`, `token-rpc-guards`, `token-rpc-runtime` 테스트 | 재조사에서 C-02 추가 발견·보완. 아래 후속 검증 기록 참조 |
 | AI 제작·검토·수량 | `automation/engine.ts`, `providers.ts`, `types.ts`, `run-queue.ts`, 마이그레이션 0014~0021; 반대 제공자, 내용/검토 해시, 수정·새 후보·중복 상한, 마감·현재 설정·lease 조건 | `automation-product`, `quantity`, `trial-quantity`, `duplicate-retry`, `quality-retry`, `quality-replacement`, `revise-fallback` 테스트 | 조사 범위에서 추가 P0/P1 미발견. 정상 품질 탈락·55분 마감으로 5장 미달은 정책상 가능한 결과 |
 | 데이터·이미지 | `storage.ts`, `png.ts`, DB 자산 보호/용량 트리거; 용량 예약→KV→ready, 부분 실패 보상, 고정 payload, 미확정 참조 삭제 차단 | `storage`, `png`, `pause-recovery`, `automation-product`, `quality-replacement`의 이력/마이그레이션 검사 | 조사 범위에서 추가 P0/P1 미발견 |
 | 중단·재개·시간 | `pause-recovery.ts`, `shared/time.ts`, `automation/settings.ts`, `trial.ts`, `run-queue.ts`; KST/UTC, 종료일, 사용자 버전, daily/trial 분리, 만료 lease와 늦은 결과 | `core`, `pause-recovery`, `pause-race`, `token-recovery`, `automation-product`, `automation-trial-quantity` 테스트 | C-01 수정. 나머지 조사 범위에서 추가 P0/P1 미발견 |
@@ -56,7 +56,7 @@ EN_Card의 예약·발송, 인증, AI 자동 제작, 저장, 복구·시간, 한
 
 화면에서는 `HistoryPage.tsx`의 API 접수/사용자 확인/결과 불명/모의 발송 표시와 `AutomationPanel.tsx`의 제작·검토·발송 상태를 확인했다. 새 화면 변경이나 운영 브라우저 테스트는 없다.
 
-## 검증 기록
+## C-01 최초 검증 기록
 
 | 검사 | 결과 | 범위·근거 |
 | --- | --- | --- |
@@ -74,6 +74,59 @@ EN_Card의 예약·발송, 인증, AI 자동 제작, 저장, 복구·시간, 한
 
 review QA의 최종 근거 판정은 `pass`, 열린 계약은 0이다. 초기 12개 smoke는 이력으로 보존하고 같은 명령의 최종 15개 재실행으로 대체했다. 전체 테스트·빌드·무료 구성 검사는 별도 근거이며 통과 수를 서로 합산하지 않는다. 테스트 완료 후 변경된 제품 소스 3개와 회귀 파일 1개의 SHA256이 실행 전 기록과 일치함을 확인했다. 이후 문서 편집은 이 제품 검증 입력을 바꾸지 않는다.
 
+## 2026-10-07 후속 재조사 — C-02 OAuth 완료의 연결 상태 덮어쓰기
+
+**P1 / 수정 전 재현 확인 / 수정·로컬 검증 완료.** 이전 C-01 구현 후 `80af70e`를 기준으로 계획의 실제 로직을 다시 확인했다. 앞선 영역별 "미발견"은 당시 조사 범위의 결과이며 이번 발견으로 인증 영역의 판정을 갱신한다.
+
+토큰 갱신과 예약 저장에는 버전 조건이 있었지만 `finishOAuth()`의 저장은 같은 운영자 ID이면 기존 토큰과 상태를 무조건 덮어썼다. 카카오 응답을 기다리는 동안 연결 해제·새 OAuth 완료·토큰 갱신이 먼저 끝나면, 오래된 응답이 최신 연결을 덮거나 삭제한 토큰을 복원했다. 연결 해제된 예약을 직접 재개하지는 않지만, 사용자의 연결 해제를 되돌리고 더 최신 토큰을 잃어 후속 인증/예약을 중단시킬 수 있다.
+
+수정 전 격리 SQL 검증은 정상 3개 통과, 위 경합 3개 실패였다. 별도 문맥의 검토에서 **로그인 창을 연 뒤 연결 해제 → 아직 도착하지 않은 콜백**도 재현했다(2개 실패/10개 통과). 콜백 시작 시 버전만 읽거나 대기 state를 삭제하는 방식에는 ticket 소비/새 state 생성 사이의 틈과 오래된 재연결 실패가 새 로그인까지 무효화하는 문제가 있었다(추가 2개 실패/12개 통과). 최종 구현은 요청 발급 시 버전을 저장해 이 경계들을 함께 보호한다.
+
+수정:
+
+- `auth.ts`와 `studio-bridge.ts`는 OAuth state/하루단어 ticket을 발급하는 SQL에서 당시 연결 버전을 저장한다. 소비 SQL은 그 버전이 현재와 같을 때만 허용하고, 제공자 I/O와 암호화 후 최종 INSERT/UPSERT도 버전·소유자를 다시 검사한다. 동시 최초 등록도 다른 성공 결과를 덮지 않는다.
+- `index.ts`는 소비한 ticket의 버전을 새 OAuth state 생성까지 전달한다. 두 SQL 사이에 연결이 바뀌면 새 state를 발급하지 않는다. 대기 요청을 일괄 삭제하지 않으므로 연결 해제 뒤 명시적으로 시작한 새 로그인과 일반 앱 세션은 보존한다.
+- 이미 소비한 콜백은 저장 시 409 `OAUTH_CHANGED`, 아직 소비하지 않은 취소된 요청은 기존 `OAUTH_STATE`/`STUDIO_TICKET`으로 거절한다. 새 로그인 시작은 허용하며 자동 OAuth 재시도는 추가하지 않는다.
+- `0022_oauth_credential_generation.sql`은 기존 `auth_state`에 nullable 버전 열 하나를 추가한다. 기존 데이터·세션·토큰은 보존한다. 이미 소유자가 있는 DB의 구형 대기 OAuth/ticket은 다시 시작해야 한다. 신규 설치와 기존 DB 업그레이드 모두 로컬 SQL로 검증하며 운영에는 적용하지 않는다. 배포 시에는 **0022 적용 후 주 Worker 배포**가 필요하다. 의존성과 하루단어 생성물 변경은 없다. [SQLite RETURNING](https://www.sqlite.org/lang_returning.html)과 [UPSERT](https://www.sqlite.org/lang_upsert.html)의 조건부 쓰기 계약을 확인했다. state 변경 중 읽는 하위 쿼리는 별도 credentials 테이블이며 자기 참조가 아니다.
+
+회귀 파일 [`tests/oauth-completion-race.test.ts`](../tests/oauth-completion-race.test.ts)는 17개 시나리오다. 정상 최초 등록/연결/명시적 재연결, 제공자 대기 중 5개 상태 변경, 최종 DB 쓰기 직전 해제, state 소비 전 해제/재연결 필요, 오래된 실패의 재처리, 실제 studio 라우트의 발급 경합과 정상 진입, 0021→0022 기존 행·세션 보존을 포함한다. 외부 카카오 응답만 모의이며 상태 전이·암호화·SQL 저장과 라우트는 실제 코드를 사용한다.
+
+### 계획 항목 재대조
+
+| 계획의 요구 | 실제 보호 경로와 회귀 근거 | 후속 판정 |
+| --- | --- | --- |
+| 중복 claim·늦은 결과·접수 후 기록 실패 | `engine.ts`의 조건부 claim/sending, attempt 및 unknown 보존; `engine`, `pause-race`, `r1-r2` | 기존 보호 유지, 새 P0/P1 미발견 |
+| 인증·연결 해제와 경합 | `connectionGuard`의 첫 쓰기 검사, OAuth/ticket 발급·소비·완료 버전 검사; `connection-mutation-race`, `oauth-completion-race`, `auth` | C-01 유지, C-02 보완 |
+| AI 장애·검토 변경·새 후보 중단 | `automation/engine.ts`의 owned/config/deadline 조건, 반대 제공자와 내용 해시, 누적 24회 예산; `automation-product`, `duplicate-retry`, `quality-replacement`, `revise-fallback` | 기존 보호 유지, 새 P0/P1 미발견 |
+| KV/D1 부분 실패·삭제 경합·예산 | `storage.ts` 보상 정리와 DB 참조/용량 트리거; `storage`의 put 후 D1 실패·늦은 put·동시 한도 시나리오 | 기존 보호 유지, 새 P0/P1 미발견 |
+| 날짜·종료일·trial/daily·사용자 설정 | `shared/time.ts`, `run-queue.ts`, `trial.ts`의 날짜별 슬롯과 config version; `core`, `automation-product`, `automation-trial-quantity` | 기존 보호 유지, 새 P0/P1 미발견 |
+| 화면·하루단어 연결·무료 구성 | `index.ts`의 상태/오류 전달, 하루단어 소유자/Origin/허용 경로, 서명된 relay; `studio-bridge`, `free-config`, 하루단어 연결 테스트 | 서버 변경만 필요. 운영 계정·CPU 검증은 여전히 후속 단계 |
+
+### C-02 최종 검증 — 2026-10-07
+
+| 실제 실행 명령·검사 | 결과 | 범위 |
+| --- | --- | --- |
+| `node node_modules/vitest/vitest.mjs run tests/oauth-completion-race.test.ts tests/auth.test.ts --reporter=verbose` | 2개 파일·49개 통과, exit 0 | 신규 17개 + 기존 인증 32개. 실제 SQL·암호화·라우트, 외부 응답만 모의 |
+| `node node_modules/vitest/vitest.mjs run --reporter=verbose` | 50개 파일·755개 통과, exit 0 | `npm test`의 `vitest run`과 같은 진입점. 15:54~16:34 KST, 2,376.79초. C-01 15개와 C-02 17개 포함 |
+| `npm run build` | 통과, exit 0 | `typecheck`·웹·주/발송/자동화 Worker dry-run. 실제 배포 없음 |
+| `npm run check:free` | 통과, exit 0 | 기본 dry_run/무료 구성 검사. 현재 계정 플랜·원격 CPU는 미검증 |
+| 하루단어 `node --test tests/card-studio.test.mjs tests/card-automation.test.mjs` | 19개 통과, exit 0 | 기존 소유자 프록시·서명 릴레이. 하루단어 파일 변경 없음 |
+| 변경 TS 4개 Prettier 검사, `git diff --check` | 통과, exit 0 | 제품 3개 + 새 회귀 파일. 마이그레이션은 신규·업그레이드 SQL 실행으로 확인 |
+
+최종 QA 근거 판정은 `pass`, 열린 계약은 0이다. 검증 전후 제품·테스트·마이그레이션·스크립트·구성 177개 파일의 SHA256이 일치한다. 중간 전체 실행 2개는 추가 경합 수정 때문에 중단했으며 통과 근거로 사용하지 않는다. 기존 41개/44개 부분 실행은 최종 동일 명령의 49개 결과로 대체했다. 이전 738개 결과는 C-01 이력이고 C-02 검증으로 재사용하지 않았다. 관련 테스트 수와 전체 수는 합산하지 않는다.
+
+오류 주입 시나리오의 `token_response_missing`, `image_upload_failed` 등 로그와 Node SQLite experimental 경고를 확인했으며 테스트 실패가 아니다. UI는 변경하지 않았고 운영 브라우저 검사는 미실시다. 별도 문맥의 native 코드 재검토에서 추가 수정 지적은 0개이며 최종 결론과 소스는 [PR13](https://github.com/zzocojoa/EN_Card/pull/13)에서 추적한다.
+
+근거 디렉터리: Git 제외 `backups/critical-defect-followup-20261007/`. 수정 전 `oauth-red.log`, state 소비 전 재현 `oauth-pending-red.log`, ticket/재처리 경계 `oauth-adjacent-red.log`, review QA `review-qa/`에 보존한다. 로컬 검증이며 새 원격 CPU·AI 호출·카카오 수신·배포·운영 설정 변경은 없다.
+
+후속 운영 적용 체크리스트(이번에는 실행하지 않음):
+
+- [ ] 최신 사용자 설정·진행 중/unknown·활성 Worker 버전과 Free 계정을 확인하고 D1을 암호화 백업한다.
+- [ ] 0022를 먼저 적용하고 기존 행·참조·세션 보존을 대조한 뒤 검증 소스의 주 Worker를 배포한다. 예약 시각·수량·자동화 설정을 변경하지 않는다.
+- [ ] 기존 앱 세션과 새 OAuth/하루단어 연결을 확인한다. 업그레이드 전 대기 연결 요청은 다시 시작하도록 안내한다.
+- [ ] 변경 경로의 일반 Worker CPU와 오류·관측 공백을 기록한다. 실제 연동 검증과 로컬 모의 검증을 구별한다.
+- [ ] 복구가 필요하면 코드 버전을 우선 검토한다. 추가한 nullable 열은 이전 코드가 무시할 수 있지만 이전 코드의 C-02 보호 누락도 돌아온다. 열 삭제나 전체 DB 복원으로 최신 이력을 덮어쓰지 않는다.
+
 ## 별도 추적 — 개발 도구 의존성 경고
 
 2026-10-07 `npm audit --json`은 high 5개 패키지(직접/전이 영향 포함), critical 0을 반환했다. `npm audit --omit=dev --json`은 0개다. 이 두 결과만으로 배포 번들의 안전성을 판정하지 않으며, 개발 의존성에 들어 있는 실제 Worker 런타임 라이브러리도 빌드에 포함될 수 있음을 구분한다.
@@ -86,7 +139,7 @@ review QA의 최종 근거 판정은 `pass`, 열린 계약은 0이다. 초기 12
 
 해결 완료로 표시하지 않는다. 별도 개발 도구 업데이트에서 패치 버전과 Wrangler/Miniflare 호환성을 검증해야 한다. audit이 제안한 구형 major 버전으로의 강제 하향은 적용하지 않았고 이번 잠금 파일·의존성은 유지했다. 이 목록은 C-01의 재현 가능한 운영 경합과 구별한다.
 
-이번 최종 빌드의 주/발송/자동화 Worker source map(각 116/104/266개 source)에서 `sharp`, `undici`, `source-map-js`, `miniflare`, `wrangler` 패키지 경로가 0개임을 확인했다. 이는 해당 빌드의 패키지 포함 여부에 관한 근거이며, 개발 도구 경고의 해소나 모든 운영 취약점의 부재를 의미하지 않는다.
+앞선 C-01 빌드의 주/발송/자동화 Worker source map(각 116/104/266개 source)에서 `sharp`, `undici`, `source-map-js`, `miniflare`, `wrangler` 패키지 경로가 0개임을 확인했다. 이는 해당 빌드의 패키지 포함 여부에 관한 근거이며, 개발 도구 경고의 해소나 모든 운영 취약점의 부재를 의미하지 않는다. C-02에서 의존성과 잠금 파일은 변경하지 않았다.
 
 실행 로그·원본 증거는 Git 제외 `backups/critical-defect-audit-20261007/`에 보존한다. 수정 전 영향은 `connection-red-impact.log`, 초기 관련 통과는 `connection-green.log`, 최종 경계 회귀는 `connection-edges-final.log`, review QA는 `review-qa/`에 있다. 초기 테스트 하네스 실패나 중단된 baseline은 제품 결함/통과 근거에 포함하지 않는다.
 
@@ -106,7 +159,7 @@ node --test tests/card-studio.test.mjs tests/card-automation.test.mjs
 
 - 실제 추가 AI 호출·카카오 발송·Cloudflare 배포·운영 DB/설정/Secret 변경은 수행하지 않았다. 이번 새 소스의 실제 수신과 CPU는 미검증이다.
 - 이전 날짜 표시 시험의 CPU(주 5.967ms, 발송 4.697ms, DO 590.185ms) 및 관측 한계는 이전 소스의 근거다. 새 SQL 조건의 운영 CPU 적합성으로 재사용하지 않는다.
-- 추후 배포를 승인받으면 계정 Free 상태·활성 버전과 바인딩/Cron·진행 중/unknown·백업을 확인하고, 변경된 예약 저장/재개/복구 요청의 일반 Worker CPU를 계측해야 한다. 10ms 이하 여부와 관측 누락을 함께 기록한다. 이미지 생성 DO는 별도 기준이며 이번 이미지 경로는 바뀌지 않았다.
+- 추후 배포를 승인받으면 계정 Free 상태·활성 버전과 바인딩/Cron·진행 중/unknown·암호화 백업을 확인한다. 0022를 적용한 뒤 변경된 예약 저장/재개/복구 및 OAuth/ticket 발급·소비·완료 요청의 일반 Worker CPU를 계측해야 한다. 일반 Worker의 10ms 이하 여부와 관측 누락을 함께 기록한다. 이미지 생성 DO는 별도 기준이며 이번 이미지 경로는 바뀌지 않았다.
 - `cso` 스킬은 설치된 경로에 필수 launcher가 없어 **not assessed**다. 이 보고서는 수동 소스 조사와 로컬 검증이며 전용 보안 스캐너 통과 보고서가 아니다.
 - `review`의 외부 Claude Code CLI는 설치되지 않아 별도 모델 검토는 미실시다. native 적대적 검토는 같은 모델의 별도 문맥이다. fixtures는 해당 검토에서 요약만 읽었으며 부모는 실제 테스트 소스를 읽고 실행했다.
 - 현재 범위에서 확인된 결함 외에 조사를 근거로 운영 전체 무결함, 정확히 한 번 도착, 무료 한도 영구 충족을 보장하지 않는다.
