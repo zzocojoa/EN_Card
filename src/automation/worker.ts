@@ -55,13 +55,17 @@ export class CardAutomation extends DurableObject<AutomationEnv> {
       });
     return this.fonts;
   }
-  private async render(card: CardInput): Promise<Uint8Array<ArrayBuffer>> {
+  private async render(
+    card: CardInput,
+    scheduledAt: number,
+    number: number,
+  ): Promise<Uint8Array<ArrayBuffer>> {
     wasmReady ??= initWasm(wasm).catch((e) => {
       wasmReady = undefined;
       throw e;
     });
     await wasmReady;
-    const svg = cardSvg(card, await this.loadFonts(), 1);
+    const svg = cardSvg(card, await this.loadFonts(), number, scheduledAt);
     const renderer = new Resvg(svg, { font: { loadSystemFonts: false } });
     try {
       const rendered = renderer.render();
@@ -82,7 +86,7 @@ export class CardAutomation extends DurableObject<AutomationEnv> {
       if (path === '/tick' && request.method === 'POST') {
         await automationTick(env, {
           ai: relayClient(env),
-          render: (card) => this.render(card),
+          render: (card, scheduledAt, number) => this.render(card, scheduledAt, number),
           clock: Date.now,
         });
         return new Response(null, { status: 204 });

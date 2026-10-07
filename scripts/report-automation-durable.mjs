@@ -163,7 +163,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     'experiments/automation-png/raster.ts',
     'src/worker/storage.ts',
     'src/worker/png.ts',
-    'src/web/canvas.ts',
+    'src/shared/card-layout.ts',
     'package-lock.json',
   ];
   const sourceHashes = {};

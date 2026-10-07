@@ -263,6 +263,19 @@ test('AI 자동 제작 설정·시작·중단과 검토 표시 및 화면 이동
     return route.fulfill({ json: view });
   });
   await page.goto('/#/automation');
+  const weekdays = page.getByRole('list', { name: '카드 요일별 색상' });
+  await expect(weekdays.getByRole('listitem')).toHaveText([
+    '월요일',
+    '화요일',
+    '수요일',
+    '목요일',
+    '금요일',
+    '토요일',
+    '일요일',
+  ]);
+  await expect(page.locator('.automation-card-stamp')).toContainText(
+    '실제 도착 시각은 다를 수 있습니다.',
+  );
   await expect(page.getByRole('combobox', { name: '하루 제작 수량', exact: true })).toHaveValue(
     '1',
   );

@@ -1,6 +1,6 @@
 import { create, type Font } from 'fontkit';
 import { cardSchema, type CardInput } from '../../src/shared/model';
-import { layoutCard } from '../../src/web/canvas';
+import { layoutCard } from '../../src/shared/card-layout';
 
 // Feasibility lab only. This module is deliberately absent from production bundles.
 // Reuse the shipped font subsets, weights and layout; outline glyphs so resvg does

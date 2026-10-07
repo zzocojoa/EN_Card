@@ -1729,6 +1729,25 @@ footer > span:last-child {
 .automation-panel {
   margin-bottom: 32px;
 }
+.automation-card-stamp {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.automation-card-stamp ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.automation-card-stamp li {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
 .automation-heading {
   display: flex;
   justify-content: space-between;

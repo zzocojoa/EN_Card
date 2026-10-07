@@ -1,6 +1,6 @@
 import { constants, crc32, deflateSync } from 'node:zlib';
 import { cardSchema, type CardInput } from '../../src/shared/model';
-import { layoutCard, type Layout } from '../../src/web/canvas';
+import { layoutCard, type Layout } from '../../src/shared/card-layout';
 import { validatePng } from '../../src/worker/png';
 import type { AtlasPainter } from './atlas-blit';
 
