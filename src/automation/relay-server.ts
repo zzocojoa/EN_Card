@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { automationSettings, aiCardSchema, reviewSchema } from '../shared/automation';
+import { automationSettings, reviewSchema } from '../shared/automation';
 import { cardSchema } from '../shared/model';
 import {
   deriveRelayKey,
@@ -8,7 +8,7 @@ import {
   verifyRelaySignature,
   validRelayHeaders,
 } from '../shared/automation-relay';
-import { AiError, providerClient, boundedJson } from './providers';
+import { AiError, providerClient, boundedJson, aiOutputSchema } from './providers';
 
 // Exported as a server-only bundle into the existing Site; provider keys never leave that Site.
 export type RelaySiteConfig = {
@@ -24,14 +24,20 @@ export type RelaySiteConfig = {
 const inputSchema = z
   .object({
     provider: z.enum(['google', 'groq']),
-    stage: z.enum(['draft', 'review', 'revise']),
+    stage: z.enum(['select', 'draft', 'review', 'revise']),
     settings: automationSettings,
     content: cardSchema.nullable(),
     review: reviewSchema.nullable(),
     recent: z.array(z.string().max(200)).max(50),
+    expression: z.string().trim().min(1).max(120).optional(),
   })
   .strict()
-  .refine((input) => input.stage === 'draft' || input.content !== null)
+  .refine((input) => ['select', 'draft'].includes(input.stage) || input.content !== null)
+  .refine(
+    (input) =>
+      input.stage !== 'select' ||
+      (input.content === null && input.review === null && input.expression === undefined),
+  )
   .refine((input) => input.stage !== 'revise' || input.review !== null);
 const requestSchema = z.discriminatedUnion('action', [
   z.object({ action: z.literal('status') }).strict(),
@@ -72,11 +78,16 @@ export async function handleCardAutomationRelay(
     let text: string;
     try {
       text = (await boundedJson(
-        request, 65536, true,
+        request,
+        65536,
+        true,
         AbortSignal.any([request.signal, AbortSignal.timeout(5000)]),
       )) as string;
     } catch (error) {
-      return response({ error: 'invalid' }, error instanceof AiError && error.bodyTooLarge ? 413 : 400);
+      return response(
+        { error: 'invalid' },
+        error instanceof AiError && error.bodyTooLarge ? 413 : 400,
+      );
     }
     const key = await deriveRelayKey(config.card_studio_bridge_secret, config.card_studio_owner_id);
     if (!(await verifyRelaySignature(request, text, key, clock())))
@@ -125,9 +136,11 @@ export async function handleCardAutomationRelay(
     )(body.input);
     try {
       return response({
-        result: (body.input.stage === 'review' ? reviewSchema : aiCardSchema).parse(output),
+        result: aiOutputSchema(body.input.stage).parse(output),
       });
-    } catch { throw new AiError('invalid'); }
+    } catch {
+      throw new AiError('invalid');
+    }
   } catch (error) {
     if (error instanceof AiError)
       return response({ error: error.code, http_status: error.httpStatus }, 502);

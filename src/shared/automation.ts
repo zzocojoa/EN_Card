@@ -47,6 +47,12 @@ export function nextAutomationDue(settings: AutomationSettings, after: number): 
   );
 }
 export const AI_MODELS = { google: 'gemini-3.1-flash-lite', groq: 'openai/gpt-oss-120b' } as const;
+// Suggestions only: each chosen expression still requires a complete independent card review.
+export const expressionCandidatesSchema = z
+  .object({
+    expressions: z.array(z.string().trim().min(1).max(120)).min(1).max(10),
+  })
+  .strict();
 export type Provider = keyof typeof AI_MODELS;
 export const opposite = (provider: Provider): Provider =>
   provider === 'google' ? 'groq' : 'google';
@@ -132,6 +138,8 @@ export const automationReasons: Record<string, string> = {
   duplicate: '이미 있는 표현',
   duplicate_retry: '중복을 피할 다른 표현으로 다시 제작 대기',
   duplicate_limit: `중복 표현 ${MAX_DUPLICATE_CANDIDATES}회로 재생성 한도에 도달함`,
+  candidate_empty: '사용하지 않은 표현 후보를 다시 확인하는 중',
+  candidate_limit: '미사용 표현 후보 확보 한도에 도달함',
   invalid: 'AI 응답 형식을 확인할 수 없음',
   auth: 'AI 인증 설정 확인 필요',
   quota: '무료 AI 호출 한도 확인 필요',

@@ -31,7 +31,7 @@ export async function allocateDailyRuns(
     ...Array.from({ length: settings.cards_per_day }, (_, index) =>
       db
         .prepare(
-          `INSERT INTO automation_runs(id,dedupe_key,day,item_index,item_count,config_version,settings,due_at,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,error,updated_at) SELECT ?,?,?,?,?,version,settings,?,?,?,'google','groq',?,?,?,?,?,? FROM automation_settings WHERE singleton=1 AND enabled=1 AND version=? AND next_due_at=? AND (?=1 OR EXISTS(SELECT 1 FROM automation_runs r WHERE r.kind='daily' AND r.day=? AND r.item_index=1 AND r.config_version=? AND r.due_at=? AND r.item_count=?)) ON CONFLICT DO NOTHING`,
+          `INSERT INTO automation_runs(id,dedupe_key,day,item_index,item_count,config_version,settings,due_at,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,error,updated_at,expression_selection) SELECT ?,?,?,?,?,version,settings,?,?,?,'google','groq',?,?,?,?,?,?,1 FROM automation_settings WHERE singleton=1 AND enabled=1 AND version=? AND next_due_at=? AND (?=1 OR EXISTS(SELECT 1 FROM automation_runs r WHERE r.kind='daily' AND r.day=? AND r.item_index=1 AND r.config_version=? AND r.due_at=? AND r.item_count=?)) ON CONFLICT DO NOTHING`,
         )
         .bind(
           crypto.randomUUID(),
