@@ -9,6 +9,7 @@ import { nextRun } from '../shared/time';
 import { makePayload } from './kakao';
 import { readPage, type Page } from './pagination';
 import { appError, type Env } from './types';
+import { connectionGuard, requireConnection } from './connection';
 
 type ScheduleRow = Omit<Schedule, 'weekdays' | 'asset_ids' | 'items' | 'pending_delivery_count'> & {
   weekdays: string;
@@ -53,7 +54,7 @@ export async function saveSchedule(
   now: number,
 ): Promise<{ id: string }> {
   const expectedVersion: number | null = expected?.version ?? null;
-  if (env.SEND_MODE === 'live') await requireConnection(env);
+  const connectionVersion = env.SEND_MODE === 'live' ? await requireConnection(env) : null;
   const data: ScheduleInput = scheduleSchema.parse(input);
   const due: number | null = nextRun(data, now + LIMITS.propagationMs - 1);
   if (!due)
@@ -84,7 +85,7 @@ export async function saveSchedule(
   const statements: D1PreparedStatement[] = [
     id
       ? env.DB.prepare(
-          "UPDATE schedules SET name=?,kind=?,date=?,time=?,end_date=?,weekdays=?,cards_per_occurrence=?,next_run_at_utc=?,version=?,cursor=0,enabled=1,reason=NULL,mutation_id=? WHERE id=? AND version=? AND cursor=? AND reason IS NOT 'cancelled'",
+          `UPDATE schedules SET name=?,kind=?,date=?,time=?,end_date=?,weekdays=?,cards_per_occurrence=?,next_run_at_utc=?,version=?,cursor=0,enabled=1,reason=NULL,mutation_id=? WHERE id=? AND version=? AND cursor=? AND reason IS NOT 'cancelled' AND ${connectionGuard}`,
         ).bind(
           data.name,
           data.kind,
@@ -99,9 +100,11 @@ export async function saveSchedule(
           id,
           expectedVersion,
           expected?.cursor ?? null,
+          connectionVersion,
+          connectionVersion,
         )
       : env.DB.prepare(
-          "INSERT INTO schedules(id,name,kind,date,time,end_date,weekdays,cards_per_occurrence,timezone,next_run_at_utc,version,cursor,enabled,mutation_id) VALUES(?,?,?,?,?,?,?,?,'Asia/Seoul',?,1,0,1,?)",
+          `INSERT INTO schedules(id,name,kind,date,time,end_date,weekdays,cards_per_occurrence,timezone,next_run_at_utc,version,cursor,enabled,mutation_id) SELECT ?,?,?,?,?,?,?,?,'Asia/Seoul',?,1,0,1,? WHERE ${connectionGuard}`,
         ).bind(
           scheduleId,
           data.name,
@@ -113,6 +116,8 @@ export async function saveSchedule(
           data.cards_per_occurrence,
           due,
           mutation,
+          connectionVersion,
+          connectionVersion,
         ),
     env.DB.prepare(
       "UPDATE deliveries SET state='cancelled',cancellation_reason='schedule_changed',error='예약 수정',claim_owner=NULL,claim_until=NULL,updated_at=? WHERE schedule_id=? AND schedule_version<? AND state IN ('pending','claimed','retry_wait','blocked') AND EXISTS(SELECT 1 FROM schedules WHERE id=? AND mutation_id=?)",
@@ -169,8 +174,10 @@ export async function resumeSchedule(
     .first<ScheduleRow & { unresolved: number }>();
   if (!raw) throw appError(409, 'SCHEDULE_CHANGED', '예약을 다시 불러오세요.');
   if (raw.unresolved) throw unresolvedScheduleError();
-  if (env.SEND_MODE === 'live' || raw.reason === 'needs_reconnect' || raw.reason === 'disconnected')
-    await requireConnection(env);
+  const connectionVersion =
+    env.SEND_MODE === 'live' || raw.reason === 'needs_reconnect' || raw.reason === 'disconnected'
+      ? await requireConnection(env)
+      : null;
   if (raw.reason === 'needs_reconnect' || raw.reason === 'daily_limit') {
     const outstanding = await env.DB.prepare(
       "SELECT count(*) AS count FROM deliveries WHERE schedule_id=? AND schedule_version=? AND state IN ('blocked','pending','retry_wait') AND due_at_utc>=?",
@@ -188,7 +195,7 @@ export async function resumeSchedule(
       const mutation: string = crypto.randomUUID();
       const resumed = await scheduleChange(env, [
         env.DB.prepare(
-          'UPDATE schedules SET reason=?,enabled=?,mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason=?',
+          `UPDATE schedules SET reason=?,enabled=?,mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason=? AND ${connectionGuard}`,
         ).bind(
           repeat ? null : raw.next_run_at_utc ? 'content_shortage' : 'completed',
           repeat ? 1 : 0,
@@ -196,6 +203,8 @@ export async function resumeSchedule(
           id,
           version,
           raw.reason,
+          connectionVersion,
+          connectionVersion,
         ),
         env.DB.prepare(
           "UPDATE deliveries SET state='pending',retry_at=NULL,error=NULL WHERE schedule_id=? AND schedule_version=? AND state='blocked' AND EXISTS(SELECT 1 FROM schedules WHERE id=? AND mutation_id=?)",
@@ -224,8 +233,8 @@ export async function resumeSchedule(
   const mutation: string = crypto.randomUUID();
   const results = await scheduleChange(env, [
     env.DB.prepare(
-      'UPDATE schedules SET enabled=1,reason=NULL,next_run_at_utc=?,version=version+1,cursor=0,mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason IS ?',
-    ).bind(due, mutation, id, version, raw.reason),
+      `UPDATE schedules SET enabled=1,reason=NULL,next_run_at_utc=?,version=version+1,cursor=0,mutation_id=? WHERE id=? AND version=? AND enabled=0 AND reason IS ? AND ${connectionGuard}`,
+    ).bind(due, mutation, id, version, raw.reason, connectionVersion, connectionVersion),
     env.DB.prepare(
       'INSERT INTO schedule_items(schedule_id,version,position,asset_id,payload) SELECT i.schedule_id,?,i.position-?,i.asset_id,i.payload FROM schedule_items i JOIN schedules s ON s.id=i.schedule_id WHERE i.schedule_id=? AND i.version=? AND i.position>=? AND s.mutation_id=?',
     ).bind(version + 1, raw.cursor, id, version, raw.cursor, mutation),
@@ -236,15 +245,6 @@ export async function resumeSchedule(
   if (!results[0]?.meta.changes)
     throw appError(409, 'SCHEDULE_CHANGED', '예약 상태가 변경되었습니다.');
 }
-async function requireConnection(env: Env): Promise<void> {
-  if (
-    !(await env.DB.prepare(
-      "SELECT owner_id FROM credentials WHERE singleton=1 AND status='connected'",
-    ).first())
-  )
-    throw appError(409, 'NEEDS_RECONNECT', '먼저 카카오를 다시 연결한 뒤 예약을 활성화하세요.');
-}
-
 async function scheduleChange(env: Env, statements: D1PreparedStatement[]): Promise<D1Result[]> {
   try {
     return await env.DB.batch(statements);

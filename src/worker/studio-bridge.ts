@@ -35,14 +35,18 @@ export async function issueStudioOAuth(env: Env, now: number): Promise<Response>
   studioOrigin(env);
   const token = randomToken();
   await env.DB.prepare(
-    "INSERT INTO auth_state(id,kind,browser_hash,csrf,expires_at) VALUES(?,'oauth',NULL,'studio-ticket',?)",
+    "INSERT INTO auth_state(id,kind,browser_hash,csrf,expires_at,credential_version) VALUES(?,'oauth',NULL,'studio-ticket',?,(SELECT version FROM credentials WHERE singleton=1))",
   )
     .bind(await digest(`studio-ticket:${token}`, env.SESSION_SECRET), now + 60_000)
     .run();
   return Response.json({ url: `${env.APP_ORIGIN}/auth/studio?ticket=${token}` });
 }
 
-export async function consumeStudioOAuth(request: Request, env: Env, now: number): Promise<void> {
+export async function consumeStudioOAuth(
+  request: Request,
+  env: Env,
+  now: number,
+): Promise<{ credentialVersion: number | null }> {
   studioOrigin(env);
   if (!env.STUDIO_BRIDGE_SECRET || !env.STUDIO_OWNER_ID)
     throw appError(403, 'STUDIO_FORBIDDEN', '하루단어 연결을 확인해 주세요.');
@@ -54,14 +58,15 @@ export async function consumeStudioOAuth(request: Request, env: Env, now: number
       '연결 요청이 만료되었습니다. 하루단어에서 다시 연결하세요.',
     );
   const row = await env.DB.prepare(
-    "DELETE FROM auth_state WHERE id=? AND kind='oauth' AND csrf='studio-ticket' AND expires_at>? RETURNING id",
+    "DELETE FROM auth_state WHERE id=? AND kind='oauth' AND csrf='studio-ticket' AND expires_at>? AND credential_version IS (SELECT version FROM credentials WHERE singleton=1) RETURNING credential_version",
   )
     .bind(await digest(`studio-ticket:${token}`, env.SESSION_SECRET), now)
-    .first();
+    .first<{ credential_version: number | null }>();
   if (!row)
     throw appError(
       403,
       'STUDIO_TICKET',
       '연결 요청이 만료되었습니다. 하루단어에서 다시 연결하세요.',
     );
+  return { credentialVersion: row.credential_version };
 }

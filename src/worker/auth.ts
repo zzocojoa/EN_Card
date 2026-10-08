@@ -84,22 +84,33 @@ export async function beginOAuth(request: Request, env: Env, now: number): Promi
   }
   return prepareOAuth(env, now);
 }
-export async function prepareOAuth(env: Env, now: number, studio = false): Promise<Response> {
+export async function prepareOAuth(
+  env: Env,
+  now: number,
+  studio = false,
+  expectedCredentialVersion?: number | null,
+): Promise<Response> {
   if (!env.KAKAO_REST_API_KEY)
     throw appError(503, 'KAKAO_CONFIG', '카카오 REST API 키를 설정하세요.');
   const state: string = randomToken();
   const browser: string = randomToken();
-  await env.DB.batch([
+  const saved = await env.DB.batch([
     env.DB.prepare('DELETE FROM auth_state WHERE expires_at<?').bind(now),
     env.DB.prepare(
-      "INSERT INTO auth_state(id,kind,browser_hash,expires_at,csrf) VALUES(?,'oauth',?,?,?)",
+      `INSERT INTO auth_state(id,kind,browser_hash,expires_at,csrf,credential_version)
+       SELECT ?,'oauth',?,?,?,(SELECT version FROM credentials WHERE singleton=1)
+       WHERE ?=0 OR (SELECT version FROM credentials WHERE singleton=1) IS ?`,
     ).bind(
       await digest(state, env.SESSION_SECRET),
       await digest(browser, env.SESSION_SECRET),
       now + 10 * 60_000,
       studio ? 'studio-return' : null,
+      expectedCredentialVersion === undefined ? 0 : 1,
+      expectedCredentialVersion ?? null,
     ),
   ]);
+  if (saved[1]?.meta.changes !== 1)
+    throw appError(409, 'OAUTH_CHANGED', '연결 상태가 변경되었습니다. 다시 로그인을 시작하세요.');
   const url: URL = new URL('https://kauth.kakao.com/oauth/authorize');
   url.search = new URLSearchParams({
     client_id: env.KAKAO_REST_API_KEY,
@@ -140,10 +151,18 @@ export async function finishOAuth(
       '인증 응답이 누락되었거나 취소되었습니다. 다시 로그인하세요.',
     );
   const consumed = await env.DB.prepare(
-    "DELETE FROM auth_state WHERE id=? AND kind='oauth' AND browser_hash=? AND expires_at>? RETURNING id,csrf",
+    `DELETE FROM auth_state WHERE id=? AND kind='oauth' AND browser_hash=? AND expires_at>?
+       AND credential_version IS (SELECT version FROM credentials WHERE singleton=1)
+     RETURNING id,csrf,credential_version,
+       (SELECT owner_id FROM credentials WHERE singleton=1) AS credential_owner`,
   )
     .bind(await digest(state, env.SESSION_SECRET), await digest(browser, env.SESSION_SECRET), now)
-    .first<{ id: string; csrf: string | null }>();
+    .first<{
+      id: string;
+      csrf: string | null;
+      credential_version: number | null;
+      credential_owner: string | null;
+    }>();
   if (!consumed)
     throw appError(
       403,
@@ -172,8 +191,16 @@ export async function finishOAuth(
       '최초 인증에 리프레시 토큰이 없습니다. 다시 연결하세요.',
     );
   const owner: string = await kakaoOwner(tokens.access_token, transport);
+  if (consumed.credential_owner !== null && consumed.credential_owner !== owner)
+    throw appError(403, 'NOT_OWNER', '등록된 운영자 계정만 사용할 수 있습니다.');
+  // Preserve the generation captured when issuing state, including across provider I/O.
+  // An older callback must not undo disconnect, another login, or token rotation.
   const saved = await env.DB.prepare(
-    "INSERT INTO credentials(singleton,owner_id,access_token,refresh_token,expires_at,refresh_expires_at,version,status) VALUES(1,?,?,?,?,?,1,'connected') ON CONFLICT(singleton) DO UPDATE SET access_token=excluded.access_token,refresh_token=excluded.refresh_token,expires_at=excluded.expires_at,refresh_expires_at=excluded.refresh_expires_at,version=credentials.version+1,status='connected',lock_owner=NULL,lock_until=NULL,refresh_attempts=0,refresh_retry_at=NULL,refresh_failure=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL WHERE credentials.owner_id=excluded.owner_id RETURNING owner_id",
+    `INSERT INTO credentials(singleton,owner_id,access_token,refresh_token,expires_at,refresh_expires_at,version,status)
+     SELECT 1,?,?,?,?,?,1,'connected'
+     WHERE ? IS NULL OR EXISTS(SELECT 1 FROM credentials WHERE singleton=1 AND version=?)
+     ON CONFLICT(singleton) DO UPDATE SET access_token=excluded.access_token,refresh_token=excluded.refresh_token,expires_at=excluded.expires_at,refresh_expires_at=excluded.refresh_expires_at,version=credentials.version+1,status='connected',lock_owner=NULL,lock_until=NULL,refresh_attempts=0,refresh_retry_at=NULL,refresh_failure=NULL,refresh_http_status=NULL,refresh_provider_error=NULL,refresh_provider_code=NULL
+     WHERE credentials.owner_id=excluded.owner_id AND credentials.version=? RETURNING owner_id`,
   )
     .bind(
       owner,
@@ -181,9 +208,13 @@ export async function finishOAuth(
       await encrypt(tokens.refresh_token, env.TOKEN_ENCRYPTION_KEY),
       now + tokens.expires_in * 1000,
       now + tokens.refresh_token_expires_in * 1000,
+      consumed.credential_version,
+      consumed.credential_version,
+      consumed.credential_version,
     )
     .first<{ owner_id: string }>();
-  if (!saved) throw appError(403, 'NOT_OWNER', '등록된 운영자 계정만 사용할 수 있습니다.');
+  if (!saved)
+    throw appError(409, 'OAUTH_CHANGED', '연결 상태가 변경되었습니다. 다시 로그인을 시작하세요.');
   const session = await createSession(env, now);
   const headers: Headers = new Headers({
     Location: consumed.csrf === 'studio-return' ? `${studioOrigin(env)}/cards` : env.APP_ORIGIN,
