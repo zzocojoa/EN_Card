@@ -19,6 +19,25 @@ export type Harness = { mf: Miniflare; env: Env };
 export async function harness(): Promise<Harness> {
   return harnessThrough('9999');
 }
+// Regression suites for jobs created before 0023 keep their original AI contract.
+// New selection-mode jobs and real default allocation are covered separately.
+export async function legacyAutomationHarness(): Promise<Harness> {
+  const h = await harness();
+  h.env.DB = new Proxy(h.env.DB, {
+    get(target, key) {
+      if (key === 'prepare')
+        return (sql: string) =>
+          target.prepare(
+            sql.startsWith('INSERT INTO automation_runs(')
+              ? sql.replace(/,1(?=\s+FROM automation_settings)/, ',0')
+              : sql,
+          );
+      const value: unknown = Reflect.get(target, key);
+      return typeof value === 'function' ? value.bind(target) : value;
+    },
+  });
+  return h;
+}
 export async function harnessThrough(lastMigration: string): Promise<Harness> {
   const mf: Miniflare = new Miniflare(
     convertV4MiniflareOptions({
@@ -74,6 +93,30 @@ export async function harnessThrough(lastMigration: string): Promise<Harness> {
             const result = await target.exec(sql);
             if (sql.includes('ADD COLUMN cancellation_reason')) legacyCancellation = false;
             if (sql.includes('CREATE TABLE automation_runs')) legacyAutomation = false;
+            return result;
+          };
+        const value: unknown = Reflect.get(target, key);
+        return typeof value === 'function' ? value.bind(target) : value;
+      },
+    });
+  }
+  if (lastMigration < '0023_automation_expression_selection.sql') {
+    let oldAllocation = true;
+    env.DB = new Proxy(env.DB, {
+      get(target, key) {
+        if (key === 'prepare')
+          return (sql: string) =>
+            target.prepare(
+              oldAllocation
+                ? sql
+                    .replace(',updated_at,expression_selection)', ',updated_at)')
+                    .replace(/,1(?=\s+FROM automation_settings)/, '')
+                : sql,
+            );
+        if (key === 'exec')
+          return async (sql: string) => {
+            const result = await target.exec(sql);
+            if (sql.includes('ADD COLUMN expression_selection')) oldAllocation = false;
             return result;
           };
         const value: unknown = Reflect.get(target, key);

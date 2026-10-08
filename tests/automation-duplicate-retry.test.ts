@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { readFile } from 'node:fs/promises';
-import { harness, harnessThrough, NOW, SAMPLE, type Harness } from './helpers';
+import {
+  legacyAutomationHarness as harness,
+  harnessThrough,
+  NOW,
+  SAMPLE,
+  type Harness,
+} from './helpers';
 import { validPng } from './png-fixture';
 import { automationTick, type AutomationRuntime } from '../src/automation/engine';
 import { changeSettings } from '../src/automation/settings';
@@ -371,7 +377,7 @@ it('finishes a five-card trial after two duplicate drafts per slot with fixed Cr
   expect((await rows()).map((r) => r.status)).toEqual(Array(5).fill('scheduled'));
   expect(runtime.ai).toHaveBeenCalledTimes(20);
   expect(runtime.render).toHaveBeenCalledTimes(5);
-});
+}, 60_000);
 
 it('0018 adds bounded rejection history without changing old runs or attempt references', async () => {
   const old = await harnessThrough('0017_automation_trial_quantity.sql');

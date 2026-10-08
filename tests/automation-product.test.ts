@@ -1,5 +1,11 @@
 import { beforeEach, afterEach, it, expect, vi } from 'vitest';
-import { harness, harnessThrough, NOW, SAMPLE, type Harness } from './helpers';
+import {
+  legacyAutomationHarness as harness,
+  harnessThrough,
+  NOW,
+  SAMPLE,
+  type Harness,
+} from './helpers';
 import { readFile } from 'node:fs/promises';
 import { validPng } from './png-fixture';
 import { automationTick, type AutomationRuntime } from '../src/automation/engine';

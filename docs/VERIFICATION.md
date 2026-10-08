@@ -1,8 +1,99 @@
 # 검증 근거
 
+## 2026-10-08 커밋 전 리팩토링 검증
+
+검증 대상은 AI 단계/품질 검토 결과 반영과 공통 실행 상태 변경의 모듈 분리다. 기존 공개 `automationTick`/`AutomationRuntime` 경로, 모드0/1 동작, SQL 조건·바인딩·예산·품질 정책을 유지했다. 관련 자동화8파일 **194/194 통과, 실패0·생략0, exit0**이며 08:44~09:12 KST에 1667.47초 실행했다. 격리 Miniflare DB/KV·모의 AI/이미지/발송이며 실제 생성/수신 검증이 아니다.
+
+| 검사 | 최종 결과 |
+| --- | --- |
+| 수량28·품질 새 후보23·수정 제공자 대체18·표현 선정27·추가 수정17·엔진44·중복 재시도14·추가 시험23 | 8파일194개 통과, exit0 |
+| `npm run build` | 타입·Vite·주/발송/자동화 Worker dry-run 통과, exit0 |
+| `node scripts/check-free.mjs` | 로컬 무료 구성 통과, exit0; 실제 계정/CPU는 확인하지 않음 |
+| `git diff --check` | 통과, exit0; 신규 모듈의 줄 끝 공백/최종 줄바꿈도 별도 확인 |
+
+테스트 재현 명령:
+
+```powershell
+node node_modules/vitest/vitest.mjs run tests/automation-expression-selection.test.ts tests/automation-product.test.ts tests/automation-duplicate-retry.test.ts tests/automation-quality-retry.test.ts tests/automation-quality-replacement.test.ts tests/automation-revise-fallback.test.ts tests/automation-quantity.test.ts tests/automation-trial-quantity.test.ts
+```
+
+이동한11개 함수 본문과 추출한 품질 검토 전이/나머지 AI 본문을 공백·가드 별칭 정규화 후 대조했다. DB prepare34/bind30/batch5 호출을 보존했다. 텍스트 대조는 회귀 테스트를 보조하며 CPU 적합성이나 모든 실행 동등성의 증명은 아니다. 검증 전후 기록한 코드·설정 입력183개 해시도 일치한다. 최초 보조 대조 스크립트의 parser/공백 처리 오류와 최초 빌드 실행기의 Windows cmd 인수 오류는 수정했으며, 후자는 npm 실행 전 실패로 실제 build 결과와 구분한다. 최종 build는 Node에서 npm CLI를 직접 호출했다. 테스트 stderr의 인증 응답 유실/503은 명시적 모의 실패 시나리오 출력이다.
+
+실행 로그·종료 코드·입력 해시·리팩토링 전 소스·최종 범위는 Git 제외 [리팩토링 보고서](../backups/expression-refactor-20261008/report.md)에 보존한다. 해당 근거 파일은 PR에 자동 포함되지 않는다. 이전 review 결과는 리팩토링 전 상태이며 이번 변경 후 검증은 위194개와 최종 빌드/구성 검사다.
+
+실제 계정·CPU·휴대전화 추가 검증은 **사용자 선택으로 미실시**다. 과거 수신 확인/CPU 관측과 이번 로컬 검증을 합쳐 운영 검증 완료로 표시하지 않는다. 기존 전체785개·이전 review248개 결과도 이번 변경 후 전체 테스트 성공으로 재사용하지 않는다. 배포·추가 AI/카카오 호출·정규 설정 변경·병합은 이번 범위 밖이다.
+
+## 2026-10-08 현재 브랜치 review 근거
+
+이번 검토는 `master@33774a0` 대비 현재 커밋·미커밋·새 파일을 포함한다. 격리 Miniflare DB/KV와 모의 AI·이미지·발송을 쓰며, `automation-expression-selection`, `automation-relay`, 기존 자동화7파일 및 연결/OAuth 경합2파일을 `node node_modules/vitest/vitest.mjs run`으로 검사한다. 타입·웹·주/발송/자동화 Worker dry-run은 `npm run build`, 무료 구성은 `npm run check:free`, 최종 패치는 `git diff --check`로 확인한다. 기존 전체785개 결과를 이번 전체 실행 성공으로 재사용하지 않는다.
+
+실제 명령 전문·각 종료 코드·stdout/stderr·전후 입력182개 해시 대조·선별 실행과 전체 파일 실행의 중복 집계 제외는 Git 제외 [리뷰 보고서](../backups/expression-review-20261008/review-report.md)와 같은 폴더의 QA 근거에 기록한다. 최종 판정은 그 보고서의 현재 결과를 따르며, 이 명령 목록 자체는 실행 성공의 근거가 아니다. 외부 다른 모델 검토·운영 브라우저·계정 Free 재조회·새 원격 CPU/카카오 검증은 이번 범위에 포함하지 않는다. 운영 문서 정정은 테스트 입력을 바꾸지 않으며 기존 실제 수신 수량과 미확인 조건은 아래 이력에 보존한다.
+
+**01:26 첫 실제 선정 성공:** Google `select` 1회 성공으로 후보10개를 저장하고1개를예약했다. 선택중복0이며 새 릴레이/0023/DO 연동은 관측됐다. 카드5장 제작·독립검토·PNG·발송·CPU·휴대전화는 아직 완료가 아니다. 근거: `selection-first-tick.json`.
+
+**2026-10-08 표현 선정5장 실측 등록:** 이번 폴더 register.mjs 읽기검사/--apply·observe.mjs registered·selection-evidence.mjs registered exit0. 기존 이력/설정/예산 보존과5행 mode1·초기AI0·중복선택0·미해결0을 확인했다. resume.mjs 읽기검사는 제작/발송 전이므로 정상 거부(ready=false, 변경0)다. Cloudflare Cron 재설정 전파 대기 후 실제 새 버전 Cron과 DO/발송 준비 tail을 확인한 뒤 등록하여 제작창55분을 유지했다. 운영 시험02:26/후속02:43이며 실제선정/최종검토/PNG/발송/CPU/폰 결과는 별도 확인 대기다. 등록 전 유휴 로그를 실제5장 부하에 합산하지 않는다.
+
+**2026-10-08 0023 운영 반영 검증:** 하루단어 카드 연동20개·typecheck·lint(기존 경고13/오류0)·빌드 exit0, exporter131개 해시 대조, 최종 EN_Card 소스155개 동일과 live 무료 구성·main/DO/점검 Worker dry-run exit0. Sites 표준 helper의 Windows npm 경로/WSL 경로와 Node22 패키저 오류는 실패로 기록했고, 기존 PowerShell 빌드 및 공식 prepare-site-build.cjs/Windows tar를 호출하는 기존 휴대형 패키저의 Node24 실행으로 저장/게시했다. 생성 코드/의존성/잠금은 이 문제 해결 때문에 바꾸지 않았다. Site v123 배포 성공·환경59/공개정책4와 manifest 확인, D1 암호화 백업/복호화 대조·0023+이력 원자 적용·기존18개 데이터 테이블 해시·legacy mode0·FK0 및 새 활성 버전 바인딩/Cron/설정 보존을 확인했다. 실측 새5장·CPU·휴대전화는 미완료다. Free는10월7일 사용자 확인과 무료 구성 검사를 근거로 하며 현재 subscription API403으로 독립 재확인하지 못했다. 근거: `backups/expression-selection-rollout-20261008/result.json`.
+
+## 2026-10-08 생성 전 표현 선정 — 로컬 검증
+
+브랜치 `codex/automation-expression-pool`, 기존 미커밋 운영 기록 보존. `0023`을 격리 Miniflare DB에 적용했으며 운영 DB·사이트·AI·카카오에는 호출/변경하지 않았다. 새 기본 정규/시험은 mode1, 기존 작업은 mode0을 유지한다. [기능/호환성/한계](AI_EXPRESSION_SELECTION.md).
+
+- 최종 `npx vitest run tests/automation-expression-selection.test.ts tests/automation-relay.test.ts --reporter=verbose`: **2파일49개 통과, exit0**. 새 흐름27개와 릴레이22개. 정규/추가시험 각5장, 오래된 중복/목록 내부 중복, 후보 공유/다음 날 재사용, 동시 예약, DB rollback, 취소/마감/claim 변경, 작성·PNG 전 수동 중복, 잘못된 표현 반환, 24회 상한, 제공자 대체/독립 검토, 품질 새 후보/호출 여유/7분 경계, 설정별 후보 분리, 0023 기존 행/참조 보존을 포함한다.
+- 두5장 시나리오는 각각 후보1+작성5+검토5=11개 **모의 AI** 호출과 각1회씩 총5개 `mock_sent`를 확인했다. 실제 호출 감소/수신/원격 CPU나5장 운영 목표 완료를 뜻하지 않는다. 중복이 없던 기존10회보다 최초 조회1회가 추가되는 비용도 유지한다.
+- 최종 `npx vitest run tests/automation-product.test.ts -t 'rendering|KV failure|late put|reviewed card reaches' --reporter=verbose`: **6개 통과/필터 제외38개, exit0**. 고정 발송 시각·승인 해시·이미지 작성 중 수정·KV 실패·늦은 put 보상·모의 발송을 재확인했다. 38개를 이번 선별 실행에서 통과했다고 합산하지 않는다.
+- `npm test` 전체 실행: **51파일 중49파일 통과, 785개 중782개 통과/3개 실패, exit1**. 실행 도중 수정된 두 신규 항목은 수정 전 모듈의 렌더 횟수1/최신 제외 목록 누락으로 실패했고, 나머지는 아래 로컬 테스트30초 제한이었다. 이 회차를 동일한 최종 소스로 전체 통과한 실행이라고 표시하지 않는다.
+- 최종 파일을 고정한 뒤 `automation-expression-selection.test.ts -t 'rechecks concurrent manual duplicates|remembers rejected old suggestions'`를 다시 실행했다. **2개 통과/필터 제외25개, exit0**이며 위49개와 겹치므로 새 테스트로 합산하지 않는다. 최종 검사에서는 렌더 전 중복이 실제 렌더 시도를 소비하지 않고, 최근50개 밖의 거절 표현도 다음 요청에 포함됨을 확인했다.
+- 기존55분 가상 Cron 시나리오는 로컬 실행30초 제한을 넘었다. 실제 제작 마감·가상 시간·검증 조건을 유지하고 해당 테스트의 실행 제한만60초로 조정했다. `npx vitest run tests/automation-duplicate-retry.test.ts --reporter=verbose`: **14개 통과, exit0**, 해당 시나리오32.297초. Cloudflare CPU 측정이 아니다. 최종 변경 영향 검사 합계는 중복 집계를 제외해 **69개(49+6+14)**다.
+- 전체 실행 종료 후 코드를 고정한 최종 재검증: `npx vitest run tests/automation-expression-selection.test.ts tests/automation-duplicate-retry.test.ts --reporter=verbose` **2파일41개 전부 통과, exit0**. 최초 실패3건을 포함한 두 파일 전체를 다시 확인했고 미해결 테스트 실패0이다. 최초 전체 실행의 나머지49파일744개와 이41개를 구분하며, 단일 `npm test` 명령이785개 전부 exit0였다고 쓰지 않는다. 재검증 중 기록한 소스/테스트/마이그레이션155개 SHA256은 종료 후 `source-proof.mjs --verify`로 일치를 확인했다(exit0). 마지막 `npm run typecheck`도 exit0이다. 증빙 파일은 Git 제외 `backups/expression-selection-local/final-source.json`에 보관한다.
+- 최종 `npm run build`: 타입·웹·주/발송/DO dry-run **exit0**. `npm run check:free` **exit0**, 기존 무료 구성/금지 경로 검사이며 실제 계정/공유 잔여량/CPU 검증은 아니다. 새 의존성·유료 자원·예산 상향0.
+- 공식 `node scripts/export-haru.mjs --target backups/expression-selection-local/haru-export`: **exit0**, UI129개·서버 릴레이2개. 기존 하루단어 checkout/게시 상태를 덮어쓰지 않았다. 같은 폴더 `check-export.mjs`: 산출물 해시 전부 및 컴파일된 릴레이의 select/선택 표현 draft/기존 draft 호환 **exit0**, 합성 제공자3회·외부 호출0. 최초 합성 응답의 `finishReason` 누락으로 실패한 시험은 fixture를 수정하고 재실행했으며 제품의 STOP 검증을 약화하지 않았다.
+
+E2E 화면 전수 및 실제 새5장/CPU/휴대전화 검증은 이번 로컬 구현 범위에서 미실시다. 후보는 사용자에게 직접 발송되는 결과가 아니며 기존 독립 검토·1080 렌더·예약/unknown 보호를 통과해야 한다. 다음 운영 반영은 새 릴레이→0023→호환 DO와 실제 연동 검증이며, 별도 승인 없이 기존 시험을 재개하거나 추가 발송하지 않는다.
+
+**2026-10-07 18:12 후속 — 관측 CPU 대조 종료, 전체5장 판정 false 유지:** `cpu-maximum.mjs phone-three`, `assess-cpu.mjs phone-three`, 좁은1분 재조회 `coverage-recheck.mjs`, `observe.mjs cpu-final`, 로컬 근거 갱신 `finalize-cpu-record.mjs` 모두 exit0. 명령 실행 성공과 검증 판정을 구분하며 `cpuVerified=false`의 `en-card-delivery_coverage_or_outcome`, `five_card_workload_mapping_incomplete`를 유지했다. 마지막 자료는 `backups/critical-defect-trial-20261007/cpu-final.json`이다.
+
+- 일반 Worker의 실제 `max.cpuTime` 집계: 주5.785ms(67호출), 발송5.754ms(69호출). 원단위 microseconds÷1000이며 모든 호출의 무누락 최대라는 뜻은 아니다. DO 반환 그룹P99 최고467.566ms는 별도 분위수 지표다.
+- AI31회·렌더3회·발송3회 각각 tail 실행 구간1개와 비표본화 단일호출 집계에 대응했다. trace ID 연결이 아닌 시각/구간 대조다. 렌더 요청 CPU는1번467.566/2번306.151/3번300.961ms, 실제 발송은1번2.659/2번4.414/3번2.689ms다.
+- 관측 런타임 오류0·sampleInterval1. 수집기3개 예정 종료, 파서 오류/버퍼 손실/미완성 조각0. 매분 Cron 누락0,16:58 KST Cron2회는 별도 중복 관측으로 보존했다. AI 제공자 unavailable10회는 런타임 오류와 구분한다.
+- 좁은 재조회1회에도 주17:08:19와 발송17:26:22 집계는 비었으며 각각 tail2ms/1ms다. 첫AI 전16:55:44 발송 보조호출은 집계2.067ms·tail없음이다. 따라서 전체 호출 관측 공백을 해소한 것으로 표시하지 않는다.
+- 사용자 정상 수신3장·나머지2장 expired·목표5장 실패는 유지했다. version40/원래 설정 해시/다음10월8일07:30·활성 버전/바인딩/Cron·진행 중0/미해결0을 확인했다. 등록39와 재개40의 차이는 resumed.json과 대조했다. 기존 후속 `en-card-5`만 PAUSED이며 제품 정규 예약은 활성이다. 이번 새 제품 코드·설정·배포·AI·발송·병합은 없다. 문서 검사는 `git diff --check`다.
+
+**2026-10-07 18:03 version39 실측 — 서버3/사용자3, 목표5장 미달:** `observe.mjs phone-three`, `verify.mjs 2026-10-07 5 phone-three trial`, `read-result.mjs phone-three`는 exit0이며, 검증 판정은 `serverEvidenceVerified=false`(4·5번 미완료)다. 1~3번의 작성/반대 제공자 검토·내용 해시·비중복·1080 PNG·각1회 live 접수를 확인했다. 사용자도3장 이미지·날짜/요일·원본 링크 정상을 확인했다. 4번은17:50 최종 검토 통과/렌더0회,5번은AI0회이며17:51에모두expired다. AI31회 중21회응답처리성공/10회unavailable이며,성공 응답에 품질 검토 탈락도 포함하므로21개 카드 성공이 아니다. 수정 제공자 대체(1번)·품질 새 후보(3번)는 최종 발송 검증에 성공했고,자연 중복(4번)은 최종 검토까지만 성공했다.
+
+`metrics.mjs`는 exit0, 현재버전의 주67·발송69·DO67개집계를 반환했다. 그룹P99 최고5.785/5.754/467.566ms,오류0,sampleInterval1이다. max 추가 조회는GraphQL budget 제한으로exit1이며 재조회는18:08:15이후 가능하다. 예비tail대조는주68/발송69/DO67개,관측이상0이다. 주17:08:19KST·발송17:26:22KST의tail각1건이집계에없고,첫AI이전16:55:44KST발송보조회차는집계1/tail0이다. DO는초단위개수대조일치다. 전체5장 CPU/무누락/전체호출최대로표시하지않는다.18:12후속에서max/좁은누락재조회와수집기종료통계를확인한다.
+
+`resume.mjs` 읽기검사ready 후승인된 `--apply` exit0, `observe.mjs resumed` exit0. **version40·매일07:30/5장·다음10월8일07:30** 및원래설정해시·활성버전/바인딩/Cron·진행중0/미해결0을확인했다. expectedVersionMatch=false는등록39와재개40차이로resumed.json과대조했다. 발송9/20·업로드9/100이며추가제작/재발송/배포/병합은없다. 원본근거는 `backups/critical-defect-trial-20261007/`이고변경문서 `git diff --check`를실행한다. 아래 시작 기록을 최종5장통과로해석하지않는다.
+
+**2026-10-07 0022 운영 적용·새 5장 검증 시작:** 현재 사용자 Workers Free 확인, 실제 live 구성 `check-free`와 주/유지보수 Worker dry-run exit0, 최종 로컬 검증 입력177개 해시 동일을 확인했다. 유지보수/Cron 중지 후 D1 백업은 DPAPI CurrentUser·제한 ACL·복호화 해시 일치·평문 제거를 확인했다. 0022의 ALTER와 이력 INSERT를 원자 적용했고 기존18개 테이블 해시·세션·credentials 보존, 새 nullable 열의 기존행 NULL, FK0을 확인했다. 주 Worker `34daa6c3-8388-4188-a60f-9a94a7991ed4`를 배포했다. 실제 활성 버전의 바인딩/Cron 대조와 API/화면 확인은 통과했다. 최초 공개 조회503은 배포 전파 중 상태이며 읽기 재확인401/200 후 완료 기록했다. 전체755개 테스트를 이번 운영 단계에서 재실행한 것으로 세지 않는다.
+
+등록 전 유휴/미해결0·발송6/20·업로드6/100이었다. 현재 **trial version39·5장·16:56/17:51/17:56 KST**를 기존 제품의 명시 승인 시험 등록 함수로 한 번 등록했다. 종료 후 정규 재개 SQL의 로컬15개 보호 시나리오 exit0, 실제 제작 중 읽기 검사에서 재개 거부를 확인했다. 등록 말미 이미 준비한 state-deployed 파일의 EEXIST는 새 등록으로 재시도하지 않고 registration.json과 원격5행/설정 version39를 읽기 대조한 registration-confirmed.json으로 확인했다. 이력·설정·예산 보존 확인은 완료했으며 제작/검토/PNG/live 접수/CPU/휴대전화 확인은 진행 중이다. 첫 카드의 수정 단계 unavailable는 현재 재시도 대기다. tail은 제작 전부터 주/발송/DO를 분리 수집하며 토큰·문장·URL query를 기록하지 않는다. 18:06 후속 확인이 ACTIVE다. 새 OAuth 완료와 수동 예약 변경·복구 경합의 운영 실측은 이번 자동 제작5장 검증으로 대신하지 않는다. [운영 기록·명령](CRITICAL_DEFECT_AUDIT.md#2026-10-07-운영-반영과-5장-시험).
+
 **C-02 OAuth 경합·0022 업그레이드 로컬 검증 완료:** 수정 전 외부 응답 대기 경합3개, 발급/소비 경계2개, ticket/반복 철회 경계2개에서 실패를 재현했다. 최종 발급 버전 저장 방식으로 신규17개·기존 인증32개가 통과했다. 0021→0022 실제 로컬 SQL에서 기존 auth_state 행·세션·credentials 보존과 구형 OAuth 거절/새 OAuth 성공을 확인했다. 최종 Vitest 전체50개 파일/755개, `npm run build`(typecheck·웹·3개 Worker dry-run), `npm run check:free`, 하루단어 연결19개 모두 exit 0이다. 전체 실행은 15:54~16:34 KST/2,376.79초이며 관련49개를 전체 수에 합산하지 않는다. QA pass/open0, 소스·테스트·마이그레이션 등177개 입력 해시 동일. 이전 후보의 부분 통과와 중단한 전체 실행은 최종 근거에서 제외한다. 외부 응답은 모의이며 운영 DB·발송·배포·병합은 변경하지 않았다. 현재 계정 플랜·새 원격 CPU·실제 수신은 미검증이다. [명령·검토 한계·후속 적용 체크리스트](CRITICAL_DEFECT_AUDIT.md).
 
 **중대 결함 C-01 로컬 검증 완료 — 2026-10-07:** 실제 Miniflare D1/KV와 조건부 SQL에 연결 해제/재연결을 끼워 넣어 4개 예약 변경 경로의 오래된 요청이 후속 모의 발송을 만드는 것을 확인했다. 수정 전 정상4/경합8실패, 수정 후 전체49개 파일/738개(최종 연결 경계15개 포함)·하루단어19개·typecheck·웹/3개 Worker dry-run·check:free가 통과했다. 관련58개 및 별도15개 재실행은 전체 통과 수에 합산하지 않는다. review QA 근거 판정은 pass/open0이며 최종 제품/테스트 해시가 실행 입력과 일치한다. 최종 리뷰 결론과 검토 커밋은 PR 본문에 기록한다. 초기 전체 baseline 중단과 테스트 입력 오류는 제품 결함/통과 근거에서 제외한다. 새로운 실제 AI/발송·원격 CPU·계정 플랜 확인은 없다. [원인·정확한 명령·근거·미검증 항목](CRITICAL_DEFECT_AUDIT.md).
+
+
+**2026-10-08 수신 수량 확인·정규 4장 원인**: 사용자가 02:26 trial42의5장과07:30 daily43의4장 도착을 확인했다. 수신 수량과 서버 접수가 일치한다. 이미지·날짜/요일·원본 링크는 별도 확인 대기이며, trial CPU 공백과 daily CPU 미검증을 완료로 바꾸지 않는다.
+
+정규1번은06:30 작성→두 차례 수정→06:35 기존 후보 최종 탈락(comparison=false)→다른 표현 작성→06:37 새 후보도 난이도 검토(level=false)에 탈락해 review_failed로 종료했다. 이는 검토 AI의 판정이다. 당시 마감07:25까지47분39초, AI8/24회였지만 revision4 새 후보는 현행 코드에서 추가 수정/재교체를 허용하지 않는다. 중복 재생성·제공자 장애·제작 시간 만료가 직접 원인은 아니다. 2~5번은 독립 검토·비중복·1080 PNG를 통과해07:30:19~07:31:20 각1회 접수됐다. 총AI25회 모두 응답ok(품질 통과 의미 아님), 이전 후보를1~4번에서 재사용하고5번에서 후보1회 보충했다.
+
+version43 매일07:30/5장·다음10월9일07:30, 원래 설정 해시·배포 버전/바인딩/Cron·연결정상·진행 중0/미해결0을 확인했다. 운영 설정·제품 코드·추가 AI/발송·배포·병합은 변경하지 않았다. 다음 개선은 기존 시간/24회 한도와 독립 검토를 유지하면서 새 후보에도 제한된 수정 기회를 주는 방안이다. 아직 구현하지 않았다. 아래 대기 상태는 이전 기록이다.
+
+검증: observe.mjs daily-phone-report, verify.mjs 2026-10-08 5 daily-phone-report daily, daily-detail-phone.mjs 최종 exit0. 최초401은 공식 Wrangler whoami exit0 후 갱신했으며, 상세 조회의 잘못된 열/별칭400은 로컬 SQL을 고쳐 성공했고 원격 변경0이다. verify 명령 exit0은5장 통과를 뜻하지 않으며 item_1_incomplete를 보존한다. 이번에는 daily CPU 조회·새 tail 수집·제품 테스트/빌드를 수행하지 않았다. 로컬 문서·JSON 기록만 갱신했다. 근거는 Git 제외 backups/expression-selection-trial-20261008/{phone-count-confirmation,result-daily-phone,verify-daily-phone-report,daily-detail-phone,observe-daily-phone-report}.json과 하루단어 docs/releases/2026-10-08-expression-selection-daily.json이다.
+
+
+**2026-10-08 표현 사전 선정 실측 — 서버 5장 통과**
+
+- 범위: day2026-10-08/kind=trial/version42/mode1/5장만 대조했다. D1 0023, Site v123, 실제 배포 주fd0d8bf0·발송ea59a0a0·DObf855d64 및 version.resources.bindings/매분 Cron이 등록 당시와 일치했다. 과거3장/실패 시험과 합산하지 않는다.
+- 서버: 5장 모두 최종 작성 성공·반대 제공자 독립 검토/내용 해시·선택 표현 일치/최종 비중복·1080 PNG·각1회 live 접수, 진행 중0/미해결0. 준비 완료02:15:17.464, 접수02:27:19.093~02:28:20.689 KST. 사용자 실제 휴대전화 수신은 별도 질문 후 대기 중이다.
+- 선정: Google select1회로 후보10개, 2~5번 추가 조회0, 최종 미사용5/예약0. 총AI25회(제공자 응답 ok19/unavailable6); 응답 ok는 품질 통과와 다르다. 슬롯별6/2/4/9/4회. 4번 revision2 추가 수정 후 최종 검토·발송 통과. 자연 후보 거절/전체 카드 중복 재생성/품질 새 후보/실패에 따른 수정 제공자 대체0, 다음 날 후보 재사용 미관측. 비교 조건이 달라 과거보다 총 호출이 줄었다고 판정하지 않는다.
+- CPU: 실제 AI 시작 전1분~마지막 발송 후2분인 UTC16:25:21.008~17:30:20.689를 조회했다. 원단위 microseconds÷1000. 일반 Worker max.cpuTime의 관측 최고 주8.011ms(72호출)/발송5.756ms(71호출); DO 반환 그룹 P99 최고627.009ms(68호출)는 전체 호출 최댓값이 아니다. 관측 오류0, sampleInterval1, 다른 버전0. 실제 발송5건은3.476~5.756ms로 tail과 초 단위 집계가 대응한다(공통 trace ID 대조 아님).
+- 관측 한계: AI25회 중23회는 tail 구간과 집계가 대응하고 3번의01:43 검토/01:44 수정2회는 집계9.064/10.431ms만 있고 tail이 없다. PNG5/발송5는 모두 대응한다. 주01:30:16·02:12:16과 DO02:13:16 보조호출은 tail만 있고 집계가 없다. 발송 defer tail02:26:21.999와 집계02:26:22/3.010ms는 1ms 경계 차이로 추정되지만 동일 호출임을 확정하지 않는다. 좁은 재조회1회에도 동일하며 cpuVerified=false를 유지한다. assess-cpu의 criticalWorkloadHasBothSources는 대응된 항목만 검사하므로 누락2AI까지 모두 관측했다는 의미가 아니다.
+- 수집: 02:41 예정 종료, 3개 tail exit code null은 의도적 종료이며 정상 exit0으로 바꾸지 않는다. 파서 invalid_json/버퍼 discard/미처리 문자0, 실제 시험 구간 Cron 분 누락0. 등록 전 before-trial-capture는 합산하지 않는다.
+- 재개: resume 읽기 검사 통과 후 --apply 1회, 02:45:42.590 KST version43 enabled1/매일07:30/5장/다음 오늘07:30을 확인했다. 설정 해시 보존·제작/미해결0·연결 정상, 전후20개 비설정 테이블과 Worker 버전/바인딩/Cron 불변·FK0. 정규 준비06:30/마감07:25. resumed.json 존재하므로 재실행하지 않는다. en-card-5만 PAUSED, 제품 정규 예약 유지.
+- 명령: 이번 폴더의 observe.mjs scheduled-trial, verify.mjs 2026-10-08 5 scheduled-trial trial, selection-evidence.mjs scheduled-trial, metrics.mjs(위 UTC 시작/끝, scheduled-trial), cpu-maximum.mjs scheduled-trial, assess-cpu.mjs scheduled-trial, recheck-coverage.mjs, resume.mjs, resume.mjs --apply, observe.mjs resumed 및 rollout snapshot.mjs before-resume/after-resume가 모두 exit0. assess 명령 성공은 CPU 완전 검증 통과와 다르다. 최초 읽기401은 공식 Wrangler whoami 갱신 후 재실행했고 결과를 덮어쓰지 않았다.
+- 근거: Git 제외 backups/expression-selection-trial-20261008/의 result.json·verify/selection/metrics/cpu-maximum/cpu-assessment-scheduled-trial.json·coverage-recheck.json·capture.log·resumed.json·observe-resumed.json. 하루단어 출시 JSON에도 같은 요약을 기록했다. 무료 구성 변경0; 계정은10월7일 사용자 Free 확인 근거를 유지하고 구독 API403 이후 새 계정 확인은 없다. 전체 목표/병합은 휴대전화와 CPU 관측 한계가 남아 미완료이며10월7일3장 정상/2장 expired 실패는 보존한다.
 
 **2026-10-07 날짜 이미지 운영 실측 대기:** DO `7f17ec46` 배포 전후 기존19개 테이블 해시·설정 원문·바인딩/Cron과 주/발송 Worker 버전이 일치한다. D1 백업은 Windows DPAPI 암호화·복호화 해시 대조·접근권한 제한을 확인했고 평문을 제거했다. 실제 live 구성 무료 검사와 dry-run 통과, 계정 구독 조회는403으로 기존 사용자 Free 확인을 보존한다. 한 장 trial(version36,09:14)은 제품 등록 로직으로 생성했고 이전 이력/정규 설정을 보존했다. 재개 SQL15개 로컬 보호 검사 통과. 주·발송·DO의 필터링한 실시간 CPU 수집을 제작 전에 시작했다. 서버 접수·PNG 날짜·CPU 부하·휴대전화 확인은 아직 미완료다. 사이트 게시 소스776개는 줄바꿈 차이만 있고 카드 생성물은 바이트 동일하며 새 게시 작업 공간 빌드를 통과했다. Sites helper의 Windows 의존성/포장 오류는 기본 npm 설치와 검증한 빌드의 Windows tar 포장으로 복구해 v122 저장까지 완료했다. 이후 공개 배포는 자동 승인 검토에서 거절되어 미실시다. 근거는 위 두 Git 제외 폴더와 하루단어 `2026-10-07-card-date-rollout.json`·`2026-10-07-card-date-trial.json`이다.
 

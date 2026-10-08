@@ -112,8 +112,8 @@ async function registerTrialBatch(
     ...ids.map((id, index) =>
       db
         .prepare(
-          `INSERT INTO automation_runs(id,dedupe_key,day,kind,item_index,item_count,not_before,config_version,settings,due_at,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,updated_at)
-      SELECT ?,?,?,'trial',?,?,?,version+1,?,?,?,'draft','google','groq',?,?,?,?,?
+          `INSERT INTO automation_runs(id,dedupe_key,day,kind,item_index,item_count,not_before,config_version,settings,due_at,deadline,status,writer,reviewer,card_id,asset_id,public_id,schedule_id,updated_at,expression_selection)
+      SELECT ?,?,?,'trial',?,?,?,version+1,?,?,?,'draft','google','groq',?,?,?,?,?,1
       FROM automation_settings WHERE singleton=1 AND version=? AND enabled=0 AND ${connected}
       AND ((?=1 AND ${idle} AND ${unused})
         OR (? > 1 AND EXISTS(SELECT 1 FROM automation_runs WHERE id=? AND config_version=?)))`,

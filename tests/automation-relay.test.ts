@@ -309,6 +309,88 @@ it('checks existing Site secrets without contacting either AI provider', async (
 });
 
 it.each(['google', 'groq'] as const)(
+  'relays bounded expression-only suggestions through %s with no full-card schema',
+  async (provider) => {
+    const result = { expressions: ['Keep going', 'Take it easy'] };
+    const transport = vi.fn<typeof fetch>(async () =>
+      Response.json(
+        provider === 'google'
+          ? {
+              candidates: [
+                { finishReason: 'STOP', content: { parts: [{ text: JSON.stringify(result) }] } },
+              ],
+            }
+          : { choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(result) } }] },
+      ),
+    );
+    const response = await handleCardAutomationRelay(
+      await request({ ...call(), input: { ...input, provider, stage: 'select' } }),
+      config,
+      transport,
+      () => now,
+    );
+    expect(await response.json()).toEqual({ result });
+    const body = JSON.parse(String(transport.mock.calls[0]![1]?.body));
+    const schema =
+      provider === 'google'
+        ? body.generationConfig.responseJsonSchema
+        : body.response_format.json_schema.schema;
+    expect(schema.properties.expressions.maxItems).toBe(10);
+    expect(schema.properties.example_en).toBeUndefined();
+    expect(String(transport.mock.calls[0]![1]?.body)).toContain('expressions only');
+  },
+);
+
+it('binds draft/correction prompts to the reserved expression and rejects invalid selection output', async () => {
+  const transport = vi.fn<typeof fetch>(async () =>
+    Response.json({
+      candidates: [{ finishReason: 'STOP', content: { parts: [{ text: JSON.stringify(card) }] } }],
+    }),
+  );
+  for (const stage of ['draft', 'revise'] as const) {
+    const response = await handleCardAutomationRelay(
+      await request({
+        ...call(),
+        input: {
+          ...input,
+          stage,
+          expression: 'Take your time',
+          content: stage === 'revise' ? card : null,
+          review: stage === 'revise' ? review : null,
+        },
+      }),
+      config,
+      transport,
+      () => now,
+    );
+    expect(response.status).toBe(200);
+    expect(String(transport.mock.calls.at(-1)![1]?.body)).toContain(
+      'Use the supplied expression exactly',
+    );
+  }
+  const invalid = await handleCardAutomationRelay(
+    await request({ ...call(), input: { ...input, stage: 'select' } }),
+    config,
+    transport,
+    () => now,
+  );
+  expect(invalid.status).toBe(502);
+  expect(await invalid.json()).toMatchObject({ error: 'invalid' });
+  const calls = transport.mock.calls.length;
+  const malformed = await handleCardAutomationRelay(
+    await request({
+      ...call(),
+      input: { ...input, stage: 'select', expression: 'Unexpected target' },
+    }),
+    config,
+    transport,
+    () => now,
+  );
+  expect(malformed.status).toBe(400);
+  expect(transport).toHaveBeenCalledTimes(calls);
+});
+
+it.each(['google', 'groq'] as const)(
   'uses only the Site-owned %s key, a pinned model, and strict output',
   async (provider) => {
     const stage = provider === 'google' ? 'draft' : 'review';

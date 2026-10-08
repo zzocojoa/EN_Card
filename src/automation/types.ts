@@ -1,3 +1,5 @@
+import type { CardInput } from '../shared/model';
+import type { AiCall } from './providers';
 import type { Env } from '../worker/types';
 import type { AutomationStatus, Provider } from '../shared/automation';
 export type AutomationEnv = Pick<
@@ -10,6 +12,16 @@ export type AutomationEnv = Pick<
   // Scoped key derived from the existing studio bridge; supplied per private DO request, never stored.
   AI_RELAY_KEY?: string;
 };
+export type AutomationRuntime = {
+  ai: AiCall;
+  render: (
+    card: CardInput,
+    scheduledAt: number,
+    number: number,
+  ) => Promise<Uint8Array<ArrayBuffer>>;
+  clock: () => number;
+};
+
 export type Run = {
   id: string;
   day: string;
@@ -42,6 +54,8 @@ export type Run = {
   render_attempts: number;
   rejected_expressions: string;
   replacement_origin: string | null;
+  expression_selection: number;
+  selected_expression: string | null;
 };
 export type SettingsRow = {
   settings: string;

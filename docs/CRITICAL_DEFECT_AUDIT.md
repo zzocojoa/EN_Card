@@ -2,7 +2,58 @@
 
 조사일: 2026-10-07 / 기준: `master@33774a06b57e4d6b2f81ddf5a5f28eb6a3b40f81`
 
-작업 브랜치: `codex/critical-defect-audit`. [조사·개선 계획](CRITICAL_DEFECT_IMPROVEMENT_PLAN.md)에 따른 조사·수정·로컬 검증 기록이다. 최종 리뷰 결론과 검토 소스 커밋은 이 브랜치의 PR 본문에 기록한다. 운영 반영 완료 기록이 아니다.
+작업 브랜치: `codex/critical-defect-audit`. [조사·개선 계획](CRITICAL_DEFECT_IMPROVEMENT_PLAN.md)에 따른 조사·수정·검증 기록이다. 최종 리뷰 결론과 검토 소스 커밋은 이 브랜치의 PR 본문에 기록한다. 후속 사용자 승인으로 진행한 운영 적용과 미완료 실측은 아래 별도 절에서 추적한다. 나머지 미배포/운영 변경 없음 설명은 당시 로컬 조사 범위다.
+
+## 2026-10-07 운영 반영과 5장 시험
+
+**18:12 후속 점검 종료:** 일반 Worker의 `max.cpuTime` 재조회는 성공했고 관측 최고는 주5.785ms·발송5.754ms다. DO 그룹P99 최고467.566ms는 별도로 기록한다. AI31회·렌더3회·발송3회 모두 tail 실행 구간1개와 비표본화 단일호출 집계에 대응했으며, 실제 발송 요청의 CPU는2.659/4.414/2.689ms다. 관측 런타임 오류0, 수집기 예정 종료 후 파서/버퍼/미완성 조각0이다. 매분 Cron 누락0과16:58 KST 중복 관측2회를 구분한다. 시각/구간 대조이며 trace ID 연결이나 AI 제공자 오류0이라는 뜻은 아니다.
+
+주17:08:19·발송17:26:22 KST의 보조호출은 좁은1분 재조회에도 집계가 없었다(tail2ms/1ms). 첫AI 전16:55:44 발송 보조호출은 집계2.067ms이나 tail이 없다. **전체 호출 CPU 무누락 통과와 5장 목표 통과는 여전히 false**다. 실제3장과 끝내 생성되지 않은2장을 합산하지 않는다. `cpu-assessment-phone-three.json`의 두 문제는 보존했고, 보조호출 공백과 실제31/3/3작업의 대응 성공을 `cpu-final.json`에 따로 기록했다.
+
+현재version40·매일07:30/5장·다음10월8일07:30·원래 설정 해시·활성 버전/바인딩/Cron·진행 중0/미해결0을 읽기 확인했다. 제품 설정과 정규 예약을 변경하지 않았으며 후속 `en-card-5`만 PAUSED로 바꿨다. `cpu-maximum`, `assess-cpu`, `coverage-recheck`, `observe cpu-final`, 로컬 근거 갱신 명령은 모두 exit0이다. 그 종료 코드는5장검증 통과를 의미하지 않는다. 새 제품 코드·배포·AI·발송·DB이력 변경·병합은 없다. Free 상태는 오늘 사용자 확인을 유지한다. 사용자가 제안한90분 준비와 대기 중 다른 카드 진행은 아직 미구현이다. 아래18:03의 조회 제한/후속 예정은 당시 기록이다.
+
+**18:03 후속 결과: 3장 정상 수신, 목표5장 미달.** 아래 등록 당시 미완료 상태의 후속이다. 사용자가 이번3장 모두 이미지·날짜/요일·원본 링크 정상이라고 확인했다. 서버17:57:21~26의접수3건과일치한다. 미해결0과설정해시일치를확인하고version40·매일07:30/5장·다음10월8일07:30으로재개했으며재개도구를다시실행하지않는다.
+
+| 슬롯 | 실제 경로와 결과 | 첫AI → 준비종료/마감 |
+| --- | --- | --- |
+| 1 | Google수정3회실패후Groq대체·Google독립검토·PNG·live접수 성공 | 16:56:44 → 17:10:19, 약13.6분 |
+| 2 | 수정 일시 오류1회후수정·검토·PNG·live접수 성공 | 17:11:20 → 17:20:19, 약9분 |
+| 3 | 두번수정후품질탈락→새후보,제공자실패/전환과검토재시도후최종live접수 성공 | 17:21:20 → 17:45:19, 약24분 |
+| 4 | 자연중복재생성·수정후17:50검토통과. PNG미생성,마감expired | 17:46:20 → 17:51:19 |
+| 5 | 앞선슬롯대기중마감. AI호출0회,expired | 시작못함 → 17:51:19 |
+
+실제AI31회중unavailable10회다. `src/automation/run-queue.ts`의claim은앞선item_index에ACTIVE상태가있으면뒤슬롯을차단하며,그조건은앞선슬롯의retry_at/이미지전파대기에도적용된다. `engine.ts`는한tick에한단계를진행한다. 따라서제공자재시도/수정·새후보·PNG대기의경과시간이누적돼55분창안에뒤슬롯을준비하지못했다. 이는일반WorkerCPU초과나카카오접수누락으로판정한것이아니다. 다음개선후보는대기중다른슬롯진행과검토완료카드의마감전처리다. 발송순서/중복표현예약/취소·unknown/한tickCPU·호출상한을보존하는구체설계와회귀가필요하다. 이번운영검증중제품코드를바꾸거나추가카드를발송하지않았다.
+
+CPU집계조회는exit0,현재버전주67·발송69·DO67개/오류0/sampleInterval1,그룹P99최고5.785/5.754/467.566ms다. 일반Workermax추가조회는GraphQL조회예산제한으로exit1이며5분후재조회대기다. 예비tail/집계대조에서주17:08:19·발송17:26:22KST각1보조호출은집계에없고,첫AI이전16:55:44KST발송보조회차는tail에없다. DO67개는일치한다. **전체5장CPU통과·무누락·전체호출최대로표시하지않는다.** 후속18:12에max·좁은누락재조회·수집기종료통계를확인한다. 현재Free구성은유지했다. 실제새OAuth완료/수동예약경합실측,개발도구high5경고는별도미완료다.
+
+새근거는시험폴더 `result-phone-three.json`, `detail-phone-three.json`, `verify-phone-three.json`, `metrics-phone-three.json`, `coverage-preliminary.json`, `resumed.json`이다. `observe`, `verify`, `read-result`, `metrics`,재개읽기/적용및재개후조회는exit0이고,verify의5장판정false와max조회exit1을구분한다. `en-card-5`는18:12CPU마무리후일시정지할예정이며현재제품정규예약은활성이다. PR13병합은하지않는다.
+
+사용자가 **0022 → Worker 배포 → 가장 빠른 새 5장 CPU·실제 연동 검증**을 승인했고, 현재 Workers Free 유지를 별도로 확인했다. 구독 API403과 브라우저 초기화 실패는 독립 계정 확인의 한계로 기록하며 사용자 확인 근거와 구분한다. AI 제공자·SQLite DO의 기존 무료 구성은 유지했다. 새로운 유료 자원·요금제 변경은 없다.
+
+- 소스 `1dcfc164b8647b3562206b1b06080e0128aef03c`; 로컬 최종 검증 입력177개 SHA256 일치. 실제 live 구성 무료 검사와 주/유지보수 dry-run exit0.
+- 제작/활성 예약/미해결0 확인 후 유지보수 진입·매분 Cron 중지. DB 백업369,591바이트를 Windows DPAPI CurrentUser로 암호화하고 복호화 해시·제한 ACL·평문 제거 확인.
+- `0022_oauth_credential_generation.sql`과 migration 이력 INSERT 원자 적용. 기존18개 데이터 테이블 해시·세션·토큰 보존, 새 열의 기존 행 NULL, FK0. 기존 대기 OAuth/ticket은 새 연결 흐름부터 다시 시작해야 한다.
+- 새 주 Worker **`34daa6c3-8388-4188-a60f-9a94a7991ed4`** 100%와 매분 Cron 확인. 발송 `ea59a0a0-fa1c-4e9d-9501-a1c66a261fa1`, DO `7f17ec46-e0eb-40a8-988b-4aee9e111ce3` 유지. 실제 버전 바인딩을 대조했다. 배포 직후 유지보수503은 재배포 없이 후속 요청의 보호 API401·boot200·화면200으로 전환 확인. Site v122와 하루단어 소스는 변경하지 않았다.
+- 기존 자동화 **version37·매일07:30·5장·종료2027-10-31·다음10월8일07:30** 원문과 이력 보존. 등록 전 오늘6/20회 발송·6/100회 업로드. 별도 승인 시험을 한 번 등록해 **trial version39·5장·16:56 제작·17:51 마감·17:56 순차 발송**으로 설정했다. 등록 중 이미 준비한 상태 파일의 충돌은 원격 등록 성공을 읽기 대조하여 확인했고 재등록하지 않았다.
+- 종료 후 정규 재개 보호 SQL15개 로컬 시나리오 exit0. 실제 제작 중 읽기 검사도 재개를 거부했다. 동일설정·시험 종료·미해결0일 때만 version40으로 저장된 다음 due를 재개하며 사용자 변경을 덮어쓰지 않는다.
+- 제작 전부터 비밀값을 제외한 주/발송/DO tail을 수집한다. 기존 `en-card-5`를 **10월7일18:06 KST** 후속 검증으로 갱신했다. CPU는 [일반 Worker 10ms](https://developers.cloudflare.com/workers/platform/limits/)와 [DO CPU 기준](https://developers.cloudflare.com/durable-objects/platform/limits/)을 구분한다. 집계 microseconds를 milliseconds로 변환하고 반환 P99를 전체 최대라고 쓰지 않는다.
+
+현재 서버5건·CPU 전체 관측·사용자 휴대전화5장 이미지/원본 링크는 **미완료**다. 초기 첫 카드 수정 단계의 unavailable는 제한 재시도 중으로 보존한다. 자연 장애 대체/중복/새 후보 미발생은 미관측으로 남긴다. 이 시험은 실제 AI·이미지·예약·카카오 연동이고, 새 OAuth 완료 및 수동 예약 수정/복구 경합의 운영 실측까지 입증하지 않는다. 해당 변경 경합은 앞 절의 로컬 실제 SQL/모의 제공자 회귀 근거를 유지한다. PR13 병합은 이번 승인 범위에 포함하지 않는다.
+
+Git 제외 근거: `backups/critical-defect-rollout-20261007/`의 `backup-proof.json`, `migration.json`, `state-deployed.json`; `backups/critical-defect-trial-20261007/`의 `registration.json`, `registration-confirmed.json`, `observe-registered.json`, `resume-guard-test.json`, `tail-*.jsonl`. 원본의 비밀값/개인 문장/임시 다운로드 URL을 문서에 복사하지 않는다.
+
+후속 **읽기 전용** 점검(기존 결과 파일이 있으면 새 라벨 사용):
+
+```powershell
+node backups/critical-defect-trial-20261007/observe.mjs scheduled-trial
+node backups/critical-defect-trial-20261007/verify.mjs 2026-10-07 5 scheduled-trial trial
+# verify 결과 suggestedCpuWindow의 UTC 문자열을 metrics.mjs에 전달한다.
+node backups/critical-defect-trial-20261007/cpu-maximum.mjs scheduled-trial
+node backups/critical-defect-trial-20261007/assess-cpu.mjs scheduled-trial
+node backups/critical-defect-trial-20261007/resume.mjs
+```
+
+등록/배포/마이그레이션 명령은 재실행하지 않는다. `resume-intent.json`/`resumed.json`이 없는 경우에만 위 재개 읽기검사의 ready와 현재 상태를 대조하고, 승인된 원래 설정 재개에 `resume.mjs --apply`를 사용한다. CPU 증거의 오류/누락과 수신 확인 전 전체 검증 완료로 표시하지 않는다.
 
 ## 범위와 판정
 
